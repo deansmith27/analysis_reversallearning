@@ -6,11 +6,12 @@ if contains(subj, 'DC')
     if strcmp(fileInfo.trackname, "TrackA'")%update track
         NRzones = [46 176 306];
         NevRzones = [106 176 296];
+            if sum(strcmp(subj, {'DC21'})) ~= 0
+                NevRzones = [76,176,226];
+            end
     elseif strcmp(fileInfo.trackname, "TrackA")%og track
         NRzones = [106 176 296];
-    end
-    if sum(strcmp(subj, {'DC21'})) ~= 0
-        NevRzones = [76,176,226];
+        NevRzones = [NaN,NaN,NaN];
     end
 elseif contains(subj, 'JK') || contains(subj, 'C')
     if strcmp(fileInfo.trackname, "TrackA'")%update track

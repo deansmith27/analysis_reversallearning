@@ -338,7 +338,7 @@ end%if isfile([virmenSessDataPath '\rawDataByLap.mat'])
 if isfile([virmenSessDataPath '\rawDataByTrial.mat'])
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% load raw virmen data %%%%%
+    %%%%% load raw virmen data %%%%%skip this, model on the other thing idk
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     rawDataByTrial = load([virmenSessDataPath '\rawDataByTrial.mat']);%trials
     rawDataByTrial = rawDataByTrial.rawDataByTrial;
