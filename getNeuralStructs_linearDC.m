@@ -120,7 +120,7 @@ for i = 1:numFolders
 end
 %will want to save lfp.meta somewhere as well
 
-%downsample from 2500 to 2000 Hz for ripple filter later
+%downsample from 20000 to 2000 Hz for ripple filter later
 lfp_samprate_down = 2000;
 downSamp = lfp_samprate/lfp_samprate_down;
 lfp_data = lfp_data(:,1:downSamp:end);
@@ -142,7 +142,7 @@ if params.rm60HzNoise
 end%params.rm60HzNoise
 
 %determine lfp start/end times
-virmen_rec_time_lfp = round(rawDataBySession.ephysInd/10);%20k/2k = 10 (og samprate/downsamp)
+virmen_rec_time_lfp = round(rawDataBySession.ephysInd/downSamp);%20k/2k = 10 (og samprate/downsamp)
 
 % %ensure last virmen data index is around last lfp ttl index
 % if abs( (lfp_ttl_end_ind/lfp_samprate_down) - (virmen_rec_time_lfp(end)/lfp_samprate_down) ) > 1%seconds
@@ -235,12 +235,9 @@ if isfile([virmenSessDataPath '\rawDataByLap.mat'])
 
     numLaps = numel(lapEndIdx);
     %preallocate output
-    rawDataByLapNeural = struct();
+    rawDataByLapNeural(1:numlaps) = struct();
     fieldsToSplit = ["vrTime","lfpTime","apTime","currentDeg","speed", ...
                  "speedSmooth","isMoving","rewarded","licked","currentZone"];
-    for f = fieldsToSplit
-        rawDataByLapNeural.(f) = cell(numLaps, 1);
-    end
 
     %actually cut each lap
     for k = 1:numLaps
@@ -251,7 +248,7 @@ if isfile([virmenSessDataPath '\rawDataByLap.mat'])
         end
         e = lapEndIdx(k);
         for f = fieldsToSplit
-            rawDataByLapNeural.(f){k} = rawDataByTrialNeural.(f)(s:e);
+            rawDataByLapNeural(k).(f) = rawDataByTrialNeural.(f)(s:e);
         end
     end
 
@@ -261,20 +258,20 @@ if isfile([virmenSessDataPath '\rawDataByLap.mat'])
     %rawDataByLap = rawDataByLap.rawDataByLap;
 
     %%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% create sturct %%%%%
+    %%%%% create sturct %%%%%figure out splitting lfp data as well
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
-    for ii = 1:length(rawDataByLap)%loop through laps
+    for ii = 1:length(rawDataByLapNeural)%loop through laps
 
         %%%%% index whole session neural struct using virmen lap times %%%%%
-        virmen_lap_start_ind = find(rawDataBySessionNeural.vrTime >= rawDataByLap(ii).vrTime(1),1,'first');
-        virmen_lap_end_ind = find(rawDataBySessionNeural.vrTime <= rawDataByLap(ii).vrTime(end),1,'last');
+        %virmen_lap_start_ind = find(rawDataBySessionNeural.vrTime >= rawDataByLap(ii).vrTime(1),1,'first');
+        %virmen_lap_end_ind = find(rawDataBySessionNeural.vrTime <= rawDataByLap(ii).vrTime(end),1,'last');
 
         %%%%% add data to struct %%%%%
-        rawDataByLapNeural(ii).vrTime = rawDataBySessionNeural.vrTime(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).lfpTime = rawDataBySessionNeural.lfpTime(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).apTime = rawDataBySessionNeural.apTime(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).lfpData = rawDataBySessionNeural.lfpData(:,(rawDataByLapNeural(ii).lfpTime(1)-lfp_ttl_start_ind+1):(rawDataByLapNeural(ii).lfpTime(end)-lfp_ttl_start_ind+1));
+        %rawDataByLapNeural(ii).vrTime = rawDataBySessionNeural.vrTime(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).lfpTime = rawDataBySessionNeural.lfpTime(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).apTime = rawDataBySessionNeural.apTime(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).lfpData = rawDataBySessionNeural.lfpData(:,(rawDataByLapNeural(ii).lfpTime(1)-lfp_ttl_start_ind+1):(rawDataByLapNeural(ii).lfpTime(end)-lfp_ttl_start_ind+1));
         for clu = 1:length(rawDataBySessionNeural.apData)
             rawDataByLapNeural(ii).apData(clu).ID = rawDataBySessionNeural.apData(clu).ID;
             rawDataByLapNeural(ii).apData(clu).maxChan = rawDataBySessionNeural.apData(clu).maxChan;
@@ -282,13 +279,13 @@ if isfile([virmenSessDataPath '\rawDataByLap.mat'])
             rawDataByLapNeural(ii).apData(clu).spikeAmps = rawDataBySessionNeural.apData(clu).spikeAmps(rawDataBySessionNeural.apData(clu).spikeInds >= rawDataByLapNeural(ii).apTime(1) & rawDataBySessionNeural.apData(clu).spikeInds <= rawDataByLapNeural(ii).apTime(end));
             rawDataByLapNeural(ii).apData(clu).putativeCellType = rawDataBySessionNeural.apData(clu).putativeCellType;
         end%clu
-        rawDataByLapNeural(ii).currentDeg = rawDataBySessionNeural.currentDeg(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).speed = rawDataBySessionNeural.speed(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).speedSmooth = rawDataBySessionNeural.speedSmooth(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).isMoving = rawDataBySessionNeural.isMoving(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).rewarded = rawDataBySessionNeural.rewarded(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).licked = rawDataBySessionNeural.licked(virmen_lap_start_ind:virmen_lap_end_ind);
-        rawDataByLapNeural(ii).currentZone = rawDataBySessionNeural.currentZone(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).currentDeg = rawDataBySessionNeural.currentDeg(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).speed = rawDataBySessionNeural.speed(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).speedSmooth = rawDataBySessionNeural.speedSmooth(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).isMoving = rawDataBySessionNeural.isMoving(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).rewarded = rawDataBySessionNeural.rewarded(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).licked = rawDataBySessionNeural.licked(virmen_lap_start_ind:virmen_lap_end_ind);
+        %rawDataByLapNeural(ii).currentZone = rawDataBySessionNeural.currentZone(virmen_lap_start_ind:virmen_lap_end_ind);
 
         %%%%% binned data for decoding %%%%%
         %DISTANCE%
