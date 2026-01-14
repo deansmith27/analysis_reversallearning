@@ -58,6 +58,7 @@ if createBehaviorStructs
         subj = [params.iden num2str(allindex(i,1))];
         sessDate = num2str(allindex(i,2));
         sessNum = num2str(allindex(i,3));
+        processedDataPath = fullfile(dirs.processeddata,[subj '_' sessDate '\']);
         trackInfo = num2str(allindex(i,4));
         virmenDataPath = fullfile(dirs.virmenrawdata, ['\' subj '_' sessDate '_' sessNum '\' 'dataWithLickometer.mat']);
         saveBehaviorPath = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData' '\' subj '\' sessDate '_' sessNum '_' trackInfo]);
@@ -72,7 +73,13 @@ if createBehaviorStructs
             %%%%% create virmen data structure, file information, and define zones %%%%%%
             %adapted from virmenToStruct_linearNJ.m
             %Note: If using update track, user may need to change the reward and non-reward locations.
-            [rawDataBySession, virmen_fileInfo] = virmenToStruct_linearJLK(virmenDataPath, saveBehaviorPath);
+            [~, virmen_fileInfo] = virmenToStruct_linearJLK(virmenDataPath, saveBehaviorPath);
+            anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  sessNum]);
+            Args = {sessNum, anvrdatafolder, processedDataPath, params};
+            feval(params.exportbehaviorfunc, Args{:});
+            rawposfile = fullfile(processedDataPath, sprintf('rawpos%s.mat', sessNum));
+            rawpos = load(rawposfile);
+            rawpos = rawpos = rawpos{1,21}{1,251118}{1,2};
             [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(virmen_fileInfo, subj);
 
             %%%%% create behavior structs %%%%%
@@ -200,6 +207,9 @@ if gatherNeuralData
             virmenSessDataPath = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData\' subj '\' sessDate '_' sessNum '_' trackInfo]);
             neuralRawDataPath = fullfile(dirs.rawdata, [subj '_' sessDate]);
             processedDataPath = fullfile(dirs.processeddata,[subj '_' sessDate '\']);
+            if ~isfield(params, 'Rzones')
+                [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(virmen_fileInfo, subj);
+            end
             if ~exist(processedDataPath, 'dir')
                 mkdir(processedDataPath);
             end
@@ -221,9 +231,7 @@ if gatherNeuralData
                         rhd2mat_tempbin_DC(neuralRawDataPath, processedDataPath, files, params);
                         disp(['Extracting Virmen Data: ', subj, ' ', sessDate])
                         for i = 1:size(files, 2)
-                        anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  num2str(files(i))]);
-                        Args = {files(i), anvrdatafolder, processedDataPath, params};
-                        feval(params.exportbehaviorfunc, Args{:});
+
                         end
                         getKilosort4Out_intan(subj, sessDate, neuralRawDataPath, dirs, files, params)%for Intan
                     else
@@ -240,7 +248,7 @@ if gatherNeuralData
                     end
 
                     %%%%% create cell_metrics, noiseLevel, session, and spikes structs %%%%%
-                    if ~isfile([neuralRawDataPath '\kilosort4\' sprintf('%s_%s.cell_metrics.cellinfo.mat', subj, sessDate)]) || params.rewrite.cell_metrics
+                    if ~isfile([processedDataPath '\kilosort4\' sprintf('%s_%s.cell_metrics.cellinfo.mat', subj, sessDate)]) || params.rewrite.cell_metrics
                         sprintf('Running CellExplorer for %s_%s_%s', subj, sessDate, sessNum)
                         addpath(genpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\CellExplorer'));
                         CellExplorer_Pipeline_DC(subj, sessDate, processedDataPath, params)%for Neuropixels

@@ -58,6 +58,7 @@ if createBehaviorStructs
         subj = [params.iden num2str(allindex(i,1))];
         sessDate = num2str(allindex(i,2));
         sessNum = num2str(allindex(i,3));
+        processedDataPath = fullfile(dirs.processeddata,[subj '_' sessDate '\']);
         trackInfo = num2str(allindex(i,4));
         virmenDataPath = fullfile(dirs.virmenrawdata, ['\' subj '_' sessDate '_' sessNum '\' 'dataWithLickometer.mat']);
         saveBehaviorPath = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData' '\' subj '\' sessDate '_' sessNum '_' trackInfo]);
@@ -72,7 +73,14 @@ if createBehaviorStructs
             %%%%% create virmen data structure, file information, and define zones %%%%%%
             %adapted from virmenToStruct_linearNJ.m
             %Note: If using update track, user may need to change the reward and non-reward locations.
-            [rawDataBySession, virmen_fileInfo] = virmenToStruct_linearJLK(virmenDataPath, saveBehaviorPath);
+            [~, virmen_fileInfo] = virmenToStruct_linearJLK(virmenDataPath, saveBehaviorPath);
+            anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  sessNum]);
+            Args = {sessNum, anvrdatafolder, processedDataPath, params};
+            feval(params.exportbehaviorfunc, Args{:});
+            rawposfile = fullfile(processedDataPath, sprintf('rawpos%s.mat', sessNum));
+            rawpos = load(rawposfile);
+            rawDataBySession = rawpos{1,num2str(allindex(i,1))}{1,num2str(allindex(i,2))}{1,num2str(allindex(i,3))};
+            save(fullfile(saveBehaviorPath, rawDataBySession.mat), "rawDataBySession");
             [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(virmen_fileInfo, subj);
 
             %%%%% create behavior structs %%%%%
@@ -224,9 +232,7 @@ if gatherNeuralData
                         rhd2mat_tempbin_DC(neuralRawDataPath, processedDataPath, files, params);
                         disp(['Extracting Virmen Data: ', subj, ' ', sessDate])
                         for i = 1:size(files, 2)
-                        anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  num2str(files(i))]);
-                        Args = {files(i), anvrdatafolder, processedDataPath, params};
-                        feval(params.exportbehaviorfunc, Args{:});
+
                         end
                         getKilosort4Out_intan(subj, sessDate, neuralRawDataPath, dirs, files, params)%for Intan
                     else
