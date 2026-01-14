@@ -346,6 +346,7 @@ if isfile([virmenSessDataPath '\rawDataByTrial.mat'])
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% create sturct %%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%
+    %ok, i have the params.rewardzone info. use 
     rawDataByTrialNeural = cell(size(rawDataByTrial));
     %loop through trials for each zone
     for znType = 1:size(rawDataByTrial,1) %1=reward, 2=nonreward, 3 = alt nonreward
