@@ -39,8 +39,8 @@ end
 [uniqSess, ind] = unique(allindex(:,1:2), 'rows'); %define session as one date
 
 %% Specify what you want to analyze here %%
-createBehaviorStructs = 0;
-plotBehavior = 0;
+createBehaviorStructs = 1;
+plotBehavior = 1;
 gatherNeuralData = 1;
 doDecoding = 1;
 
@@ -74,13 +74,15 @@ if createBehaviorStructs
             %adapted from virmenToStruct_linearNJ.m
             %Note: If using update track, user may need to change the reward and non-reward locations.
             [~, virmen_fileInfo] = virmenToStruct_linearJLK(virmenDataPath, saveBehaviorPath);
+            rhd2mat_tempbin_DC(neuralRawDataPath, processedDataPath, sessNum, params);
+            disp(['Extracting Virmen Data: ', subj, ' ', sessDate, ' ', sessNum])
             anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  sessNum]);
             Args = {sessNum, anvrdatafolder, processedDataPath, params};
             feval(params.exportbehaviorfunc, Args{:});
             rawposfile = fullfile(processedDataPath, sprintf('rawpos%s.mat', sessNum));
             rawpos = load(rawposfile);
-            rawDataBySession = rawpos{1,num2str(allindex(i,1))}{1,num2str(allindex(i,2))}{1,num2str(allindex(i,3))};
-            save(fullfile(saveBehaviorPath, rawDataBySession.mat), "rawDataBySession");
+            rawDataBySession = rawpos.rawpos;
+            save(fullfile(saveBehaviorPath, 'rawDataBySession.mat'), 'rawDataBySession');
             [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(virmen_fileInfo, subj);
 
             %%%%% create behavior structs %%%%%
@@ -228,9 +230,8 @@ if gatherNeuralData
                 if ~isfolder([processedDataPath '\kilosort4'])
                     sprintf('Running Kilosort4 for %s_%s', subj, sessDate)
                     if params.iden == 'DC'
-                        files = getfilenums(anrawdatadir);
-                        rhd2mat_tempbin_DC(neuralRawDataPath, processedDataPath, files, params);
-                        disp(['Extracting Virmen Data: ', subj, ' ', sessDate])
+                        %files = getfilenums(anrawdatadir);
+
                         for i = 1:size(files, 2)
 
                         end
