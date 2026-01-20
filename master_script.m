@@ -52,8 +52,8 @@ if createBehaviorStructs
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     for i = 1:size(allindex,1) %loop through every session
-        addpath('\\ad.gatech.edu\bme\labs\singer\Josh\Code\AnalysisCode\vr_novelty_behavior\commonfunc')%DC fix 
-        addpath('\\ad.gatech.edu\bme\labs\singer\Josh\Code\AnalysisCode\vr_novelty_behavior\functions')%DC fix 
+        addpath('\\ad.gatech.edu\bme\labs\singer\Daneille\code\vr_novelty_behavior\commonfunc')
+        addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\functions')
         %%%%% session info %%%%%
         subj = [params.iden num2str(allindex(i,1))];
         sessDate = num2str(allindex(i,2));
