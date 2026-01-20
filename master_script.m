@@ -126,7 +126,7 @@ if createBehaviorStructs
     %%%%%%%%%%%%%%%%
     addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\functions')
     
-    getBehaviorROC_JLK(allindex,dirs,uniqSess,params)
+    getBehaviorROC_DC(allindex,dirs,uniqSess,params)
 
 end%if createBehaviorStructs
 
@@ -168,12 +168,12 @@ if plotBehavior
         if plotByDateOrType == 0 %plotting by date using plotDate, whichDay irrelevant
             thisp = size(plotDate,2);
             for p = 1:thisp
-                plotBehaviorLapAndSession_JLK(anindex,an,dirs,params,plotByDateOrType,plotDate(an,p),whichDay,sessionToPlot,doSessionPlots,doLapPlots,plotLapByBlock,numTrPerBlock,whichBlocks)
+                plotBehaviorLapAndSession_DC(anindex,an,dirs,params,plotByDateOrType,plotDate(an,p),whichDay,sessionToPlot,doSessionPlots,doLapPlots,plotLapByBlock,numTrPerBlock,whichBlocks)
             end
         elseif plotByDateOrType == 1 || plotByDateOrType == 2 || plotByDateOrType == 3 || plotByDateOrType == 4 %plotting by type using whichDay, plotDate irrelevant
             thisp = length(whichDay);
             for p = 1:thisp
-                plotBehaviorLapAndSession_JLK(anindex,an,dirs,params,plotByDateOrType,plotDate(1),whichDay(p),sessionToPlot,doSessionPlots,doLapPlots,plotLapByBlock,numTrPerBlock,whichBlocks)
+                plotBehaviorLapAndSession_DC(anindex,an,dirs,params,plotByDateOrType,plotDate(1),whichDay(p),sessionToPlot,doSessionPlots,doLapPlots,plotLapByBlock,numTrPerBlock,whichBlocks)
             end
         end%if plotByDateOrType == 0
     end%an
@@ -191,7 +191,7 @@ if plotBehavior
         doROCPlots = 0; %ROC plots across sessions/animals, separated by track
         doAUCIndPlots = 1; %AUC plots across sessions for each animal
         doAUCGroupUpdatePlots = 0;%AUC plots across original sessions and update sessions by control vs. experimental group
-        plotBehaviorROC_JLK(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
+        plotBehaviorROC_DC(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
     end
 
 end%if plotBehavior
