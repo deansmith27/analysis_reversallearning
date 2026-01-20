@@ -87,20 +87,20 @@ for id = 1:length(params.rocID)
                         for zn = 1:length(params.Azones)
                             tmpBins = [];
                             tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
-                            tmpBins = tmpBins/params.binsize_deg;
+                            tmpBins = round(tmpBins/params.binsize_deg);%DC adding round to handle offset RZ with new projector
                             data.(currEnv).az = [data.(currEnv).az; lapData(lp,tmpBins)];
                         end
                         for zn = 1:length(params.NRzones)
                             tmpBins = [];
                             tmpBins = params.NRzones(zn):params.binsize_deg:params.NRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
-                            tmpBins = tmpBins/params.binsize_deg;
+                            tmpBins = round(tmpBins/params.binsize_deg);
                             data.(currEnv).cz = [data.(currEnv).cz; lapData(lp,tmpBins)];
                         end
                         for zn = 1:length(params.NevRzones)
                             if ~isnan(params.NevRzones(zn))
                                 tmpBins = [];
                                 tmpBins = params.NevRzones(zn):params.binsize_deg:params.NevRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
-                                tmpBins = tmpBins/params.binsize_deg;
+                                tmpBins = round(tmpBins/params.binsize_deg);
                                 data.(currEnv).nevrz = [data.(currEnv).nevrz; lapData(lp,tmpBins)];
                             else
                                 data.(currEnv).nevrz = [];
