@@ -284,6 +284,134 @@ if isfile([virmenSessDataPath '\rawDataByLap.mat'])
 
 end%if isfile([virmenSessDataPath '\rawDataByLap.mat'])
 
+% if isfile([virmenSessDataPath '\rawDataByLap.mat'])
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%% load raw virmen data %%%%%skip this, instead break up the session
+%     %%%%% data
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%     %take rawDataBySessionNeural and break up using .currentDeg where
+%     %lap changes over. want vrTime, lfpTime, apTime, currentDeg, speed,
+%     %speekSmooth, isMoving, rewarded, licked, and currentZone to all be
+%     %broken up. then do ratemaps, etc like Josh does. add on apData
+%     %structure like Josh does below (use double for loop structure, just
+%     %remove extra)
+% 
+%     deg = rawDataBySessionNeural.currentDeg(:);
+%     %find lap boundaries
+%     lapStartIdx = 1; %first lap starts at 1
+%     lapEndIdx = [];
+% 
+%     for i = 1:length(deg) - 1
+%         if deg(i) > 355 && deg(i+1) < 5 %little wiggle room for not exact
+%             lapEndIdx = [lapEndIdx; i];
+%         end
+%     end
+% 
+%     %add final lap if it passes the last RZ
+%     if deg(end) > params.Rzones(3) + 20
+%         lapEndIdx = [lapEndIdx; length(deg)];
+%     end
+% 
+%     numLaps = numel(lapEndIdx);
+%     %preallocate output
+%     rawDataByLapNeural(1:numlaps) = struct();
+%     fieldsToSplit = ["vrTime","lfpTime","apTime","currentDeg","speed", ...
+%                  "speedSmooth","isMoving","rewarded","licked","currentZone"];
+% 
+%     %actually cut each lap
+%     for k = 1:numLaps
+%         if k == 1
+%             s = lapStartIdx;
+%         else
+%             s = lapEndIdx(k-1) + 1;
+%         end
+%         e = lapEndIdx(k);
+%         for f = fieldsToSplit
+%             rawDataByLapNeural(k).(f) = rawDataByTrialNeural.(f)(s:e);
+%         end
+%     end
+% 
+% 
+% 
+%     %rawDataByLap = load([virmenSessDataPath '\rawDataByLap.mat']);%laps
+%     %rawDataByLap = rawDataByLap.rawDataByLap;
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%% create sturct %%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%     for ii = 1:length(rawDataByLapNeural)%loop through laps
+% 
+%         %%%%% index whole session neural struct using virmen lap times %%%%%
+%         %virmen_lap_start_ind = find(rawDataBySessionNeural.vrTime >= rawDataByLap(ii).vrTime(1),1,'first');
+%         %virmen_lap_end_ind = find(rawDataBySessionNeural.vrTime <= rawDataByLap(ii).vrTime(end),1,'last');
+% 
+%         %%%%% add data to struct %%%%%
+%         %rawDataByLapNeural(ii).vrTime = rawDataBySessionNeural.vrTime(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).lfpTime = rawDataBySessionNeural.lfpTime(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).apTime = rawDataBySessionNeural.apTime(virmen_lap_start_ind:virmen_lap_end_ind);
+%         rawDataByLapNeural(ii).lfpData = rawDataBySessionNeural.lfpData(:,(rawDataByLapNeural(ii).lfpTime(1)):(rawDataByLapNeural(ii).lfpTime(end)));
+%         for clu = 1:length(rawDataBySessionNeural.apData)
+%             rawDataByLapNeural(ii).apData(clu).ID = rawDataBySessionNeural.apData(clu).ID;
+%             rawDataByLapNeural(ii).apData(clu).maxChan = rawDataBySessionNeural.apData(clu).maxChan;
+%             rawDataByLapNeural(ii).apData(clu).spikeInds = rawDataBySessionNeural.apData(clu).spikeInds(rawDataBySessionNeural.apData(clu).spikeInds >= rawDataByLapNeural(ii).apTime(1) & rawDataBySessionNeural.apData(clu).spikeInds <= rawDataByLapNeural(ii).apTime(end));
+%             rawDataByLapNeural(ii).apData(clu).spikeAmps = rawDataBySessionNeural.apData(clu).spikeAmps(rawDataBySessionNeural.apData(clu).spikeInds >= rawDataByLapNeural(ii).apTime(1) & rawDataBySessionNeural.apData(clu).spikeInds <= rawDataByLapNeural(ii).apTime(end));
+%             rawDataByLapNeural(ii).apData(clu).putativeCellType = rawDataBySessionNeural.apData(clu).putativeCellType;
+%         end%clu
+%         %rawDataByLapNeural(ii).currentDeg = rawDataBySessionNeural.currentDeg(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).speed = rawDataBySessionNeural.speed(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).speedSmooth = rawDataBySessionNeural.speedSmooth(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).isMoving = rawDataBySessionNeural.isMoving(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).rewarded = rawDataBySessionNeural.rewarded(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).licked = rawDataBySessionNeural.licked(virmen_lap_start_ind:virmen_lap_end_ind);
+%         %rawDataByLapNeural(ii).currentZone = rawDataBySessionNeural.currentZone(virmen_lap_start_ind:virmen_lap_end_ind);
+% 
+%         %%%%% binned data for decoding %%%%%
+%         %DISTANCE%
+%         %create bins and identify which bins each position data point belongs to
+%         degBinEdges = 0:params.binsize_deg:360;
+%         rawDataByLapNeural(ii).degBinEdges = degBinEdges;
+%         degBinIden = discretize(rawDataByLapNeural(ii).currentDeg,degBinEdges);
+%         rawDataByLapNeural(ii).degBinSize = params.binsize_deg;
+% 
+%         %compute occupancy, speed, and licks per spatial bin
+%         for b = 1:length(degBinEdges)-1
+%             rawDataByLapNeural(ii).degBinOccup(b) = sum(diff(rawDataByLapNeural(ii).vrTime(degBinIden == b)));
+%             rawDataByLapNeural(ii).degBinPos(b) = sum(diff(rawDataByLapNeural(ii).currentDeg(degBinIden == b)));
+%             rawDataByLapNeural(ii).degBinLicked(b) = sum(rawDataByLapNeural(ii).licked(degBinIden == b));
+%         end%bin
+%         rawDataByLapNeural(ii).degBinSpeed = rawDataByLapNeural(ii).degBinPos ./ rawDataByLapNeural(ii).degBinOccup;
+%         rawDataByLapNeural(ii).degBinLickRate = rawDataByLapNeural(ii).degBinLicked ./ rawDataByLapNeural(ii).degBinOccup;
+%         %smooth data
+%         rawDataByLapNeural(ii).degBinOccupSmooth = gaussSmooth(rawDataByLapNeural(ii).degBinOccup, 2)';
+%         rawDataByLapNeural(ii).degBinPosSmooth = gaussSmooth(rawDataByLapNeural(ii).degBinPos, 2)';
+%         rawDataByLapNeural(ii).degBinSpeedSmooth = gaussSmooth(rawDataByLapNeural(ii).degBinSpeed, 2)';
+%         rawDataByLapNeural(ii).degBinLickRateSmooth = gaussSmooth(rawDataByLapNeural(ii).degBinLickRate, 2)';
+% 
+%         %add spiking data and rate map
+%         rawDataByLapNeural(ii).degBinSpikeCount = zeros(length(degBinEdges)-1,length(rawDataBySessionNeural.apData));
+%         rawDataByLapNeural(ii).degBinSpikeCountSmooth = zeros(length(degBinEdges)-1,length(rawDataBySessionNeural.apData));
+%         rawDataByLapNeural(ii).degBinRateMap = zeros(length(degBinEdges)-1,length(rawDataBySessionNeural.apData));
+%         for clu = 1:length(rawDataBySessionNeural.apData)
+%             spikePosInd = lookup2(rawDataByLapNeural(ii).apData(clu).spikeInds, rawDataByLapNeural(ii).apTime);
+%             spikePos = rawDataByLapNeural(ii).currentDeg(spikePosInd);
+%             rawDataByLapNeural(ii).degBinSpikeCount(:,clu) = histcounts(spikePos,degBinEdges);
+%             rawDataByLapNeural(ii).degBinSpikeCountSmooth(:,clu) = gaussSmooth(rawDataByLapNeural(ii).degBinSpikeCount(:,clu)', 2)';
+%             rawDataByLapNeural(ii).degBinRateMap(:,clu) = rawDataByLapNeural(ii).degBinSpikeCountSmooth(:,clu) ./ rawDataByLapNeural(ii).degBinOccupSmooth;
+%         end%clu
+% 
+%     end%ii
+% 
+%     %%%%%%%%%%%%%%%%%%%%%
+%     %%%%% save data %%%%%
+%     %%%%%%%%%%%%%%%%%%%%%
+%     filename = [saveNeuralPath '\' 'rawDataByLapNeural.mat'];
+%     save(filename, 'rawDataByLapNeural', '-v7.3');
+% 
+% end%if isfile([virmenSessDataPath '\rawDataByLap.mat'])
+
 
 %% Create Raw Data Struct for Trials with LFP and AP Times and Data %%
 %Note: Rest sessions and active sessions with <= 1 trial do not have trial structs
