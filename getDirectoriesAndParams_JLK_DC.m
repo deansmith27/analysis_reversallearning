@@ -25,8 +25,8 @@ dirs.kilosortPyScript = 'Y:\singer\Danielle\Code\AnalysisCode\Neuropixels_analys
 %general
 params.iden = 'DC'; %JK for default Josh's mice
 params.animals = [21];
-params.datesincl = [251118];
-params.datesexcl = [251117];
+params.datesincl = [];
+params.datesexcl = [];
 params.recday = [];
 params.brainReg = {'CA1'};
 params.probeChannels = {1:64};                                              %64-channel NeuroNexus probe
@@ -51,6 +51,7 @@ params.adc_channels = [0 1];
 params.adcInfo = 'scaled ball tracking';
 params.velocityfilename = 'velocity';
 params.savechnum = {0:63};
+params.rm60HzNoise = 0;
 
 %zones
 params.cueSize = 10;                                                        %in degrees, size of wall cue (zone)
@@ -104,7 +105,7 @@ params.longtimescales = 0;
 params.refactoredcalc = 0;
 
 %to overwrite existing files or not
-params.rewrite.behavior = 1;
+params.rewrite.behavior = 0;
 params.rewrite.ROC = 1;
 params.rewrite.clusters = 0;
 params.rewrite.cell_metrics = 0;

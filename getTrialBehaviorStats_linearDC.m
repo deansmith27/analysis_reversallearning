@@ -72,7 +72,7 @@ else %at least one completed lap
                     C = [PZ(1:2:end),PZ(2:2:end)];
                     %exclude trials that are shorter (in degrees) than expected
                     idx2excl = find(wrapTo360(rawDataBySession.currentDeg(C(:,2)) - rawDataBySession.currentDeg(C(:,1))) < params.gapBefore + params.gapAfter);
-                    C(idx2excl,:) = [];
+                    %C(idx2excl,:) = [];
                     allC = [allC; C];
                 else
                     C = [PZ(1:2:end-1),PZ(2:2:end-1)];
