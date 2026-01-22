@@ -3,7 +3,7 @@ function sessionPyrLayerInfo = getPyrLayerInfo(subj, sessDate, sessNum, dirs, pa
 
 %DC updating to make early exit for my short probes
 if strcmp(params.iden, 'DC')
-    sessionPyrLayerInfo.pyrLayerCA1 = 0:63;
+    sessionPyrLayerInfo.pyrLayerCA1 = 1:64;
     sessionPyrLayerInfo.pyrLayerCA3 = NaN;
     sessionPyrLayerInfo.note  = 'Skipped full pyr layer processing for DC';
     %% save data %%

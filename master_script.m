@@ -270,7 +270,7 @@ if gatherNeuralData
 
                     %%%%% get pyramidal layer info for this session %%%%%
                     %Note: Uses rawDataBySessionNeural and clusters_allrec structs
-                    if ~isfile([saveNeuralPath '\' 'sessionPyrLayerInfo.mat']) || params.rewrite.pyrLayer || ~params.iden == 'DC'
+                    if ~isfile([saveNeuralPath '\' 'sessionPyrLayerInfo.mat']) || params.rewrite.pyrLayer
                         sprintf('Getting pyramidal layer info for %s_%s_%s', subj, sessDate, sessNum)
                         plotPyrLayer = 1;
                         selectManually = 1;
@@ -282,7 +282,7 @@ if gatherNeuralData
                     if ~isfield([saveNeuralPath '\' 'rawDataBySessionNeural'], 'ripplesGood') || params.rewrite.ripples
                         sprintf('Getting ripples for %s_%s_%s', subj, sessDate, sessNum)
                         plotRipples = 1;
-                        getRipplesTmp(dirs, params, saveNeuralPath, plotRipples)
+                        getRipplesTmp_DC(dirs, params, saveNeuralPath, plotRipples)
                     end
 
 
