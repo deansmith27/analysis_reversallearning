@@ -52,7 +52,7 @@ if createBehaviorStructs
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     for i = 1:size(allindex,1) %loop through every session
-        addpath('\\ad.gatech.edu\bme\labs\singer\Daneille\code\vr_novelty_behavior\commonfunc')
+        addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\commonfunc')
         addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\functions')
         %%%%% session info %%%%%
         subj = [params.iden num2str(allindex(i,1))];
@@ -263,11 +263,9 @@ if gatherNeuralData
 
                     %%%%% get cell yield info for this session %%%%%
                     %Note: Uses rawDataBySessionNeural and only do session 3
-                    if str2num(sessNum) == 3
-                        if ~isfile([saveNeuralPath '\' 'cellYield.mat']) || params.rewrite.cellYield
+                    if ~isfile([saveNeuralPath '\' 'cellYield.mat']) || params.rewrite.cellYield
                             sprintf('Getting cell yield info for %s_%s_%s', subj, sessDate, sessNum)
                             getCellYieldInfo(saveNeuralPath)
-                        end
                     end
 
                     %%%%% get pyramidal layer info for this session %%%%%
