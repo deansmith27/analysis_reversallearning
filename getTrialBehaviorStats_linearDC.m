@@ -71,8 +71,9 @@ else %at least one completed lap
                 if mod(size(PZ,1),2) == 0 %ensure it's even number of elements
                     C = [PZ(1:2:end),PZ(2:2:end)];
                     %exclude trials that are shorter (in degrees) than expected
-                    idx2excl = find(wrapTo360(rawDataBySession.currentDeg(C(:,2)) - rawDataBySession.currentDeg(C(:,1))) < params.gapBefore + params.gapAfter);
-                    %C(idx2excl,:) = [];
+                    %idx2excl = find(wrapTo360(rawDataBySession.currentDeg(C(:,2)) - rawDataBySession.currentDeg(C(:,1))) < params.gapBefore + params.gapAfter);
+                    idx2excl = find(wrapTo360(rawDataBySession.currentDeg(C(:,2)) - rawDataBySession.currentDeg(C(:,1))) < 10);%take care of where 1 bin trials are being created but not excluding real, short trials
+                    C(idx2excl,:) = [];
                     allC = [allC; C];
                 else
                     C = [PZ(1:2:end-1),PZ(2:2:end-1)];
