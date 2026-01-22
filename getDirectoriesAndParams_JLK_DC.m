@@ -121,13 +121,13 @@ params.longtimescales = 0;
 params.refactoredcalc = 0;
 
 %to overwrite existing files or not
-params.rewrite.behavior = 1;
+params.rewrite.behavior = 0;
 params.rewrite.ROC = 1;
 params.rewrite.clusters = 0;
 params.rewrite.cell_metrics = 0;
 params.rewrite.neuralStructs = 0;
 params.rewrite.cellYield = 0;
-params.rewrite.pyrLayer = 1;
-params.rewrite.ripples = 1;
-params.rewrite.decodingData = 1;
-params.rewrite.decodingResults = 1;
+params.rewrite.pyrLayer = 0;
+params.rewrite.ripples = 0;
+params.rewrite.decodingData = 0;
+params.rewrite.decodingResults = 0;

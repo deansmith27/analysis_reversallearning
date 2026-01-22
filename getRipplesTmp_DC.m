@@ -207,7 +207,7 @@ if params.ripple.applyCriteria
 
             %find all outlier indicies for this channel
             thisChOutInd = [];
-            if isfield(rawDataBySessionNeural.lfpOutlierInd)%DC added since skipping this step in preprocessing
+            if isfield(rawDataBySessionNeural, 'lfpOutlierInd')%DC added since skipping this step in preprocessing
                 for outInd = 1:size(rawDataBySessionNeural.lfpOutlierInd,1)
                     thisChOutInd = [thisChOutInd rawDataBySessionNeural.lfpOutlierInd(outInd,1):rawDataBySessionNeural.lfpOutlierInd(outInd,2)];
                 end

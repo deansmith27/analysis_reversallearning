@@ -231,7 +231,7 @@ if gatherNeuralData
                 if ~isfolder([processedDataPath '\kilosort4'])
                     sprintf('Running Kilosort4 for %s_%s', subj, sessDate)
                     if params.iden == 'DC'
-                        files = getfilenums(anrawdatadir);
+                        files = getfilenums(neuralRawDataPath);
                         getKilosort4Out_intan(subj, sessDate, neuralRawDataPath, dirs, files, params)%for Intan
                     else
                         getKilosort4Out(subj, sessDate, neuralRawDataPath, dirs)%for Neuropixels
