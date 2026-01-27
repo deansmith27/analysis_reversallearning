@@ -1,7 +1,9 @@
-function [rawDataBySessionNeural] = getRipples(dirs, params, saveNeuralPath, plotRawTraceForRipples, plotRipples)
+function [rawDataBySessionNeural] = getRipples_DC(dirs, params, saveNeuralPath, plotRawTraceForRipples, plotRipples)
 %adapted from filtereeg2_Intan.m, extractripples3.m,
 % ripplepostfileprocess2, findpowerratioripplevsabove2
 %last checked JLK 1/8/26
+%DC changing to fully incorporate ripplefileprocess, extractripples3, 
+%ripplepostfileprocess2, getBestRippleChan_simple, plotLFPperiods
 
 %% extract ripples across session %%
 
@@ -45,7 +47,7 @@ smoothing_kernel_rip = gaussian(smoothing_width_rip*ripple.samprate, ceil(8*smoo
 smoothing_width_tdb = 1; % 1 s
 smoothing_kernel_tdb = gaussian(smoothing_width_tdb*ripple.samprate, ceil(8*smoothing_width_tdb*ripple.samprate));
 minRipDur = round(params.ripple.minRipDur * ripple.samprate);
-
+tmpDat = rawDataBySessionNeural.lfpData;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% clean square-wave, lick related noise from raw data %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,27 +113,28 @@ for chan = 1:size(tmpDat2,1)
     end%middle index
 end%chan
 %rip filter
-tmpRipDat2 = filtfilt(ripplefilter.kernel, 1 , tmpDat2(noiseChan,:));
 
-if plotRawTraceForRipples
+%tmpRipDat2 = filtfilt(ripplefilter.kernel, 1 , tmpDat2(noiseChan,:));
+
+if plotRawTraceForRipples%DC check if this plot is needed/useful
     %%%% plot %%%%%
     %noise chan
     figure; hold on
-    plot(tmpDat(noiseChan,:))
-    plot(tmpDat2(noiseChan,:))
-    plot(tmpPksInds, tmpDat2(noiseChan,tmpPksInds), '*c')
-    plot(tmpTroughsInds, tmpDat2(noiseChan,tmpTroughsInds), '*b')
-    plot(tmpMidInds, tmpDat2(noiseChan,tmpMidInds), '*r')
-    plot(tmpRipDat)
-    plot(tmpRipDat2)
+    % plot(tmpDat(noiseChan,:))
+    % plot(tmpDat2(noiseChan,:))
+    % plot(tmpPksInds, tmpDat2(noiseChan,tmpPksInds), '*c')
+    % plot(tmpTroughsInds, tmpDat2(noiseChan,tmpTroughsInds), '*b')
+    % plot(tmpMidInds, tmpDat2(noiseChan,tmpMidInds), '*r')
+    % plot(tmpRipDat)
+    % plot(tmpRipDat2)
     %random HIP chan
     tmpRipDatHIP = filtfilt(ripplefilter.kernel, 1 , tmpDat(layerChans(5),:));
-    tmpRipDatHIP2 = filtfilt(ripplefilter.kernel, 1 , tmpDat2(layerChans(5),:));
+    tmpRipDatHIP2 = filtfilt(ripplefilter.kernel, 1 , tmpDat(layerChans(10),:));
     plot(tmpDat(layerChans(5),:)+0.5)
-    plot(tmpDat2(layerChans(5),:)+0.5)
-    plot(tmpPksInds, tmpDat2(layerChans(5),tmpPksInds)+0.5, '*c')
-    plot(tmpTroughsInds, tmpDat2(layerChans(5),tmpTroughsInds)+0.5, '*b')
-    plot(tmpMidInds, tmpDat2(layerChans(5),tmpMidInds)+0.5, '*r')
+    plot(tmpDat(layerChans(10),:)+0.5)
+    % plot(tmpPksInds, tmpDat(layerChans(10),tmpPksInds)+0.5, '*c')
+    % plot(tmpTroughsInds, tmpDat(layerChans(10),tmpTroughsInds)+0.5, '*b')
+    % plot(tmpMidInds, tmpDat(layerChans(10),tmpMidInds)+0.5, '*r')
     plot(tmpRipDatHIP+0.5)
     plot(tmpRipDatHIP2+0.5)
 end%if plotRawTraceForRipples
@@ -142,7 +145,7 @@ end%if plotRawTraceForRipples
 for ch = layerChans
     chCtr = chCtr+1;
     %ripple filter (150-250 Hz)
-    ripple.filtdata(chCtr,:) = filtfilt(ripplefilter.kernel, 1 , tmpDat2(ch,:));
+    ripple.filtdata(chCtr,:) = filtfilt(ripplefilter.kernel, 1 , tmpDat(ch,:));
 
     %Hilbert transform ripple data
     hdata = hilbert(ripple.filtdata(chCtr,:));

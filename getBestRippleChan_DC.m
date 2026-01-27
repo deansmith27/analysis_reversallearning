@@ -1,0 +1,110 @@
+function out = getBestRippleChan_DC(sessindex, files, processeddatadir, lfpChans, rewrite)
+%% this function finds the channel with the highest ripple power to be included for any data analyses
+% SP 11.14.18
+% INPUTS:
+%       sessindex - [animal date recording] indices
+%       processeddatadir - where the files are
+%       iden - 'F' or 'W' animal identifier
+%       recDepth - recording depth to get the right file
+% OUTPUTS:
+%       top channel in terms of ripple power output from 0:31
+% updated for 2 shank takahashi probes - ALP 11/22/19
+% updated ALP 4/1/21 for a simple format for the preprocessing stream
+
+filename = [processeddatadir, 'bestripplechan' num2str(sessindex(1,1)) , '_', num2str(sessindex(1,2)) '.mat'];
+
+if ~exist(filename, 'file') || rewrite
+    % loop through all channels to get average ripple envelope
+    for i = 1:length(files)
+        index = [sessindex files(i)];
+        %updated loop ALP 4/9/21 for times when the channel # does not
+        %start at 0
+        for c = 1:length(lfpChans)
+            chanIdx = lfpChans(c); 
+        %for chanIdx = 0:length(lfpChans)-1
+            %load ripple files
+            anprocesseddatadir = [processeddatadir, '/', num2str(chanIdx), '/'];
+            ripplefiltfilename =  [anprocesseddatadir, 'EEG/ripple', num2str(index(3)), '.mat'];
+            load(ripplefiltfilename);
+            ripplefilename = [anprocesseddatadir, 'ripples' num2str(index(3)) '.mat'];
+            load(ripplefilename);
+            
+            %get average ripple envelope
+            rippleEnv = ripple{index(1)}{index(2)}{index(3)}.data(:,3);
+            avgRipplePowertemp(chanIdx+1) = mean(rippleEnv);
+            
+            %get peak ripple values
+            if size(ripples{index(1)}{index(2)}{index(3)}.peak,1) > 0
+                ripplePeaktemp(chanIdx+1) = max(ripples{index(1)}{index(2)}{index(3)}.peak);
+                rippleEnergytemp(chanIdx+1) = max(ripples{index(1)}{index(2)}{index(3)}.energy);
+            else
+                ripplePeaktemp(chanIdx+1) = nan;
+                rippleEnergytemp(chanIdx+1) = nan;
+            end
+        end
+        avgRipplePower(i,:) = avgRipplePowertemp'; %this value is derived from overall amplitude in the ripple band
+        maxRipplePeak(i,:) = ripplePeaktemp; %this value is derived from actual ripple events
+        maxRippleEnergy(i,:) = rippleEnergytemp; %this value is derived from actual ripple events
+    end
+    
+    
+    %         remove rows with missing files
+    avgRipplePower = avgRipplePower(any(avgRipplePower,2),:);
+    maxRipplePeak = maxRipplePeak(any(maxRipplePeak,2),:);
+    maxRippleEnergy = maxRippleEnergy(any(maxRippleEnergy,2),:);
+    
+    %% plot these values as a sanity check
+    %this section commented out for the simple version ALP 4/1/21
+    %make your own version and enter the probe geometry  if you'd like
+    %to plot these things!
+    
+    %         for chanIdx = 1:32
+    %             avgRipplePower_geomorderedchan(1:size(avgRipplePower,1),chanIdx) = avgRipplePower(:,channelgeom.(probeside{p})(chanIdx)+1);
+    %             maxRipplePeak_geomorderedchan(1:size(maxRipplePeak,1),chanIdx) = maxRipplePeak(:,channelgeom.(probeside{p})(chanIdx)+1);
+    %             maxRippleEnergy_geomorderedchan(1:size(maxRippleEnergy,1),chanIdx) = maxRippleEnergy(:,channelgeom.(probeside{p})(chanIdx)+1);
+    %         end
+    
+    %         figure(1); hold on; subplot(1,2,p); hold on;
+    %         plot(avgRipplePower_geomorderedchan','LineWidth',2)
+    %         title(ports{p})
+    %         xlabel('Channels from Top to Bottom','FontSize',20)
+    %         xticks(1:32); xlim([0 33])
+    %         ylabel('Mean SWR Envelope')
+    %
+    %
+    %         figure(2); hold on; subplot(1,2,p); hold on;
+    %         plot(maxRipplePeak_geomorderedchan','LineWidth',2)
+    %         title(ports{p})
+    %         xlabel('Channels from Top to Bottom','FontSize',20)
+    %         xticks(1:32); xlim([0 33])
+    %         ylabel('Max SWR Peak')
+    %
+    %
+    %         figure(3); hold on; subplot(1,2,p); hold on
+    %         plot(maxRippleEnergy_geomorderedchan','LineWidth',2)
+    %         title(ports{p})
+    %         xlabel('Channels from Top to Bottom','FontSize',20)
+    %         xticks(1:32); xlim([0 33])
+    %         ylabel('Max SWR Energy')
+    %
+    
+    %% get ripple channel
+    %highest average ripple power
+    if size(avgRipplePower,1) > 1
+        meanRipPower = nanmean(avgRipplePower);
+    else
+        meanRipPower = avgRipplePower;
+    end
+    bestRippleChan.channel = find(meanRipPower == max(meanRipPower))- 1;
+    bestRippleChan.info = 'channel with largest mean power in the ripple band - 0 based channel ID'; 
+    bestRippleChan.date = datestr(now); 
+    st = dbstack; 
+    bestRippleChan.callFun = {st(:).name}; 
+    
+    if ~exist(filename, 'file'); save(filename, 'bestRippleChan'); end
+else
+    load(filename, 'bestRippleChan')
+end
+
+out = bestRippleChan.channel; 
+end

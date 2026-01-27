@@ -35,7 +35,7 @@ for r = 1:size(tmpFiles,2)
     props.fileNums(r) = r;
 end%r
 
-kilosort_path = [processedDataPath '\' 'kilosort4'];
+kilosort_path = [processedDataPath 'kilosort4'];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% create raw cluster structures using phy2 output %%%%%
@@ -205,7 +205,14 @@ for clu = 1:length(rawclusters{1}) %each session should have same number of clus
     metrics(clu).isi.all_ms = isi./(props.sampRate/1000); %in ms
     metrics(clu).isi.edges_ms = 0:0.1:10;
     metrics(clu).isi_h = nan(1, length(metrics(clu).isi.edges_ms));
+    %DC fix for edge case with only 1 spike in given session
+    if isempty(metrics(clu).isi.all_ms)
+        %fill histogram with zeros
+        bins = 0:0.1:10;
+        metrics(clu).isi_h = zeros(size(bins));
+    else
     metrics(clu).isi_h(1:length(metrics(clu).isi.edges_ms)) = histc(metrics(clu).isi.all_ms, 0:0.1:10);
+    end
     metrics(clu).numspikes = spikeCount;
     metrics(clu).files = props.fileNums;
     metrics(clu).index = [subj '_' sessDate];

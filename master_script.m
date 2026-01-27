@@ -42,7 +42,7 @@ end
 createBehaviorStructs = 0;
 plotBehavior = 0;
 gatherNeuralData = 1;
-doDecoding = 1;
+doDecoding = 0;
 
 %% Create behavior data structs %%
 if createBehaviorStructs
@@ -230,6 +230,9 @@ if gatherNeuralData
                 %%%%% create single ap bin file for all recordings on a given day %%%%%
                 if ~isfolder([processedDataPath '\kilosort4'])
                     sprintf('Running Kilosort4 for %s_%s', subj, sessDate)
+                    if strcmp(sessDate, '251118')
+                        dirs.kilosortPyScript = 'Y:\singer\Danielle\Code\AnalysisCode\Neuropixels_analyses\runKilosort4_CN.py';
+                    end
                     if params.iden == 'DC'
                         files = getfilenums(neuralRawDataPath);
                         getKilosort4Out_intan(subj, sessDate, neuralRawDataPath, dirs, files, params)%for Intan
@@ -279,11 +282,43 @@ if gatherNeuralData
 
                     %%%%% get ripples for this session %%%%%
                     %Note: Uses rawDataBySessionNeural struct and chooses channel with most ripples that pass criteria
-                    if ~isfield([saveNeuralPath '\' 'rawDataBySessionNeural'], 'ripplesGood') || params.rewrite.ripples
+                    if ~exist('rawDataBySessionNeural', 'var')
+                        load(fullfile(saveNeuralPath,'rawDataBySessionNeural.mat'));
+                    end
+                    if ~isfield(rawDataBySessionNeural, 'ripplesGood') || params.rewrite.ripples
                         sprintf('Getting ripples for %s_%s_%s', subj, sessDate, sessNum)
                         plotRipples = 1;
-                        getRipplesTmp_DC(dirs, params, saveNeuralPath, plotRipples)
+                        getRipples_DC(dirs, params, saveNeuralPath, plotRipples)
                     end
+                    % if ~isfield(rawDataBySessionNeural, 'ripplesGood') || params.rewrite.ripples
+                    %     ripplefileprocess2(chanprocesseddatadir,['eeg',num2str(index(:,3))], dirs.filterdir, params.ripfilterfile)
+                    %     %makes ripple filtered lfp
+                    %     sprintf('Getting ripples for %s_%s_%s', subj, sessDate, sessNum)
+                    %     plotRipples = 1;
+                    %     extractripples3(chanprocesseddatadir, sessindex(1), sessindex(2), files, ...
+                    %         params.extractripples_minsuprathreshduration, params.ripnstd, 'inclposinfo', 0, 'samethreshperday', 1);
+                    %     %extracts actual ripples
+                    %     if ripplepostprocess
+                    %         excluded = [];
+                    %         disp(['Post Processing SWRs: ', identifier, num2str(sessindex(1)), ' ', num2str(sessindex(2))])
+                    %         ripplepostfileprocess2(chanprocesseddatadir, sessindex, files, ...
+                    %             params.extractripples_timearoundrip , params.extractripples_freqnumerator, ...
+                    %             params.extractripples_freqdenominator, params.extractripples_ratiothresh, outlierindices_allchan, ...
+                    %             'exclude', 1, 'applyspeed', params.rippostprocess_applySpeed,'applyMUA', params.rippostprocess_applyMUA);
+                    %     end
+                    %     %For Excluding Ripples that are  outside of the power band 150
+                    %     disp(['getting best ripple channel for ', num2str(sessindex(1)), ' ', ...
+                    %     num2str(sessindex(2)), ' ', sessregions{pr}])
+                    %     plottingChan = getBestRippleChan_simple(sessindex, files, probeprocesseddatadir, ...
+                    %         params.savechnum{pr}, overwriteripplechan);
+                    %     %plot everything of interest on the best ripple channel
+                    %     savefigsdir = fullfile(anprocesseddatadir, 'ProcessingFigures', sessregions{pr}, filesep);
+                    %     plottingdatadir = [probeprocesseddatadir, num2str(plottingChan), '\']; 
+                    %     plotLFPperiods(savefigsdir, plottingdatadir, sessindex, files, params, ploteeg, ...
+                    %         plotthetas, plotnonthetas, plotripples, plotgammas, sessregions{pr}, ...
+                    %         plottingChan, interactive); 
+                    % end
+                    clear ("rawDataBySessionNeural")
 
 
                 end%if postSpikeSort

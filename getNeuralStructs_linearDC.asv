@@ -89,7 +89,7 @@ numFolders = numel(names);
 firstFile = fullfile(lfp_filepath, names{1}, sprintf('raweeg%s.mat', sessNum));
 tmp = load(firstFile);
 samples = numel(tmp.raweeg.data);
-lfp_data = zeros(numFolders, samples/10);%want size to fit downsampled data (20k/2k)
+lfp_data = zeros(numFolders, samples);
 % Initialize metadata structure
 lfp_meta = struct();
 lfp_meta.samprate = tmp.raweeg.samprate;   % same for all files
@@ -98,7 +98,6 @@ lfp_meta.port          = cell(numFolders,1);
 lfp_meta.nativechannel = cell(numFolders,1);
 lfp_meta.channelInd    = zeros(numFolders,1);
 lfp_meta.gapInfo       = cell(numFolders,1);
-lfp_samprate_down = 2000;
 
 % Loop through folders
 for i = 1:numFolders
@@ -109,7 +108,7 @@ for i = 1:numFolders
     R = S.raweeg;
 
     %filter EEG
-    [eeg, outlierthresh, numoutlierperiods] = makefiltereeg_Intan_DC(R, params.filteegfreq, params.eegsamprate, params.outliernstd);
+    [eeg, outlierthresh, numoutlierperiods] = makefiltereeg_Intan_DC(R, );
 
     % Store LFP data
     lfp_data(i, :) = double(eeg.data);
@@ -119,14 +118,16 @@ for i = 1:numFolders
     lfp_meta.nativechannel{i} = R.nativechannel;
     lfp_meta.channelInd(i)    = R.channelInd;
     lfp_meta.gapInfo{i}       = R.gapInfo;
-    lfp_meta.outlierthresh{i}    = outlierthresh;
-    lfp_meta.numoutlierperiods{i} = numoutlierperiods;
-    
+    lfp_meta.outlierthresh    = outlierthresh;
+    lfp_meta.numoutlierperiods = numoutlierperiods;
+    lfp_meta.downsamplerate = lfp_samprate
+
 end
 %will want to save lfp.meta somewhere as well
-lfp_meta.downsamplerate = lfp_samprate_down;
-%downsample from 20000 to 2000 Hz for ripple filter later
 
+%downsample from 20000 to 2000 Hz for ripple filter later
+% lfp_samprate_down = 2000;
+% downSamp = R.samprate/lfp_samprate_down;
 % lfp_data = lfp_data(:,1:downSamp:end);
 
 %need to filter outliers + downsample instead. filter works on individual
@@ -150,7 +151,7 @@ if params.rm60HzNoise
 end%params.rm60HzNoise
 
 %determine lfp start/end times
-virmen_rec_time_lfp = round(rawDataBySession.ephysInd/lfp_samprate_down);%20k/2k = 10 (og samprate/downsamp)
+virmen_rec_time_lfp = round(rawDataBySession.ephysInd/downSamp);%20k/2k = 10 (og samprate/downsamp)
 
 % %ensure last virmen data index is around last lfp ttl index
 % if abs( (lfp_ttl_end_ind/lfp_samprate_down) - (virmen_rec_time_lfp(end)/lfp_samprate_down) ) > 1%seconds
