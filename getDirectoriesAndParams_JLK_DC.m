@@ -4,23 +4,23 @@ function [dirs, params] = getDirectoriesAndParams_JLK_DC()
 %ephys
 dirs.rawdata = '\\ad.gatech.edu\bme\labs\singer\RawData\DAlesion\';
 dirs.processeddata = '\\ad.gatech.edu\bme\labs\singer\ProcessedData\VR_Novelty_DAlesion\';
-dirs.filters = '\\ad.gatech.edu\bme\labs\singer\Data Extraction and PreProcessing\Intan\Filtering\';
+%dirs.filters = '\\ad.gatech.edu\bme\labs\singer\Data Extraction and PreProcessing\Intan\Filtering\';
 dirs.code = '\\ad.gatech.edu\bme\labs\singer\Danielle\code\AnalysisCode\Neuropixels_analyses\';
 %behavior
 dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\Annular FAM\';
 dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\sessionData\';
-dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\TrackFigures\RewardZones.mat';
+dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\Danielle\Danielle\TrackFigures\RewardZones.mat';
 %save results
-dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\Danielle\Figures\';
-dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\Danielle\Figures\behavior\';
-dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\Danielle\OutputStructs\';
+dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\Figures\';
+dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\Figures\behavior\';
+dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\OutputStructs\';
 %spreadsheets with training or recording info
 %dirs.spreadsheet_rec = '\\ad.gatech.edu\bme\labs\singer\Josh\Spreadsheets\UpdateBehaviorSpreadsheet.csv'; %JLK commented out 10/2/24 because currently only one spreadsheet
 dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\Annular FAM\NoveltyBehaviorSpreadsheet2.xlsx'; 
-dirs.clusfolder = 'sorted\';
-dirs.cluster_local = 'C:\Users\scushing6\Desktop\TempKilosort\';
-dirs.kilosortPyEnv = 'C:\Users\scushing6\AppData\Local\anaconda3\envs\kilosort\python.exe';
-dirs.kilosortPyScript = 'Y:\singer\Danielle\Code\AnalysisCode\Neuropixels_analyses\runKilosort4.py';
+%dirs.clusfolder = 'sorted\';
+%dirs.cluster_local = 'C:\Users\scushing6\Desktop\TempKilosort\';
+% dirs.kilosortPyEnv = 'C:\Users\scushing6\AppData\Local\anaconda3\envs\kilosort\python.exe';
+% dirs.kilosortPyScript = 'Y:\singer\Danielle\Code\AnalysisCode\Neuropixels_analyses\runKilosort4.py';
 
 %% parameters for analyses
 %general

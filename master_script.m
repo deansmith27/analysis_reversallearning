@@ -40,9 +40,9 @@ end
 
 %% Specify what you want to analyze here %%
 createBehaviorStructs = 0;
-plotBehavior = 0;
-gatherNeuralData = 1;
-doDecoding = 1;
+plotBehavior = 1;
+gatherNeuralData = 0;
+doDecoding = 0;
 
 %% Create behavior data structs %%
 if createBehaviorStructs
@@ -80,7 +80,7 @@ if createBehaviorStructs
             end
             %rhd2mat_tempbin_DC(neuralRawDataPath, processedDataPath, sessNum, params);
             disp(['Extracting Virmen Data: ', subj, ' ', sessDate, ' ', sessNum])
-            anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  sessNum]);
+            % anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  sessNum]);
             Args = {sessNum, anvrdatafolder, processedDataPath, params};
             %feval(params.exportbehaviorfunc, Args{:});
             rawposfile = fullfile(processedDataPath, sprintf('rawpos%s.mat', sessNum));
@@ -95,24 +95,24 @@ if createBehaviorStructs
                 %LAPS
                 %adapted from getTrialByTrialStats_linearJLK and getSessionStats_linearJLK
                 %Note: only completed laps
-                if ~isfile([saveBehaviorPath '\' 'statsByLap.mat']) || params.rewrite.behavior
-                    getLapBehaviorStats_linearDC(rawDataBySession, virmen_fileInfo, params, saveBehaviorPath);
-                end
+                % if ~isfile([saveBehaviorPath '\' 'statsByLap.mat']) || params.rewrite.behavior
+                %     getLapBehaviorStats_linearDC(rawDataBySession, virmen_fileInfo, params, saveBehaviorPath);
+                % end
 
                 %TRIALS
                 %adapted from getTrialByTrialStats_linearJLK and getSessionStats_linearJLK
                 %Note: uses all trials
-                if ~isfile([saveBehaviorPath '\' 'statsByRewardTrial.mat']) || params.rewrite.behavior
-                    getTrialBehaviorStats_linearDC(rawDataBySession, virmen_fileInfo, params, saveBehaviorPath);
-                end
+                % if ~isfile([saveBehaviorPath '\' 'statsByRewardTrial.mat']) || params.rewrite.behavior
+                %     getTrialBehaviorStats_linearDC(rawDataBySession, virmen_fileInfo, params, saveBehaviorPath);
+                % end
 
             elseif allindex(i,6) == 3%Rest session
                 
                 %REST
                 %adapted from getRestSessionStats_linearJLK
-                if ~isfile([saveBehaviorPath '\' 'statsByRestSession.mat']) || params.rewrite.behavior
-                    getRestBehaviorStats_linearJLK(rawDataBySession, virmen_fileInfo, saveBehaviorPath);
-                end
+                % if ~isfile([saveBehaviorPath '\' 'statsByRestSession.mat']) || params.rewrite.behavior
+                %     getRestBehaviorStats_linearJLK(rawDataBySession, virmen_fileInfo, saveBehaviorPath);
+                % end
 
             end%if allindex(i,6)
 
