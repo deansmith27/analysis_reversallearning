@@ -1,7 +1,9 @@
-function [rawDataBySessionNeural] = getRipples(dirs, params, saveNeuralPath, plotRawTraceForRipples, plotRipples)
+function [rawDataBySessionNeural] = getRipples_DC(dirs, params, saveNeuralPath, plotRawTraceForRipples, plotRipples)
 %adapted from filtereeg2_Intan.m, extractripples3.m,
 % ripplepostfileprocess2, findpowerratioripplevsabove2
 %last checked JLK 1/8/26
+%DC changing to fully incorporate ripplefileprocess, extractripples3, 
+%ripplepostfileprocess2, getBestRippleChan_simple, plotLFPperiods
 
 %% extract ripples across session %%
 
@@ -45,90 +47,91 @@ smoothing_kernel_rip = gaussian(smoothing_width_rip*ripple.samprate, ceil(8*smoo
 smoothing_width_tdb = 1; % 1 s
 smoothing_kernel_tdb = gaussian(smoothing_width_tdb*ripple.samprate, ceil(8*smoothing_width_tdb*ripple.samprate));
 minRipDur = round(params.ripple.minRipDur * ripple.samprate);
-
+tmpDat = rawDataBySessionNeural.lfpData;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% clean square-wave, lick related noise from raw data %%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% get channel from original data to find noise %%%%%
-noiseChan = layerChans(end)+110;%110 channels above top CA1 pyr layer chan
-tmpDat = rawDataBySessionNeural.lfpData;
-tmpDatBandFilt = bandpass(tmpDat(noiseChan,:),[100 300],params.lfp_samprate_down);
+% noiseChan = layerChans(end)+110;%110 channels above top CA1 pyr layer chan
+% tmpDat = rawDataBySessionNeural.lfpData;
+% tmpDatBandFilt = bandpass(tmpDat(noiseChan,:),[100 300],params.lfp_samprate_down);
+% %rip filter
+% tmpRipDat = filtfilt(ripplefilter.kernel, 1 , tmpDat(noiseChan,:));
+% 
+% %%%%% find noise in the channel %%%%%
+% %peaks based on bandpass filtered data
+% [~,tmpPksInds] = findpeaks(tmpDatBandFilt,"MinPeakHeight",0.005);
+% tmpPksInds = tmpPksInds(diff(tmpPksInds)>20);
+% %troughs based on bandpass filtered data
+% tmpMnDat = movmean(tmpDat(noiseChan,:),100);
+% tmpMidInds = [];
+% [~,tmpTroughsInds]  = findpeaks(-tmpMnDat,'MinPeakProminence',0.01);
+% for thisI = 1:length(tmpTroughsInds)-1
+%     tmpMidInds(thisI) = round(tmpTroughsInds(thisI) + ((tmpTroughsInds(thisI+1)-tmpTroughsInds(thisI))/2));
+% end
+% 
+% %%%%% smooth noise with a line in all channels %%%%%
+% tmpDat2 = tmpDat;
+% for chan = 1:size(tmpDat2,1)
+%     for mInd = 1:length(tmpMidInds)-1
+%         tmpInds = tmpMidInds(mInd):tmpMidInds(mInd+1);
+%         if any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 2%1 trough, 2 peaks
+%            pk2trough = abs(tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - tmpPksInds(find(ismember(tmpPksInds,tmpInds),2,'first')));
+%            if pk2trough < 150%both peaks close to trough             
+%                 tmpLinInds = tmpPksInds(find(ismember(tmpPksInds,tmpInds)));
+%                 tmpDat2(chan,tmpLinInds(1):tmpLinInds(2)) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(2)), length(tmpDat2(chan,tmpLinInds(1):tmpLinInds(2))));
+%            else%one peak far from trough
+%                tmpPksIndsByTrough = tmpPksInds(find(ismember(tmpPksInds,tmpInds),2,'first'));
+%                tmpPksIndsByTrough = tmpPksIndsByTrough(pk2trough<150);
+%                if tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) > tmpPksIndsByTrough%trough before close peak
+%                    tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough(pk2trough<150)) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough(pk2trough<150) + 40);
+%                    tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
+%                elseif tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) < tmpPksIndsByTrough%trough after close peak
+%                    tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough(pk2trough<150) -40) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough(pk2trough<150));
+%                    tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
+%                end%peak before/after trough
+%            end
+%         elseif any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 4%1 trough, 4 peaks
+%             tmpLinInds = tmpPksInds(find(ismember(tmpPksInds,tmpInds)));
+%             tmpDat2(chan,tmpLinInds(1):tmpLinInds(2)) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(2)), length(tmpDat2(chan,tmpLinInds(1):tmpLinInds(2))));
+%             tmpDat2(chan,tmpLinInds(3):tmpLinInds(4)) = linspace(tmpDat2(chan,tmpLinInds(3)),tmpDat2(chan,tmpLinInds(4)), length(tmpDat2(chan,tmpLinInds(3):tmpLinInds(4))));
+%         elseif any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 1%1 trough, 1 peak
+%             pk2trough = abs(tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - tmpPksInds(find(ismember(tmpPksInds,tmpInds))));
+%             if tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) > tmpPksInds(find(ismember(tmpPksInds,tmpInds))) && pk2trough < 150%trough before 1 peak
+%                 tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough + 40);
+%                 tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
+%             elseif tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) < tmpPksInds(find(ismember(tmpPksInds,tmpInds))) && pk2trough < 150%trough after 1 peak
+%                 tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough -40) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough);
+%                 tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
+%             end%peak before/after trough
+%         elseif any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 3%1 trough, 3 peak
+%            pk2trough = abs(tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - tmpPksInds(find(ismember(tmpPksInds,tmpInds),3,'first')));
+%            tmpPksIndsByTrough = tmpPksInds(find(ismember(tmpPksInds,tmpInds),3,'first'));
+%            tmpLinInds = tmpPksIndsByTrough(find(abs(diff(pk2trough))==min(abs(diff(pk2trough))))):tmpPksIndsByTrough(find(abs(diff(pk2trough))==min(abs(diff(pk2trough))))+1);
+%            tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
+%         end%number of peaks
+%     end%middle index
+% end%chan
 %rip filter
-tmpRipDat = filtfilt(ripplefilter.kernel, 1 , tmpDat(noiseChan,:));
 
-%%%%% find noise in the channel %%%%%
-%peaks based on bandpass filtered data
-[~,tmpPksInds] = findpeaks(tmpDatBandFilt,"MinPeakHeight",0.005);
-tmpPksInds = tmpPksInds(diff(tmpPksInds)>20);
-%troughs based on bandpass filtered data
-tmpMnDat = movmean(tmpDat(noiseChan,:),100);
-tmpMidInds = [];
-[~,tmpTroughsInds]  = findpeaks(-tmpMnDat,'MinPeakProminence',0.01);
-for thisI = 1:length(tmpTroughsInds)-1
-    tmpMidInds(thisI) = round(tmpTroughsInds(thisI) + ((tmpTroughsInds(thisI+1)-tmpTroughsInds(thisI))/2));
-end
-
-%%%%% smooth noise with a line in all channels %%%%%
-tmpDat2 = tmpDat;
-for chan = 1:size(tmpDat2,1)
-    for mInd = 1:length(tmpMidInds)-1
-        tmpInds = tmpMidInds(mInd):tmpMidInds(mInd+1);
-        if any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 2%1 trough, 2 peaks
-           pk2trough = abs(tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - tmpPksInds(find(ismember(tmpPksInds,tmpInds),2,'first')));
-           if pk2trough < 150%both peaks close to trough             
-                tmpLinInds = tmpPksInds(find(ismember(tmpPksInds,tmpInds)));
-                tmpDat2(chan,tmpLinInds(1):tmpLinInds(2)) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(2)), length(tmpDat2(chan,tmpLinInds(1):tmpLinInds(2))));
-           else%one peak far from trough
-               tmpPksIndsByTrough = tmpPksInds(find(ismember(tmpPksInds,tmpInds),2,'first'));
-               tmpPksIndsByTrough = tmpPksIndsByTrough(pk2trough<150);
-               if tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) > tmpPksIndsByTrough%trough before close peak
-                   tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough(pk2trough<150)) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough(pk2trough<150) + 40);
-                   tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
-               elseif tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) < tmpPksIndsByTrough%trough after close peak
-                   tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough(pk2trough<150) -40) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough(pk2trough<150));
-                   tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
-               end%peak before/after trough
-           end
-        elseif any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 4%1 trough, 4 peaks
-            tmpLinInds = tmpPksInds(find(ismember(tmpPksInds,tmpInds)));
-            tmpDat2(chan,tmpLinInds(1):tmpLinInds(2)) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(2)), length(tmpDat2(chan,tmpLinInds(1):tmpLinInds(2))));
-            tmpDat2(chan,tmpLinInds(3):tmpLinInds(4)) = linspace(tmpDat2(chan,tmpLinInds(3)),tmpDat2(chan,tmpLinInds(4)), length(tmpDat2(chan,tmpLinInds(3):tmpLinInds(4))));
-        elseif any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 1%1 trough, 1 peak
-            pk2trough = abs(tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - tmpPksInds(find(ismember(tmpPksInds,tmpInds))));
-            if tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) > tmpPksInds(find(ismember(tmpPksInds,tmpInds))) && pk2trough < 150%trough before 1 peak
-                tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough + 40);
-                tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
-            elseif tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) < tmpPksInds(find(ismember(tmpPksInds,tmpInds))) && pk2trough < 150%trough after 1 peak
-                tmpLinInds = (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - pk2trough -40) : (tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) + pk2trough);
-                tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
-            end%peak before/after trough
-        elseif any(ismember(tmpTroughsInds,tmpInds)) && sum(ismember(tmpPksInds,tmpInds)) == 3%1 trough, 3 peak
-           pk2trough = abs(tmpTroughsInds(find(ismember(tmpTroughsInds,tmpInds))) - tmpPksInds(find(ismember(tmpPksInds,tmpInds),3,'first')));
-           tmpPksIndsByTrough = tmpPksInds(find(ismember(tmpPksInds,tmpInds),3,'first'));
-           tmpLinInds = tmpPksIndsByTrough(find(abs(diff(pk2trough))==min(abs(diff(pk2trough))))):tmpPksIndsByTrough(find(abs(diff(pk2trough))==min(abs(diff(pk2trough))))+1);
-           tmpDat2(chan,tmpLinInds) = linspace(tmpDat2(chan,tmpLinInds(1)),tmpDat2(chan,tmpLinInds(end)), length(tmpDat2(chan,tmpLinInds)));
-        end%number of peaks
-    end%middle index
-end%chan
-%rip filter
-tmpRipDat2 = filtfilt(ripplefilter.kernel, 1 , tmpDat2(noiseChan,:));
+%tmpRipDat2 = filtfilt(ripplefilter.kernel, 1 , tmpDat2(noiseChan,:));
 
 if plotRawTraceForRipples
     %%%% plot %%%%%
     %noise chan
     figure; hold on
-    plot(tmpDat(noiseChan,:))
-    plot(tmpDat2(noiseChan,:))
-    plot(tmpPksInds, tmpDat2(noiseChan,tmpPksInds), '*c')
-    plot(tmpTroughsInds, tmpDat2(noiseChan,tmpTroughsInds), '*b')
-    plot(tmpMidInds, tmpDat2(noiseChan,tmpMidInds), '*r')
-    plot(tmpRipDat)
-    plot(tmpRipDat2)
+    % plot(tmpDat(noiseChan,:))
+    % plot(tmpDat2(noiseChan,:))
+    % plot(tmpPksInds, tmpDat2(noiseChan,tmpPksInds), '*c')
+    % plot(tmpTroughsInds, tmpDat2(noiseChan,tmpTroughsInds), '*b')
+    % plot(tmpMidInds, tmpDat2(noiseChan,tmpMidInds), '*r')
+    % plot(tmpRipDat)
+    % plot(tmpRipDat2)
     %random HIP chan
     tmpRipDatHIP = filtfilt(ripplefilter.kernel, 1 , tmpDat(layerChans(5),:));
-    tmpRipDatHIP2 = filtfilt(ripplefilter.kernel, 1 , tmpDat2(layerChans(5),:));
+    tmpRipDatHIP2 = filtfilt(ripplefilter.kernel, 1 , tmpDat(layerChans(10),:));
     plot(tmpDat(layerChans(5),:)+0.5)
-    plot(tmpDat2(layerChans(5),:)+0.5)
+    plot(tmpDat(layerChans(5),:)+0.5)
     plot(tmpPksInds, tmpDat2(layerChans(5),tmpPksInds)+0.5, '*c')
     plot(tmpTroughsInds, tmpDat2(layerChans(5),tmpTroughsInds)+0.5, '*b')
     plot(tmpMidInds, tmpDat2(layerChans(5),tmpMidInds)+0.5, '*r')

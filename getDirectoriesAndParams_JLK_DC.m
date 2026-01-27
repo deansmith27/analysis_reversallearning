@@ -77,6 +77,9 @@ params.colors_fam = og_colors(7:2:end, :); %shades of grey for original
 % params.colors_pyr = hex2rgb({'#f5d6d6','#e08585','#cb3433'});
 
 %ripples
+params.outliernstd = 15; %original: 15, strict: 7 - number of std to exclude outliers. [1x1] or [1x2]. see interpoveroutliers for details
+params.filteegfreq = [1 300];
+params.eegsamprate = 2000;
 params.ripple.nstdEnv = [3 3];%number of standard deviations above mean of envelope for 150-250Hz to detect ripple
 params.ripple.nstdNoise = 10;%detect noise deflections in raw data
 params.ripple.minRipDur = 0.02;%ms
@@ -128,6 +131,6 @@ params.rewrite.cell_metrics = 0;
 params.rewrite.neuralStructs = 0;
 params.rewrite.cellYield = 0;
 params.rewrite.pyrLayer = 0;
-params.rewrite.ripples = 0;
+params.rewrite.ripples = 1;
 params.rewrite.decodingData = 0;
 params.rewrite.decodingResults = 0;

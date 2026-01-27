@@ -387,7 +387,7 @@ if isfile([saveNeuralPath '\rawDataByTrialNeural.mat'])
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% load session data %%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    load([saveNeuralPath '\rawDataByTrialNeural.mat'])
+    load([saveNeuralPath '\rawDataByTrialNeural.mat']);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% collect ripple info per trial %%%%%
@@ -403,7 +403,7 @@ if isfile([saveNeuralPath '\rawDataByTrialNeural.mat'])
                 for ch = 1:length(rawDataBySessionNeural.ripplesGood)
                     ripLapCtr = 0;
                     for r = 1:length(rawDataBySessionNeural.ripplesGood(ch).startind)
-                        if ismember(rawDataBySessionNeural.ripplesGood(ch).startind(r), rawDataByTrialNeural{znType,znNum}.lfpTime(1):rawDataByTrialNeural{znType,znNum}.lfpTime(end))
+                        if ismember(rawDataBySessionNeural.ripplesGood(ch).startind(r), rawDataByTrialNeural{znType,znNum}(r).lfpTime(1):rawDataByTrialNeural{znType,znNum}(r).lfpTime(end))
                             ripLapCtr = ripLapCtr + 1;
                             rawDataByTrialNeural{znType,znNum}.ripplesGood(ch).startind(ripLapCtr) = rawDataBySessionNeural.ripplesGood(ch).startind(r);
                             rawDataByTrialNeural{znType,znNum}.ripplesGood(ch).midind(ripLapCtr) = rawDataBySessionNeural.ripplesGood(ch).midind(r);
