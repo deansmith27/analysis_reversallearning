@@ -39,7 +39,7 @@ end
 [uniqSess, ind] = unique(allindex(:,1:2), 'rows'); %define session as one date
 
 %% Specify what you want to analyze here %%
-createBehaviorStructs = 0;
+createBehaviorStructs = 1;
 plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;

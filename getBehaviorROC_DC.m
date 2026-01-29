@@ -16,7 +16,7 @@ for id = 1:length(params.rocID)
         sessionInfo = allindex(tempidx, :);
         temp{ss,1} = sessionInfo;
 
-        ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
+        ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC\DC21\', [params.iden num2str(animal)], ...
             num2str(sessionInfo(1,2)), [params.rocID{id} '.mat']);
 
         %get latest file with name that contains the specified string if
@@ -53,7 +53,7 @@ for id = 1:length(params.rocID)
                 currFile = files(f);
                 sessionType = sessionInfo(f,4);
 
-                datafname = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(animal)], ...
+                datafname = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData\DC21\' params.iden num2str(animal)], ...
                     [num2str(sessDate) '_' num2str(currFile) '_' num2str(sessionType)], 'statsByLap.mat');
                 if isfile(datafname)
                     load(datafname)

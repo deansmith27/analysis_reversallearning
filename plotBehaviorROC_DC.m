@@ -1,4 +1,4 @@
-function plotBehaviorROC_DC(allindex, uniqSess, dirs, ROC, rocID, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
+function plotBehaviorROC_DC(allindex,uniqSess, dirs, ROC, rocID, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%% Saving Info %%%%%
