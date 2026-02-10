@@ -81,7 +81,7 @@ if createBehaviorStructs
             %rhd2mat_tempbin_DC(neuralRawDataPath, processedDataPath, sessNum, params);
             disp(['Extracting Virmen Data: ', subj, ' ', sessDate, ' ', sessNum])
             % anvrdatafolder = fullfile(dirs.virmenrawdata, [subj '_', sessDate, '_',  sessNum]);
-            Args = {sessNum, anvrdatafolder, processedDataPath, params};
+            % Args = {sessNum, anvrdatafolder, processedDataPath, params};
             %feval(params.exportbehaviorfunc, Args{:});
             rawposfile = fullfile(processedDataPath, sprintf('rawpos%s.mat', sessNum));
             rawpos = load(rawposfile);
