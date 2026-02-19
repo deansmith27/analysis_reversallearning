@@ -92,6 +92,7 @@ if createBehaviorStructs
             %%%%% create behavior structs %%%%%
             if allindex(i,6) == 2%Active VR session
 
+
                 %LAPS
                 %adapted from getTrialByTrialStats_linearJLK and getSessionStats_linearJLK
                 %Note: only completed laps
@@ -191,8 +192,8 @@ if plotBehavior
         ROCtoPlotInd = find(contains({dirROC.name}, ['ROC' '_' params.rocID{id}]),1,'last');%most recent data
         ROCtoPlot = load([dirROC(1).folder '\' dirROC(ROCtoPlotInd(1)).name]);
         ROC = ROCtoPlot.ROC;
-        doROCPlots = 0; %ROC plots across sessions/animals, separated by track
-        doAUCIndPlots = 1; %AUC plots across sessions for each animal
+        doROCPlots = 1; %ROC plots across sessions/animals, separated by track
+        doAUCIndPlots = 0; %AUC plots across sessions for each animal
         doAUCGroupUpdatePlots = 0;%AUC plots across original sessions and update sessions by control vs. experimental group
         plotBehaviorROC_DC(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
     end

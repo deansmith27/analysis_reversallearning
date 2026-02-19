@@ -6,17 +6,6 @@ function [ROC] = getBehaviorROC_DC(allindex,dirs,uniqSess,params)
 ROC = [];
 sessionInfo = [];
 
-
-% --- Add-only: group-of-5 column feature extraction ---
-groupSize = 5;
-
-% Returns an (N x nGroups) matrix where each column is the mean of a 5-col group
-toGroupMeans = @(X, groupSize) squeeze( ...
-    nanmean( reshape( X(:, 1:(floor(size(X,2)/groupSize)*groupSize)), ...
-                      size(X,1), groupSize, [] ), ...
-            2) );
-% ------------------------------------------------------
-
 for id = 1:length(params.rocID)
     %loop through unique sessions
     for ss = 1:size(uniqSess,1)
@@ -27,13 +16,13 @@ for id = 1:length(params.rocID)
         sessionInfo = allindex(tempidx, :);
         temp{ss,1} = sessionInfo;
 
-        ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
+        ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC\DC21\', [params.iden num2str(animal)], ...
             num2str(sessionInfo(1,2)), [params.rocID{id} '.mat']);
 
         %get latest file with name that contains the specified string if
         % exist, make speed/lickrate AZ vs NRZ distributiuon file if not
         % adapted from getBehaviorDistributionAZvsNRZ_JLK
-        if ~exist(ROCfname, 'file') || params.rewrite.ROC
+        if ~exist(ROCfname) || params.rewrite.ROC
 
             %%%%% make save path if not already created %%%%%
             if ~isfolder([dirs.saveoutputstructs, 'Data\Behavior\ROC'])
@@ -45,14 +34,13 @@ for id = 1:length(params.rocID)
                 fieldname2select = 'velocCountsSmooth';
             elseif strcmp(params.rocID{id}, 'lickrate') || strcmp(params.rocID{id}, 'deltalickrate')
                 fieldname2select = 'lickRateSmooth';
-            elseif strcmp(params.rocID{id}, 'velocityNEW')
-                fieldname2select = 'velocCountsSmooth';
-
             else
-                print('Select from behavior type options: speed, lickrate, deltalickrate, velocityNEW')
+                print('Select from behavior type options: speed, lickrate')
             end
             fNames = {'az','cz', 'nevrz', 'sessionInfo'};
-
+% Deandra's inserted code:
+            elseif strcmp(params.rocID{id}, 'velocityNEW')
+                fieldname2select = 'velocCountsSmooth';
             %initialize data structure with empty fields
             data = [];
             for ee = 1:length(params.environments)
@@ -152,28 +140,12 @@ for id = 1:length(params.rocID)
                 data_cz = nanmean(data.(currEnv).cz, 2);
                 rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
 
-
                 rocOut.(currEnv).mdl{ss} = rocData.mdl;
                 rocOut.(currEnv).scores{ss} = rocData.scores;
                 rocOut.(currEnv).X{ss} = rocData.X;
                 rocOut.(currEnv).Y{ss} = rocData.Y;
                 rocOut.(currEnv).T{ss} = rocData.T;
                 rocOut.(currEnv).AUC(ss) = rocData.AUC;
-
-                % --- Deandra: Add-only: AUC per 5-column group ---
-                azG = toGroupMeans(data.(currEnv).az, groupSize);   % (N_az x 36)
-                czG = toGroupMeans(data.(currEnv).cz, groupSize);   % (N_cz x 36)
-
-                nGroups = size(azG,2); % should be 36 for 180 cols
-                for g = 1:nGroups
-                    rocDataG = calcBehaviorROC( ...
-                        azG(:,g) * params.rocMultiplier(id), ...
-                        czG(:,g) * params.rocMultiplier(id));
-
-                    rocOut.(currEnv).AUC_by5(ss,g) = rocDataG.AUC;
-                end
-                % ----------------------------------------
-
             else
                 rocOut.(currEnv).AUC(ss) = nan;
             end

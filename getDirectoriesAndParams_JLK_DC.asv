@@ -9,11 +9,11 @@ dirs.code = '\\ad.gatech.edu\bme\labs\singer\Danielle\code\AnalysisCode\Neuropix
 %behavior
 dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\Annular FAM\';
 dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\sessionData\';
-dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\TrackFigures\RewardZones.mat';
+dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\Danielle\Danielle\TrackFigures\RewardZones.mat';
 %save results
-dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\Under\Figures\';
-dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\Danielle\Figures\behavior\';
-dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\Danielle\OutputStructs\';
+dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\Figures\';
+dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\Figures\behavior\';
+dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\OutputStructs\';
 %spreadsheets with training or recording info
 %dirs.spreadsheet_rec = '\\ad.gatech.edu\bme\labs\singer\Josh\Spreadsheets\UpdateBehaviorSpreadsheet.csv'; %JLK commented out 10/2/24 because currently only one spreadsheet
 dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\Annular FAM\NoveltyBehaviorSpreadsheet2.xlsx'; 
@@ -24,8 +24,8 @@ dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\Annular FA
 
 %% parameters for analyses
 %general
-params.iden = 'DC'; %JK for default Josh's mice
-params.animals = [21];
+params.iden = 'JK'; %JK for default Josh's mice
+params.animals = [23];
 params.datesincl = [];
 params.datesexcl = [];
 params.recday = [];
@@ -37,8 +37,8 @@ params.binsize_s = 60;                                                      %in 
 params.samprate = 20000;  
 params.lfp_samprate_down = 2000;%in Hz for SpikeGadgets acquisition system
 params.timeoutZone = 17;
-params.rocID = {'speed', 'lickrate', 'deltalickrate'};
-params.rocMultiplier = [-1 1 1];
+params.rocID = {'speed', 'lickrate', 'deltalickrate', 'velocityNEW'};
+params.rocMultiplier = [-1 1 1 -1];
 params.numTrPerBlock = 5;
 params.savechnum = {0:63}; %how to save the channels listed below in channelInds. Will have portRegion as external folder
 
