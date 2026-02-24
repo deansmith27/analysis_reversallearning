@@ -7,15 +7,8 @@ ROC = [];
 sessionInfo = [];
 
 
-% --- Add-only: group-of-5 column feature extraction ---
-groupSize = 5;
-
-% Returns an (N x nGroups) matrix where each column is the mean of a 5-col group
-toGroupMeans = @(X, groupSize) squeeze( ...
-    nanmean( reshape( X(:, 1:(floor(size(X,2)/groupSize)*groupSize)), ...
-                      size(X,1), groupSize, [] ), ...
-            2) );
-% ------------------------------------------------------
+% --- Group-of-5 column feature extraction ---
+groupSize_cols = 5;
 
 for id = 1:length(params.rocID)
     %loop through unique sessions
@@ -160,22 +153,45 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).T{ss} = rocData.T;
                 rocOut.(currEnv).AUC(ss) = rocData.AUC;
 
-                % --- Deandra: Add-only: AUC per 5-column group ---
-                azG = toGroupMeans(data.(currEnv).az, groupSize);   % (N_az x 36)
-                czG = toGroupMeans(data.(currEnv).cz, groupSize);   % (N_cz x 36)
+                % Deandra: store ROC curves per 5-column group (36 groups) 
+                % Convert N x 180 into N x 36 by averaging every 5 columns
+                nColsAZ = size(data.(currEnv).az, 2);
+                nColsCZ = size(data.(currEnv).cz, 2);
 
-                nGroups = size(azG,2); % should be 36 for 180 cols
+                nUseCols = min([nColsAZ, nColsCZ]);
+                nUseCols = floor(nUseCols / groupSize_cols) * groupSize_cols;  % multiple of 5
+
+                azMat = data.(currEnv).az(:, 1:nUseCols);
+                czMat = data.(currEnv).cz(:, 1:nUseCols);
+
+                % reshape: N x (5*36) -> N x 5 x 36, then mean over the 5
+                azG = squeeze(nanmean(reshape(azMat, size(azMat,1), groupSize_cols, []), 2)); % N x 36
+                czG = squeeze(nanmean(reshape(czMat, size(czMat,1), groupSize_cols, []), 2)); % M x 36
+
+                nGroups = size(azG, 2);
+
                 for g = 1:nGroups
                     rocDataG = calcBehaviorROC( ...
                         azG(:,g) * params.rocMultiplier(id), ...
                         czG(:,g) * params.rocMultiplier(id));
 
-                    rocOut.(currEnv).AUC_by5(ss,g) = rocDataG.AUC;
+                    % Store ROC curve data for plotting (no overwriting of existing fields)
+                    rocOut.(currEnv).X_by5{ss,g} = rocDataG.X;
+                    rocOut.(currEnv).Y_by5{ss,g} = rocDataG.Y;
+                    rocOut.(currEnv).T_by5{ss,g} = rocDataG.T;
                 end
-                % ----------------------------------------
+                % ================================================================
 
             else
                 rocOut.(currEnv).AUC(ss) = nan;
+                % Deandra : placeholders so plotting grouped ROCs doesn't error ---
+                % Pre-fill 36 groups with empty cells for this session index
+            for g = 1:36
+                rocOut.(currEnv).X_by5{ss,g} = [];
+                rocOut.(currEnv).Y_by5{ss,g} = [];
+                rocOut.(currEnv).T_by5{ss,g} = [];
+            end
+        % ---------------------------------------------------------------
             end
         end
 
@@ -319,25 +335,25 @@ for id = 1:length(params.rocID)
         end
 
 
-        %% ROC type 5: use all trials and original reward zones vs never rewarded control zones
-        for ee = 2 %only update sessions
-            currEnv = params.environments{ee};
-            if  isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
-                %reshape to Nx1 structure and combine CZ and NevRZ data into one
-                data_cz = nanmean(data.(currEnv).cz, 2);
-                data_nevrz = nanmean(data.(currEnv).nevrz, 2);
-                rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+%%%%        %% ROC type 5: use all trials and original reward zones vs never rewarded control zones
+%%%%        for ee = 2 %only update sessions
+%%%%            currEnv = params.environments{ee};
+%%%%            if  isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
+%%%%                %reshape to Nx1 structure and combine CZ and NevRZ data into one
+%%%%                data_cz = nanmean(data.(currEnv).cz, 2);
+%%%%                data_nevrz = nanmean(data.(currEnv).nevrz, 2);
+%%%%                rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
 
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).scores{ss} = rocData.scores;
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).X{ss} = rocData.X;
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).Y{ss} = rocData.Y;
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).T{ss} = rocData.T;
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
-            else
-                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = nan;
-            end
-        end
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).scores{ss} = rocData.scores;
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).X{ss} = rocData.X;
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).Y{ss} = rocData.Y;
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).T{ss} = rocData.T;
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
+%%%%            else
+%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = nan;
+%%%%            end
+%%%%        end
 
         %% Save all data into a giant structure
         ROC.sessInfo = temp;
@@ -354,7 +370,7 @@ for id = 1:length(params.rocID)
         ROC.up_UAZvNevRZ_half2 = rocOut.up_UAZvNevRZ_half2;
         ROC.up_UAZvNevRZ_block1 = rocOut.up_UAZvNevRZ_block1;
         ROC.up_UAZvNevRZ_block2 = rocOut.up_UAZvNevRZ_block2;
-        ROC.up_ORZvNevRZ = rocOut.up_ORZvNevRZ;
+        % ROC.up_ORZvNevRZ = rocOut.up_ORZvNevRZ;
         ROC.up_ORZvNevRZ_half1 = rocOut.up_ORZvNevRZ_half1;
         ROC.up_ORZvNevRZ_half2 = rocOut.up_ORZvNevRZ_half2;
         ROC.up_ORZvNevRZ_block1 = rocOut.up_ORZvNevRZ_block1;

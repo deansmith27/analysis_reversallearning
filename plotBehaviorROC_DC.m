@@ -101,32 +101,32 @@ if doROCPlots
     end
 
     %original reward vs never rewarded zones
-    if isfield(ROC.up_ORZvNevRZ,'X')
-        figure
-        hold on
-        colors = [];
-        colors = hsv(length(ROC.up_ORZvNevRZ.X));
-        colorctr = 0;
-        newanctr = 0;
-        for r = 1:length(ROC.up_ORZvNevRZ.X)
-            if r >= find(~isnan(ROC.up_ORZvNevRZ.AUC),1,'first') && r <= length(ROC.up_ORZvNevRZ.AUC)/2
-                colorctr = colorctr + 1;
-                plot(ROC.up_ORZvNevRZ.X{r}, ROC.up_ORZvNevRZ.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
-            elseif r > length(ROC.up_ORZvNevRZ.AUC)/2 && ~isnan(ROC.up_ORZvNevRZ.AUC(r))
-                newanctr = newanctr + 1;
-                if newanctr == 1
-                    colorctr = 0;
-                end
-                colorctr = colorctr + 1;
-                plot(ROC.up_ORZvNevRZ.X{r}, ROC.up_ORZvNevRZ.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
-            end
-        end
-        legend('Box','off')
-        plot(0:.1:1,0:.1:1,'-k')
-        title(sprintf('Update Original RZ Vs. Never Rewarded Zones %s ROC: %s %s',rocID,params.iden,ids))
-        figname = fullfile(figdir, sprintf('up_ORZvNevRZ_%s_ROC_across_sessions',rocID));
-        print(gcf,figname,'-dpng','-r300')
-    end
+%%%%    if isfield(ROC.up_ORZvNevRZ,'X')
+%%%%        figure
+%%%%        hold on
+%%%%        colors = [];
+%%%%        colors = hsv(length(ROC.up_ORZvNevRZ.X));
+%%%%        colorctr = 0;
+%%%%        newanctr = 0;
+%%%%        for r = 1:length(ROC.up_ORZvNevRZ.X)
+%%%%            if r >= find(~isnan(ROC.up_ORZvNevRZ.AUC),1,'first') && r <= length(ROC.up_ORZvNevRZ.AUC)/2
+%%%%                colorctr = colorctr + 1;
+%%%%                plot(ROC.up_ORZvNevRZ.X{r}, ROC.up_ORZvNevRZ.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
+%%%%            elseif r > length(ROC.up_ORZvNevRZ.AUC)/2 && ~isnan(ROC.up_ORZvNevRZ.AUC(r))
+%%%%                newanctr = newanctr + 1;
+%%%%                if newanctr == 1
+%%%%                    colorctr = 0;
+%%%%                end
+%%%%                colorctr = colorctr + 1;
+%%%%                plot(ROC.up_ORZvNevRZ.X{r}, ROC.up_ORZvNevRZ.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
+%%%%            end
+%%%%        end
+%%%%        legend('Box','off')
+%%%%        plot(0:.1:1,0:.1:1,'-k')
+%%%%        title(sprintf('Update Original RZ Vs. Never Rewarded Zones %s ROC: %s %s',rocID,params.iden,ids))
+%%%%        figname = fullfile(figdir, sprintf('up_ORZvNevRZ_%s_ROC_across_sessions',rocID));
+%%%%        print(gcf,figname,'-dpng','-r300')
+%%%%    end
 
     %novel vs control zones (novel reward zones + 30 deg)
     if isfield(ROC.nov_all,'X')
@@ -183,7 +183,19 @@ if doROCPlots
         figname = fullfile(figdir, sprintf('nov2_%s_ROC_across_sessions',rocID));
         print(gcf,figname,'-dpng','-r300')
     end%if isfield(ROC.nov2_all,'X')
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Deandra's code to insert new ROC's %%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Toggle to enable these grouped ROC figures
+    doGroupedROC36 = 1;
 
+    if doGroupedROC36
+
+        groupsToPlot = 1:5;  % can be changed for less ROCs to be generated
+        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
+    end
+    
 end%if doROCPlots
 
 if doAUCIndPlots
@@ -672,3 +684,46 @@ end%if doAUCGroupUpdatePlots
 
 cd('\\ad.gatech.edu\bme\labs\singer\Danielle\code\AnalysisCode\Neuropixels_analyses');
 end%function
+
+%%%%%%%%%%%%%%%%%%%%
+%% Deandra's code %%
+%%%%%%%%%%%%%%%%%%%%
+function plotGroupedROCsForField(ROCfield, fieldLabel, groupsToPlot, rocID, params, ids)
+% Creates one ROC-curve figure per group index in groupsToPlot
+    if ~isfield(ROCfield, 'X_by5') || ~isfield(ROCfield, 'Y_by5')
+        fprintf('No X_by5/Y_by5 found for %s; skipping grouped ROC plots.\n', fieldLabel);
+        return;
+    end
+
+
+    nSess = size(ROCfield.X_by5, 1);
+
+    for g = groupsToPlot
+
+        figure('Name', sprintf('%s %s group %d', fieldLabel, rocID, g));
+        hold on
+
+
+        for r = 1:nSess
+            % safety checks, cell exists and is non-empty
+            if size(ROCfield.X_by5,2) >= g && size(ROCfield.Y_by5,2) >= g
+                if ~isempty(ROCfield.X_by5{r,g}) && ~isempty(ROCfield.Y_by5{r,g})
+                    plot(ROCfield.X_by5{r,g}, ROCfield.Y_by5{r,g}, 'LineWidth', 1);
+                end
+            end
+        end
+
+        % Chance line
+        plot(0:0.1:1, 0:0.1:1, '-k');
+
+
+        title(sprintf('%s %s ROC (group %d: cols %d-%d) %s %s', ...
+            fieldLabel, rocID, g, (g-1)*5+1, g*5, params.iden, ids));
+
+        xlabel('False positive rate');
+        ylabel('True positive rate');
+        legend('Box','off');
+
+    end
+
+end

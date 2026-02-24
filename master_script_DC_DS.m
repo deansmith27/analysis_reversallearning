@@ -20,7 +20,7 @@ allindexT = selectindextable_JLK(dirs.spreadsheet, 'animal', params.animals, 'Tr
 
 % % for Danielle/Xiao's virmen output spreadsheet
 % [dirs, params] = getDirectoriesAndParams_JLK_DC();
-% allindexT = selectindextable_JLK(dirs.spreadsheet, 'animal', params.animals, 'Track', [1 2 3 4]);
+% allindexT = selectindext
 
 %create allindex and uniqSess variables
 allindex = allindexT{:,{'Animal', 'Date', 'SessionNum', 'Track'}};
