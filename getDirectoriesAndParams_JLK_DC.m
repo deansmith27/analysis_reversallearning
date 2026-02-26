@@ -37,8 +37,8 @@ params.binsize_s = 60;                                                      %in 
 params.samprate = 20000;  
 params.lfp_samprate_down = 2000;%in Hz for SpikeGadgets acquisition system
 params.timeoutZone = 17;
-params.rocID = {'speed', 'lickrate', 'deltalickrate', 'velocityNEW'};
-params.rocMultiplier = [-1 1 1 -1];
+params.rocID = {'deltalickrate'}; %params.rocID = {'speed', 'lickrate', 'deltalickrate', 'velocityNEW'};
+params.rocMultiplier = [1]; %params.rocMultiplier = [-1 1 1 -1];
 params.numTrPerBlock = 5;
 params.savechnum = {0:63}; %how to save the channels listed below in channelInds. Will have portRegion as external folder
 

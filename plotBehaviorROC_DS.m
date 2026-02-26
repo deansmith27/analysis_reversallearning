@@ -1,4 +1,4 @@
-function plotBehaviorROC_DC(allindex,uniqSess, dirs, ROC, rocID, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
+function plotBehaviorROC_DS(allindex,uniqSess, dirs, ROC, rocID, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%% Saving Info %%%%%
@@ -192,8 +192,11 @@ if doROCPlots
 
     if doGroupedROC36
 
-        groupsToPlot = 1:5;  % can be changed for less ROCs to be generated
+        groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
+
         plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
+        plotGroupedROCsForField(ROC.up_ORZvNevRZ, 'up_ORZvNevRZ', groupsToPlot, rocID, params, ids);
+        
     end
     
 end%if doROCPlots
@@ -404,7 +407,18 @@ if doAUCIndPlots
     %save
     figname = fullfile(figdir, sprintf('%s_AUC_across_sessions',rocID));
     print(gcf,figname,'-dpng','-r300')
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Deandra's code to insert new IndAUCS's %%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Toggle to enable these grouped ROC figures
+    doGroupedIndROC36 = 1;
 
+    if doGroupedIndROC36
+
+        groupsToPlot = 1:36;  % can be changed for less ROCs to be generated
+        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
+    end
 end%if doAUCIndPlots
 
 if doAUCGroupUpdatePlots
@@ -526,6 +540,18 @@ if doAUCGroupUpdatePlots
         %save
         print(gcf,figname,'-dpng','-r300')
     end%dayType
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% Deandra's code to insert new UpdateAUCS's %%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Toggle to enable these grouped ROC figures
+    doGroupedUpdateROC36 = 1;
+
+    if doGroupedUpdateROC36
+
+        groupsToPlot = 1:36;  % can be changed for less ROCs to be generated
+        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
+    end
 
 end%if doAUCGroupUpdatePlots
 
@@ -682,7 +708,7 @@ end%if doAUCGroupUpdatePlots
 % % % % figname = fullfile(figdir, sprintf('%s_AUC_across_sessions_first5last5',rocID));
 % % % % print(gcf,figname,'-dpdf','-r300')
 
-cd('\\ad.gatech.edu\bme\labs\singer\Danielle\code\AnalysisCode\Neuropixels_analyses');
+cd('\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\analysis_reversallearning');
 end%function
 
 %%%%%%%%%%%%%%%%%%%%
@@ -726,4 +752,34 @@ function plotGroupedROCsForField(ROCfield, fieldLabel, groupsToPlot, rocID, para
 
     end
 
+end
+
+function plotGroupedAUCsForField(ROCfield, fieldLabel, groupsToPlot, rocID, params, ids)
+% plotGroupedAUCsForField
+% Creates one AUC figure per group index in groupsToPlot.
+
+    if ~isfield(ROCfield, 'AUC_by5')
+        fprintf('No AUC_by5 found for %s; skipping grouped AUC plots.\n', fieldLabel);
+        return;
+    end
+
+    A = ROCfield.AUC_by5;  % nSessions x nGroups
+
+    for g = groupsToPlot
+        figure('Name', sprintf('%s %s AUC group %d', fieldLabel, rocID, g));
+        hold on
+
+        if size(A,2) >= g
+            plot(A(:,g), '-o', 'LineWidth', 1);
+        else
+            plot(nan(size(A,1),1), '-o', 'LineWidth', 1);
+        end
+
+        ylim([0 1]);
+        xlabel('Session index (ss)');
+        ylabel('AUC');
+        title(sprintf('%s %s AUC (group %d: cols %d-%d) %s %s', ...
+            fieldLabel, rocID, g, (g-1)*5+1, g*5, params.iden, ids));
+        legend('Box','off');
+    end
 end

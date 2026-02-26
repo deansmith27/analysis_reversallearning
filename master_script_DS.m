@@ -39,7 +39,7 @@ end
 [uniqSess, ind] = unique(allindex(:,1:2), 'rows'); %define session as one date
 
 %% Specify what you want to analyze here %%
-createBehaviorStructs = 1;
+createBehaviorStructs = 0;
 plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
@@ -195,7 +195,7 @@ if plotBehavior
         doROCPlots = 1; %ROC plots across sessions/animals, separated by track
         doAUCIndPlots = 0; %AUC plots across sessions for each animal
         doAUCGroupUpdatePlots = 0;%AUC plots across original sessions and update sessions by control vs. experimental group
-        plotBehaviorROC_DC(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
+        plotBehaviorROC_DS(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
     end
 
 end%if plotBehavior

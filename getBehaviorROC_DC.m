@@ -7,7 +7,7 @@ ROC = [];
 sessionInfo = [];
 
 
-% --- Group-of-5 column feature extraction ---
+% --- Deandra: Group-of-5 column feature extraction ---
 groupSize_cols = 5;
 
 for id = 1:length(params.rocID)
@@ -152,7 +152,8 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).Y{ss} = rocData.Y;
                 rocOut.(currEnv).T{ss} = rocData.T;
                 rocOut.(currEnv).AUC(ss) = rocData.AUC;
-
+                
+                % ================================================================
                 % Deandra: store ROC curves per 5-column group (36 groups) 
                 % Convert N x 180 into N x 36 by averaging every 5 columns
                 nColsAZ = size(data.(currEnv).az, 2);
@@ -174,8 +175,9 @@ for id = 1:length(params.rocID)
                     rocDataG = calcBehaviorROC( ...
                         azG(:,g) * params.rocMultiplier(id), ...
                         czG(:,g) * params.rocMultiplier(id));
+                    rocOut.(currEnv).AUC_by5(ss,g) = rocDataG.AUC;
 
-                    % Store ROC curve data for plotting (no overwriting of existing fields)
+                    % Store ROC curve data for plotting 
                     rocOut.(currEnv).X_by5{ss,g} = rocDataG.X;
                     rocOut.(currEnv).Y_by5{ss,g} = rocDataG.Y;
                     rocOut.(currEnv).T_by5{ss,g} = rocDataG.T;
@@ -184,6 +186,7 @@ for id = 1:length(params.rocID)
 
             else
                 rocOut.(currEnv).AUC(ss) = nan;
+            % ================================================================
                 % Deandra : placeholders so plotting grouped ROCs doesn't error ---
                 % Pre-fill 36 groups with empty cells for this session index
             for g = 1:36
@@ -191,127 +194,127 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).Y_by5{ss,g} = [];
                 rocOut.(currEnv).T_by5{ss,g} = [];
             end
-        % ---------------------------------------------------------------
+            % ================================================================
             end
         end
 
-        %% ROC type 2: separate first-half and second-half of trials with anticipatory zones vs primary control zones
-        for ee = 1:length(params.environments)
-            currEnv = params.environments{ee};
-            if ~isempty(data.(currEnv).az) %if session exists
-                nTrialsAZ = size(data.(currEnv).az,1); half_az = ceil(nTrialsAZ/2);
-                nTrialsCZ = size(data.(currEnv).cz,1); half_cz = ceil(nTrialsCZ/2);
-                nTrialsNevRZ = size(data.(currEnv).nevrz,1); half_nevrz = ceil(nTrialsNevRZ/2);
+        % %% ROC type 2: separate first-half and second-half of trials with anticipatory zones vs primary control zones
+        % for ee = 1:length(params.environments)
+        %     currEnv = params.environments{ee};
+        %     if ~isempty(data.(currEnv).az) %if session exists
+        %         nTrialsAZ = size(data.(currEnv).az,1); half_az = ceil(nTrialsAZ/2);
+        %         nTrialsCZ = size(data.(currEnv).cz,1); half_cz = ceil(nTrialsCZ/2);
+        %         nTrialsNevRZ = size(data.(currEnv).nevrz,1); half_nevrz = ceil(nTrialsNevRZ/2);
+        % 
+        %         for iH = 1:2 %first or second half
+        %             if iH == 1
+        %                 data_az = nanmean(data.(currEnv).az(1:half_az,:), 2);
+        %                 data_cz = nanmean(data.(currEnv).cz(1:half_cz,:), 2);
+        %                 data_nevrz = nanmean(data.(currEnv).nevrz(1:half_nevrz,:), 2);
+        %             else
+        %                 data_az = nanmean(data.(currEnv).az(half_az+1:end,:), 2);
+        %                 data_cz = nanmean(data.(currEnv).cz(half_cz+1:end,:), 2);
+        %                 data_nevrz = nanmean(data.(currEnv).nevrz(half_nevrz+1:end,:), 2);
+        %             end
+        %             %anticipatory zones vs primary control zones
+        %             rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
+        %             rocOut.([currEnv, '_half', num2str(iH)]).mdl{ss} = rocData.mdl;
+        %             rocOut.([currEnv, '_half', num2str(iH)]).scores{ss} = rocData.scores;
+        %             rocOut.([currEnv, '_half', num2str(iH)]).X{ss} = rocData.X;
+        %             rocOut.([currEnv, '_half', num2str(iH)]).Y{ss} = rocData.Y;
+        %             rocOut.([currEnv, '_half', num2str(iH)]).T{ss} = rocData.T;
+        %             rocOut.([currEnv, '_half', num2str(iH)]).AUC(ss) = rocData.AUC;
+        %             if strcmp(params.environments{ee},'up')
+        %                 %update anticipatory zones vs never rewarded control zones
+        %                 rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+        %                 rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).mdl{ss} = rocData.mdl;
+        %                 rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).scores{ss} = rocData.scores;
+        %                 rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).X{ss} = rocData.X;
+        %                 rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).Y{ss} = rocData.Y;
+        %                 rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).T{ss} = rocData.T;
+        %                 rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).AUC(ss) = rocData.AUC;
+        %                 %original reward zones vs never rewarded control zones
+        %                 rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+        %                 rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).mdl{ss} = rocData.mdl;
+        %                 rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).scores{ss} = rocData.scores;
+        %                 rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).X{ss} = rocData.X;
+        %                 rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).Y{ss} = rocData.Y;
+        %                 rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).T{ss} = rocData.T;
+        %                 rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).AUC(ss) = rocData.AUC;
+        %             end%if strcmp(params.environments{ee},'up')
+        % 
+        %         end%iH
+        % 
+        %     else
+        %         for iH = 1:2
+        %             rocOut.([currEnv, '_half', num2str(iH)]).AUC(ss) = nan;
+        %             rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).AUC(ss) = nan;
+        %             rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).AUC(ss) = nan;
+        %         end
+        %     end
+        % end
 
-                for iH = 1:2 %first or second half
-                    if iH == 1
-                        data_az = nanmean(data.(currEnv).az(1:half_az,:), 2);
-                        data_cz = nanmean(data.(currEnv).cz(1:half_cz,:), 2);
-                        data_nevrz = nanmean(data.(currEnv).nevrz(1:half_nevrz,:), 2);
-                    else
-                        data_az = nanmean(data.(currEnv).az(half_az+1:end,:), 2);
-                        data_cz = nanmean(data.(currEnv).cz(half_cz+1:end,:), 2);
-                        data_nevrz = nanmean(data.(currEnv).nevrz(half_nevrz+1:end,:), 2);
-                    end
-                    %anticipatory zones vs primary control zones
-                    rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
-                    rocOut.([currEnv, '_half', num2str(iH)]).mdl{ss} = rocData.mdl;
-                    rocOut.([currEnv, '_half', num2str(iH)]).scores{ss} = rocData.scores;
-                    rocOut.([currEnv, '_half', num2str(iH)]).X{ss} = rocData.X;
-                    rocOut.([currEnv, '_half', num2str(iH)]).Y{ss} = rocData.Y;
-                    rocOut.([currEnv, '_half', num2str(iH)]).T{ss} = rocData.T;
-                    rocOut.([currEnv, '_half', num2str(iH)]).AUC(ss) = rocData.AUC;
-                    if strcmp(params.environments{ee},'up')
-                        %update anticipatory zones vs never rewarded control zones
-                        rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
-                        rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).mdl{ss} = rocData.mdl;
-                        rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).scores{ss} = rocData.scores;
-                        rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).X{ss} = rocData.X;
-                        rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).Y{ss} = rocData.Y;
-                        rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).T{ss} = rocData.T;
-                        rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).AUC(ss) = rocData.AUC;
-                        %original reward zones vs never rewarded control zones
-                        rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
-                        rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).mdl{ss} = rocData.mdl;
-                        rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).scores{ss} = rocData.scores;
-                        rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).X{ss} = rocData.X;
-                        rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).Y{ss} = rocData.Y;
-                        rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).T{ss} = rocData.T;
-                        rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).AUC(ss) = rocData.AUC;
-                    end%if strcmp(params.environments{ee},'up')
-
-                end%iH
-
-            else
-                for iH = 1:2
-                    rocOut.([currEnv, '_half', num2str(iH)]).AUC(ss) = nan;
-                    rocOut.([currEnv, '_UAZvNevRZ_half', num2str(iH)]).AUC(ss) = nan;
-                    rocOut.([currEnv, '_ORZvNevRZ_half', num2str(iH)]).AUC(ss) = nan;
-                end
-            end
-        end
-
-        %% ROC type 3: separate 1st + 2nd block of trials with anticipatory zones vs atlernative control zones and primary control zones vs. never rewarded control zones
-        for ee = 2 %only update sessions
-            currEnv = params.environments{ee};
-            if ~isempty(data.(currEnv).az) && size(data.(currEnv).az,1) %if session exists and has at least 10 trials
-                %get trials to use
-                nTrialsAZ = size(data.(currEnv).az,1);
-                nTrialsCZ = size(data.(currEnv).cz,1);
-                nTrialsNevRZ = size(data.(currEnv).nevrz,1);
-                for bl = 1:2
-                    %initialize
-                    useAzTrials = nan(1,params.numTrPerBlock);
-                    useCzTrials = nan(1,params.numTrPerBlock);
-                    useNevCzTrials = nan(1,params.numTrPerBlock);
-                    if bl == 1
-                        useAzTrials = [1:params.numTrPerBlock];
-                        useCzTrials = [1:params.numTrPerBlock];
-                        useNevCzTrials = [1:params.numTrPerBlock];
-                    elseif bl == 2
-                        useAzTrials = [nTrialsAZ-params.numTrPerBlock+1:nTrialsAZ];
-                        useCzTrials = [nTrialsCZ-params.numTrPerBlock+1:nTrialsCZ];
-                        useNevCzTrials = [nTrialsNevRZ-params.numTrPerBlock+1:nTrialsNevRZ];
-                    end%if bl == 1
-
-                    %get data
-                    data_az = nanmean(data.(currEnv).az(useAzTrials,:), 2);
-                    data_cz = nanmean(data.(currEnv).cz(useCzTrials,:), 2);
-                    data_nevrz = nanmean(data.(currEnv).nevrz(useNevCzTrials,:), 2);
-                    %update anticipatory zones vs original reward zones
-                    rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).mdl{ss} = rocData.mdl;
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).scores{ss} = rocData.scores;
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).X{ss} = rocData.X;
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).Y{ss} = rocData.Y;
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).T{ss} = rocData.T;
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).AUC(ss) = rocData.AUC;
-                    %update anticipatory zones vs never rewarded control zones
-                    rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).mdl{ss} = rocData.mdl;
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).scores{ss} = rocData.scores;
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).X{ss} = rocData.X;
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).Y{ss} = rocData.Y;
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).T{ss} = rocData.T;
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).AUC(ss) = rocData.AUC;
-                    %original reward zones vs never rewarded control zones
-                    rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).mdl{ss} = rocData.mdl;
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).scores{ss} = rocData.scores;
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).X{ss} = rocData.X;
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).Y{ss} = rocData.Y;
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).T{ss} = rocData.T;
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).AUC(ss) = rocData.AUC;
-                end
-
-            else
-                for bl = 1:2
-                    rocOut.(sprintf('%s_block%d', currEnv,bl)).AUC(ss) = nan;
-                    rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).AUC(ss) = nan;
-                    rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).AUC(ss) = nan;
-                end
-            end
-        end
+        % %% ROC type 3: separate 1st + 2nd block of trials with anticipatory zones vs atlernative control zones and primary control zones vs. never rewarded control zones
+        % for ee = 2 %only update sessions
+        %     currEnv = params.environments{ee};
+        %     if ~isempty(data.(currEnv).az) && size(data.(currEnv).az,1) %if session exists and has at least 10 trials
+        %         %get trials to use
+        %         nTrialsAZ = size(data.(currEnv).az,1);
+        %         nTrialsCZ = size(data.(currEnv).cz,1);
+        %         nTrialsNevRZ = size(data.(currEnv).nevrz,1);
+        %         for bl = 1:2
+        %             %initialize
+        %             useAzTrials = nan(1,params.numTrPerBlock);
+        %             useCzTrials = nan(1,params.numTrPerBlock);
+        %             useNevCzTrials = nan(1,params.numTrPerBlock);
+        %             if bl == 1
+        %                 useAzTrials = [1:params.numTrPerBlock];
+        %                 useCzTrials = [1:params.numTrPerBlock];
+        %                 useNevCzTrials = [1:params.numTrPerBlock];
+        %             elseif bl == 2
+        %                 useAzTrials = [nTrialsAZ-params.numTrPerBlock+1:nTrialsAZ];
+        %                 useCzTrials = [nTrialsCZ-params.numTrPerBlock+1:nTrialsCZ];
+        %                 useNevCzTrials = [nTrialsNevRZ-params.numTrPerBlock+1:nTrialsNevRZ];
+        %             end%if bl == 1
+        % 
+        %             %get data
+        %             data_az = nanmean(data.(currEnv).az(useAzTrials,:), 2);
+        %             data_cz = nanmean(data.(currEnv).cz(useCzTrials,:), 2);
+        %             data_nevrz = nanmean(data.(currEnv).nevrz(useNevCzTrials,:), 2);
+        %             %update anticipatory zones vs original reward zones
+        %             rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).mdl{ss} = rocData.mdl;
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).scores{ss} = rocData.scores;
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).X{ss} = rocData.X;
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).Y{ss} = rocData.Y;
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).T{ss} = rocData.T;
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).AUC(ss) = rocData.AUC;
+        %             %update anticipatory zones vs never rewarded control zones
+        %             rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).mdl{ss} = rocData.mdl;
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).scores{ss} = rocData.scores;
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).X{ss} = rocData.X;
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).Y{ss} = rocData.Y;
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).T{ss} = rocData.T;
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).AUC(ss) = rocData.AUC;
+        %             %original reward zones vs never rewarded control zones
+        %             rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).mdl{ss} = rocData.mdl;
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).scores{ss} = rocData.scores;
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).X{ss} = rocData.X;
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).Y{ss} = rocData.Y;
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).T{ss} = rocData.T;
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).AUC(ss) = rocData.AUC;
+        %         end
+        % 
+        %     else
+        %         for bl = 1:2
+        %             rocOut.(sprintf('%s_block%d', currEnv,bl)).AUC(ss) = nan;
+        %             rocOut.(sprintf('%s_UAZvNevRZ_block%d', currEnv,bl)).AUC(ss) = nan;
+        %             rocOut.(sprintf('%s_ORZvNevRZ_block%d', currEnv,bl)).AUC(ss) = nan;
+        %         end
+        %     end
+        % end
 
 
         %% ROC type 4: use all trials and update anticipatory zones vs never rewarded control zones
@@ -329,31 +332,75 @@ for id = 1:length(params.rocID)
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y{ss} = rocData.Y;
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T{ss} = rocData.T;
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
+
+                % ================================================================
+                % Deandra: store ROC curves per 5-column group (36 groups) 
+                % Convert N x 180 into N x 36 by averaging every 5 columns
+                nColsAZ    = size(data.(currEnv).az, 2);
+                nColsNevRZ = size(data.(currEnv).nevrz, 2);
+
+                nUseCols = min([nColsAZ, nColsNevRZ]);
+                nUseCols = floor(nUseCols / groupSize_cols) * groupSize_cols;  % multiple of 5
+
+                azMat    = data.(currEnv).az(:,    1:nUseCols);
+                nevrzMat = data.(currEnv).nevrz(:, 1:nUseCols);
+
+                % reshape: N x (5*G) -> N x 5 x G, then mean over the 5
+                azG    = squeeze(nanmean(reshape(azMat,    size(azMat,1),    groupSize_cols, []), 2)); % N x G
+                nevrzG = squeeze(nanmean(reshape(nevrzMat, size(nevrzMat,1), groupSize_cols, []), 2)); % N x G
+
+                nGroups = size(azG, 2);
+
+                for g = 1:nGroups
+                    rocDataG = calcBehaviorROC( ...
+                        azG(:,g)    * params.rocMultiplier(id), ...
+                        nevrzG(:,g) * params.rocMultiplier(id));
+
+                    % Store grouped ROC curve data for plotting (new fields, no overwrite)
+                    rocOut.(fieldName).X_by5{ss,g} = rocDataG.X;
+                    rocOut.(fieldName).Y_by5{ss,g} = rocDataG.Y;
+                    rocOut.(fieldName).T_by5{ss,g} = rocDataG.T;
+
+                    % Optional: store grouped AUCs (you can skip plotting them for now)
+                    rocOut.(fieldName).AUC_by5(ss,g) = rocDataG.AUC;
+                end
+                % ================================================================
             else
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
+            % ================================================================
+                % Deandra : placeholders so plotting grouped ROCs doesn't error
+                % Pre-fill 36 groups with empty cells for this session index
+            for g = 1:36
+                rocOut.(fieldName).X_by5{ss,g} = [];
+                rocOut.(fieldName).Y_by5{ss,g} = [];
+                rocOut.(fieldName).T_by5{ss,g} = [];
+                rocOut.(fieldName).AUC_by5(ss,g) = nan;  % optional
+            end
+            % ================================================================
+            end
             end
         end
 
 
-%%%%        %% ROC type 5: use all trials and original reward zones vs never rewarded control zones
-%%%%        for ee = 2 %only update sessions
-%%%%            currEnv = params.environments{ee};
-%%%%            if  isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
-%%%%                %reshape to Nx1 structure and combine CZ and NevRZ data into one
-%%%%                data_cz = nanmean(data.(currEnv).cz, 2);
-%%%%                data_nevrz = nanmean(data.(currEnv).nevrz, 2);
-%%%%                rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
-
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).scores{ss} = rocData.scores;
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).X{ss} = rocData.X;
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).Y{ss} = rocData.Y;
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).T{ss} = rocData.T;
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
-%%%%            else
-%%%%                rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = nan;
-%%%%            end
-%%%%        end
+        % %% ROC type 5: use all trials and original reward zones vs never rewarded control zones
+        % for ee = 2 %only update sessions
+        %     currEnv = params.environments{ee};
+        %     if  isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
+        %         %reshape to Nx1 structure and combine CZ and NevRZ data into one
+        %         data_cz = nanmean(data.(currEnv).cz, 2);
+        %         data_nevrz = nanmean(data.(currEnv).nevrz, 2);
+        %         rocData = calcBehaviorROC(data_cz*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+        % 
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).scores{ss} = rocData.scores;
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).X{ss} = rocData.X;
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).Y{ss} = rocData.Y;
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).T{ss} = rocData.T;
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
+        %     else
+        %         rocOut.(sprintf('%s_ORZvNevRZ', currEnv)).AUC(ss) = nan;
+        %     end
+        % end
 
         %% Save all data into a giant structure
         ROC.sessInfo = temp;
@@ -370,7 +417,7 @@ for id = 1:length(params.rocID)
         ROC.up_UAZvNevRZ_half2 = rocOut.up_UAZvNevRZ_half2;
         ROC.up_UAZvNevRZ_block1 = rocOut.up_UAZvNevRZ_block1;
         ROC.up_UAZvNevRZ_block2 = rocOut.up_UAZvNevRZ_block2;
-        % ROC.up_ORZvNevRZ = rocOut.up_ORZvNevRZ;
+        ROC.up_ORZvNevRZ = rocOut.up_ORZvNevRZ;
         ROC.up_ORZvNevRZ_half1 = rocOut.up_ORZvNevRZ_half1;
         ROC.up_ORZvNevRZ_half2 = rocOut.up_ORZvNevRZ_half2;
         ROC.up_ORZvNevRZ_block1 = rocOut.up_ORZvNevRZ_block1;
