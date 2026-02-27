@@ -194,8 +194,8 @@ if doROCPlots
 
         groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
 
-        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
-        plotGroupedROCsForField(ROC.up_ORZvNevRZ, 'up_ORZvNevRZ', groupsToPlot, rocID, params, ids);
+        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids); % ROC type 1
+        plotGroupedROCsForField(ROC.up_UAZvNevRZ, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
         
     end
     

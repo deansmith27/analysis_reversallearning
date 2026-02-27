@@ -345,7 +345,6 @@ for id = 1:length(params.rocID)
                 azMat    = data.(currEnv).az(:,    1:nUseCols);
                 nevrzMat = data.(currEnv).nevrz(:, 1:nUseCols);
 
-                % reshape: N x (5*G) -> N x 5 x G, then mean over the 5
                 azG    = squeeze(nanmean(reshape(azMat,    size(azMat,1),    groupSize_cols, []), 2)); % N x G
                 nevrzG = squeeze(nanmean(reshape(nevrzMat, size(nevrzMat,1), groupSize_cols, []), 2)); % N x G
 
@@ -356,28 +355,31 @@ for id = 1:length(params.rocID)
                         azG(:,g)    * params.rocMultiplier(id), ...
                         nevrzG(:,g) * params.rocMultiplier(id));
 
-                    % Store grouped ROC curve data for plotting (new fields, no overwrite)
                     rocOut.(fieldName).X_by5{ss,g} = rocDataG.X;
                     rocOut.(fieldName).Y_by5{ss,g} = rocDataG.Y;
                     rocOut.(fieldName).T_by5{ss,g} = rocDataG.T;
-
-                    % Optional: store grouped AUCs (you can skip plotting them for now)
                     rocOut.(fieldName).AUC_by5(ss,g) = rocDataG.AUC;
                 end
+
+                for g = (nGroups+1):36
+                    rocOut.(fieldName).X_by5{ss,g} = [];
+                    rocOut.(fieldName).Y_by5{ss,g} = [];
+                    rocOut.(fieldName).T_by5{ss,g} = [];
+                    rocOut.(fieldName).AUC_by5(ss,g) = nan;
+                end                
                 % ================================================================
             else
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
             % ================================================================
                 % Deandra : placeholders so plotting grouped ROCs doesn't error
                 % Pre-fill 36 groups with empty cells for this session index
-            for g = 1:36
-                rocOut.(fieldName).X_by5{ss,g} = [];
-                rocOut.(fieldName).Y_by5{ss,g} = [];
-                rocOut.(fieldName).T_by5{ss,g} = [];
-                rocOut.(fieldName).AUC_by5(ss,g) = nan;  % optional
-            end
+                for g = 1:36
+                    rocOut.(fieldName).X_by5{ss,g} = [];
+                    rocOut.(fieldName).Y_by5{ss,g} = [];
+                    rocOut.(fieldName).T_by5{ss,g} = [];
+                    rocOut.(fieldName).AUC_by5(ss,g) = nan;  % optional
+                end
             % ================================================================
-            end
             end
         end
 
