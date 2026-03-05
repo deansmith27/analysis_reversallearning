@@ -413,17 +413,17 @@ for id = 1:length(params.rocID)
         %ROC.up_UAZvNevRZ_half2 = rocOut.up_UAZvNevRZ_half2;
         %ROC.up_UAZvNevRZ_block1 = rocOut.up_UAZvNevRZ_block1;
         %ROC.up_UAZvNevRZ_block2 = rocOut.up_UAZvNevRZ_block2;
-        %ROC.up_ORZvNevRZ = rocOut.up_ORZvNevRZ;
+        ROC.up_ORZvNevRZ = rocOut.up_ORZvNevRZ;
         %ROC.up_ORZvNevRZ_half1 = rocOut.up_ORZvNevRZ_half1;
-        %ROC.up_ORZvNevRZ_half2 = rocOut.up_ORZvNevRZ_half2;
-        %ROC.up_ORZvNevRZ_block1 = rocOut.up_ORZvNevRZ_block1;
-        %ROC.up_ORZvNevRZ_block2 = rocOut.up_ORZvNevRZ_block2;
+        ROC.up_ORZvNevRZ_half2 = rocOut.up_ORZvNevRZ_half2;
+        ROC.up_ORZvNevRZ_block1 = rocOut.up_ORZvNevRZ_block1;
+        ROC.up_ORZvNevRZ_block2 = rocOut.up_ORZvNevRZ_block2;
         ROC.nov_all = rocOut.nov;
-        %ROC.nov_half1 = rocOut.nov_half1;
-        %ROC.nov_half2 = rocOut.nov_half2;
+        ROC.nov_half1 = rocOut.nov_half1;
+        ROC.nov_half2 = rocOut.nov_half2;
         ROC.nov2_all = rocOut.nov2;
-        %ROC.nov2_half1 = rocOut.nov2_half1;
-        %ROC.nov2_half2 = rocOut.nov2_half2;
+        ROC.nov2_half1 = rocOut.nov2_half1;
+        ROC.nov2_half2 = rocOut.nov2_half2;
 
         filedir = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC');
 
