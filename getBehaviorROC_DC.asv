@@ -360,7 +360,13 @@ for id = 1:length(params.rocID)
                     rocOut.(fieldName).T_by5{ss,g} = rocDataG.T;
                     rocOut.(fieldName).AUC_by5(ss,g) = rocDataG.AUC;
                 end
-              
+
+                for g = (nGroups+1):36
+                    rocOut.(fieldName).X_by5{ss,g} = [];
+                    rocOut.(fieldName).Y_by5{ss,g} = [];
+                    rocOut.(fieldName).T_by5{ss,g} = [];
+                    rocOut.(fieldName).AUC_by5(ss,g) = nan;
+                end                
                 % ================================================================
             else
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;

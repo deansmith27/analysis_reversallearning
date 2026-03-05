@@ -39,7 +39,7 @@ end
 [uniqSess, ind] = unique(allindex(:,1:2), 'rows'); %define session as one date
 
 %% Specify what you want to analyze here %%
-createBehaviorStructs = 0;
+createBehaviorStructs = 1;
 plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
@@ -118,7 +118,7 @@ if createBehaviorStructs
             end%if allindex(i,6)
 
         else
-            sprintf('File not found - Skipped analyzing session data for %s_%s_%s', subj, sessDate, sessNum)
+            %sprintf('File not found - Skipped analyzing session data for %s_%s_%s', subj, sessDate, sessNum)
         end%isfile(virmenDataPath)
 
         fprintf(['Finished analyzing trial data for session ' num2str(i) ' out of ' num2str(size(allindex,1)) ': ' params.iden num2str(allindex(i,1)) '_' num2str(allindex(i,2)) '_' num2str(allindex(i,3)) '... \n'])
@@ -130,7 +130,7 @@ if createBehaviorStructs
     %%%%%%%%%%%%%%%%
     addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\functions')
     
-    getBehaviorROC_DC(allindex,dirs,uniqSess,params)
+    getBehaviorROC_DS(allindex,dirs,uniqSess,params)
 
 end%if createBehaviorStructs
 

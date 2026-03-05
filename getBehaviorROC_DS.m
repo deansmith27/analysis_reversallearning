@@ -1,4 +1,4 @@
-function [ROC] = getBehaviorROC_DC(allindex,dirs,uniqSess,params)
+function [ROC] = getBehaviorROC_DS(allindex,dirs,uniqSess,params)
 %adapted from getNovelBehaviorROC_JLK and getBehaviorDistributionAZvsNRZ_JLK
 
 %% create or load ROC data for each session %%
@@ -21,7 +21,7 @@ for id = 1:length(params.rocID)
         temp{ss,1} = sessionInfo;
 
         ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
-            num2str(sessionInfo(1,2)), [params.rocID{id} '.mat']);
+            num2str(sessionInfo(1,2)), [params.rocID{id} 'NEW.mat']);
 
         %get latest file with name that contains the specified string if
         % exist, make speed/lickrate AZ vs NRZ distributiuon file if not
@@ -355,10 +355,10 @@ for id = 1:length(params.rocID)
                         azG(:,g)    * params.rocMultiplier(id), ...
                         nevrzG(:,g) * params.rocMultiplier(id));
 
-                    rocOut.(fieldName).X_by5{ss,g} = rocDataG.X;
-                    rocOut.(fieldName).Y_by5{ss,g} = rocDataG.Y;
-                    rocOut.(fieldName).T_by5{ss,g} = rocDataG.T;
-                    rocOut.(fieldName).AUC_by5(ss,g) = rocDataG.AUC;
+                    rocOut.(currEnv).X_by5{ss,g} = rocDataG.X;
+                    rocOut.(currEnv).Y_by5{ss,g} = rocDataG.Y;
+                    rocOut.(currEnv).T_by5{ss,g} = rocDataG.T;
+                    rocOut.(currEnv).AUC_by5(ss,g) = rocDataG.AUC;
                 end
               
                 % ================================================================
@@ -368,10 +368,10 @@ for id = 1:length(params.rocID)
                 % Deandra : placeholders so plotting grouped ROCs doesn't error
                 % Pre-fill 36 groups with empty cells for this session index
                 for g = 1:36
-                    rocOut.(fieldName).X_by5{ss,g} = [];
-                    rocOut.(fieldName).Y_by5{ss,g} = [];
-                    rocOut.(fieldName).T_by5{ss,g} = [];
-                    rocOut.(fieldName).AUC_by5(ss,g) = nan;  % optional
+                    rocOut.(currEnv).X_by5{ss,g} = [];
+                    rocOut.(currEnv).Y_by5{ss,g} = [];
+                    rocOut.(currEnv).T_by5{ss,g} = [];
+                    rocOut.(currEnv).AUC_by5(ss,g) = nan;  % optional
                 end
             % ================================================================
             end
