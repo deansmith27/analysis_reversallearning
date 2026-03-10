@@ -87,6 +87,10 @@ for id = 1:length(params.rocID)
                         lapData = diff(lapData,1,2);
                     end
                     
+                    % --- Deandra: group lapData by 5 ---
+                    for lapDataGrouped = (size(lapData))
+                        lapDataGrouped = floor(lapDataGrouped / groupSize_cols) 
+
                     
                     %get zone info
                     [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
