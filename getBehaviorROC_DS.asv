@@ -44,7 +44,7 @@ for id = 1:length(params.rocID)
             else
                 print('Select from behavior type options: speed, lickrate, deltalickrate, velocityNEW')
             end
-            fNames = {'az','cz', 'nevrz', 'sessionInfo'};
+            fNames = {'az','cz', 'nevrz', 'sessionInfo', 'fullTrackGrouped'}; % Deandra: Added additional parameter titled 'fullTrackGrouped'
 
             %initialize data structure with empty fields
             data = [];
@@ -87,7 +87,18 @@ for id = 1:length(params.rocID)
                         lapData = diff(lapData,1,2);
                     end
                     
-                    
+                    % =================================================================================
+                    % Deandra: Grouping of lapData which is 180 bins
+
+                    % nUseCols_full = floor(size(lapData, 2) / groupSize_cols) * groupSize_cols;
+                    % lapDataFull = lapData(:, 1:nUseCols_full)
+                    % 
+                    % tmpFull = nanmean(reshape(lapDataFull, size(lapDataFull, 1), groupSize_col, []), 2);
+                    % lapDataGrouped = reshape(tmpFull, size(lapDataFull, 1), []);
+                    % 
+                    % data.(currEnv).fullTrackGrouped = [data.(currEnv).fullTrackGrouped; lapDataGrouped];
+                    % ==================================================================================
+
                     %get zone info
                     [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
 
