@@ -87,15 +87,78 @@ for id = 1:length(params.rocID)
                         lapData = diff(lapData,1,2);
                     end
                     
-                    % --- Deandra: group lapData by 5 ---
-                    for lapDataGrouped = (size(lapData))
-                        lapDataGrouped = floor(lapDataGrouped / groupSize_cols) 
+                    
+                    % ================================================================
+                    % Deandra: Create 5-column groups out of lapData (36 groups) 
+                    lapDataCols = size(lapData,2)  / groupSize_cols;
+                    
+                    for i = 1:lapDataCols
+                        lapDataGroupedStart = groupSize_cols * i - (groupSize_cols - 1);
+                        lapDataGroupedEnd = groupSize_cols * i;
+
+                        lapDataGrouped = lapData(:,lapDataGroupedStart:lapDataGroupedEnd);
+
+                        % disp(size(lapDataGrouped))
+
+                    end
+                    % ================================================================
 
                     
-                    %get zone info
+        %             %get zone info
+        %             [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
+        % 
+        %             for lp = 1:size(lapData,1)
+        %                 for zn = 1:length(params.Azones)
+        %                     tmpBins = [];
+        %                     tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
+        %                     tmpBins = round(tmpBins/params.binsize_deg);%DC adding round to handle offset RZ with new projector
+        %                     data.(currEnv).az = [data.(currEnv).az; lapData(lp,tmpBins)];
+        %                 end
+        %                 for zn = 1:length(params.NRzones)
+        %                     tmpBins = [];
+        %                     tmpBins = params.NRzones(zn):params.binsize_deg:params.NRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
+        %                     tmpBins = round(tmpBins/params.binsize_deg);
+        %                     data.(currEnv).cz = [data.(currEnv).cz; lapData(lp,tmpBins)];
+        %                 end
+        %                 for zn = 1:length(params.NevRzones)
+        %                     if ~isnan(params.NevRzones(zn))
+        %                         tmpBins = [];
+        %                         tmpBins = params.NevRzones(zn):params.binsize_deg:params.NevRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
+        %                         tmpBins = round(tmpBins/params.binsize_deg);
+        %                         data.(currEnv).nevrz = [data.(currEnv).nevrz; lapData(lp,tmpBins)];
+        %                     else
+        %                         data.(currEnv).nevrz = [];
+        %                     end
+        %                 end
+        %             end
+        % 
+        %             %save info common to data structure
+        %             data.(currEnv).azBins_deg = params.Azones;
+        %             data.(currEnv).czBins_deg = params.NRzones;
+        %             data.(currEnv).nevrzBins_deg = params.NevRzones;
+        %             data.(currEnv).sessionInfo = [data.(currEnv).sessionInfo; sessionInfo(f,:)];
+        % 
+        %         end
+        %     end
+        % 
+        %     %save data
+        %     dir2save = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
+        %         num2str(sessionInfo(1,2)));
+        %     if ~isfolder(dir2save); mkdir(dir2save); end
+        %     save([dir2save, '\', params.rocID{id}, '.mat'], 'data', 'data');
+        % 
+        % 
+        % else
+        %     load(ROCfname);
+        % end
+
+        % ======================================================================================================================================================
+        % Deandra: get zone info
+        % Swaps lapData for new grouping variable: lapDataGrouped
+
                     [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
 
-                    for lp = 1:size(lapData,1)
+                    for lp = 1:size(lapDataGrouped,1)
                         for zn = 1:length(params.Azones)
                             tmpBins = [];
                             tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
@@ -139,7 +202,7 @@ for id = 1:length(params.rocID)
         else
             load(ROCfname);
         end
-
+        % ======================================================================================================================================================
 
         %% ROC type 1: use all trials and anticipatory zones vs primary control zones %%
         for ee = 1:length(params.environments)
@@ -158,55 +221,55 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).T{ss} = rocData.T;
                 rocOut.(currEnv).AUC(ss) = rocData.AUC;
                 
-                % ================================================================
-                % Deandra: store ROC curves per 5-column group (36 groups) 
-                % Convert N x 180 into N x 36 by averaging every 5 columns
-                nColsAZ = size(data.(currEnv).az, 2);
-                nColsCZ = size(data.(currEnv).cz, 2);
-
-                nUseCols = min([nColsAZ, nColsCZ]);
-                nUseCols = floor(nUseCols / groupSize_cols) * groupSize_cols;  % multiple of 5
-
-                azMat = data.(currEnv).az(:, 1:nUseCols);
-                czMat = data.(currEnv).cz(:, 1:nUseCols);
-
-                % reshape: N x (5*36) -> N x 5 x 36, then mean over the 5
-                azG = squeeze(nanmean(reshape(azMat, size(azMat,1), groupSize_cols, []), 2)); % N x 36
-                czG = squeeze(nanmean(reshape(czMat, size(czMat,1), groupSize_cols, []), 2)); % M x 36
-                
-                % Debugging 
-                disp(size(azMat))
-                disp(size(czMat))
-                disp(size(azG))
-                disp(size(czG))
-
-
-
-                nGroups = size(azG, 2);
-
-                for g = 1:nGroups
-                    rocDataG = calcBehaviorROC( ...
-                        azG(:,g) * params.rocMultiplier(id), ...
-                        czG(:,g) * params.rocMultiplier(id));
-                    rocOut.(currEnv).AUC_by5(ss,g) = rocDataG.AUC;
-
-                    % Store ROC curve data for plotting 
-                    rocOut.(currEnv).X_by5{ss,g} = rocDataG.X;
-                    rocOut.(currEnv).Y_by5{ss,g} = rocDataG.Y;
-                    rocOut.(currEnv).T_by5{ss,g} = rocDataG.T;
-                end
+                % % ================================================================
+                % % Deandra: store ROC curves per 5-column group (36 groups) 
+                % % Convert N x 180 into N x 36 by averaging every 5 columns
+                % nColsAZ = size(data.(currEnv).az, 2);
+                % nColsCZ = size(data.(currEnv).cz, 2);
+                % 
+                % nUseCols = min([nColsAZ, nColsCZ]);
+                % nUseCols = floor(nUseCols / groupSize_cols) * groupSize_cols;  % multiple of 5
+                % 
+                % azMat = data.(currEnv).az(:, 1:nUseCols);
+                % czMat = data.(currEnv).cz(:, 1:nUseCols);
+                % 
+                % % reshape: N x (5*36) -> N x 5 x 36, then mean over the 5
+                % azG = squeeze(nanmean(reshape(azMat, size(azMat,1), groupSize_cols, []), 2)); % N x 36
+                % czG = squeeze(nanmean(reshape(czMat, size(czMat,1), groupSize_cols, []), 2)); % M x 36
+                % 
+                % % Debugging 
+                % disp(size(azMat))
+                % disp(size(czMat))
+                % disp(size(azG))
+                % disp(size(czG))
+                % 
+                % 
+                % 
+                % nGroups = size(azG, 2);
+                % 
+                % for g = 1:nGroups
+                %     rocDataG = calcBehaviorROC( ...
+                %         azG(:,g) * params.rocMultiplier(id), ...
+                %         czG(:,g) * params.rocMultiplier(id));
+                %     rocOut.(currEnv).AUC_by5(ss,g) = rocDataG.AUC;
+                % 
+                %     % Store ROC curve data for plotting 
+                %     rocOut.(currEnv).X_by5{ss,g} = rocDataG.X;
+                %     rocOut.(currEnv).Y_by5{ss,g} = rocDataG.Y;
+                %     rocOut.(currEnv).T_by5{ss,g} = rocDataG.T;
+                % end
                 % ================================================================
 
             else
                 rocOut.(currEnv).AUC(ss) = nan;
             % ================================================================
-                % Deandra : placeholders so plotting grouped ROCs doesn't error ---
-                % Pre-fill 36 groups with empty cells for this session index
-            for g = 1:36
-                rocOut.(currEnv).X_by5{ss,g} = [];
-                rocOut.(currEnv).Y_by5{ss,g} = [];
-                rocOut.(currEnv).T_by5{ss,g} = [];
-            end
+            %     % Deandra : placeholders so plotting grouped ROCs doesn't error ---
+            %     % Pre-fill 36 groups with empty cells for this session index
+            % for g = 1:36
+            %     rocOut.(currEnv).X_by5{ss,g} = [];
+            %     rocOut.(currEnv).Y_by5{ss,g} = [];
+            %     rocOut.(currEnv).T_by5{ss,g} = [];
+            % end
             % ================================================================
             end
         end
@@ -347,45 +410,45 @@ for id = 1:length(params.rocID)
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
 
                 % ================================================================
-                % Deandra: store ROC curves per 5-column group (36 groups) 
-                % Convert N x 180 into N x 36 by averaging every 5 columns
-                nColsAZ    = size(data.(currEnv).az, 2);
-                nColsNevRZ = size(data.(currEnv).nevrz, 2);
-
-                nUseCols = min([nColsAZ, nColsNevRZ]);
-                nUseCols = floor(nUseCols / groupSize_cols) * groupSize_cols;  % multiple of 5
-
-                azMat    = data.(currEnv).az(:, 1:nUseCols);
-                nevrzMat = data.(currEnv).nevrz(:, 1:nUseCols);
-
-                azG    = squeeze(nanmean(reshape(azMat,    size(azMat,1),    groupSize_cols, []), 2)); % N x G
-                nevrzG = squeeze(nanmean(reshape(nevrzMat, size(nevrzMat,1), groupSize_cols, []), 2)); % N x G
-
-                nGroups = size(azG, 2);
-
-                for g = 1:nGroups
-                    rocDataG = calcBehaviorROC( ...
-                        azG(:,g)    * params.rocMultiplier(id), ...
-                        nevrzG(:,g) * params.rocMultiplier(id));
-
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).X_by5{ss,g} = rocDataG.X;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y_by5{ss,g} = rocDataG.Y;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T_by5{ss,g} = rocDataG.T;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC_by5(ss,g) = rocDataG.AUC;
-                end
-              
+                % % Deandra: store ROC curves per 5-column group (36 groups) 
+                % % Convert N x 180 into N x 36 by averaging every 5 columns
+                % nColsAZ    = size(data.(currEnv).az, 2);
+                % nColsNevRZ = size(data.(currEnv).nevrz, 2);
+                % 
+                % nUseCols = min([nColsAZ, nColsNevRZ]);
+                % nUseCols = floor(nUseCols / groupSize_cols) * groupSize_cols;  % multiple of 5
+                % 
+                % azMat    = data.(currEnv).az(:, 1:nUseCols);
+                % nevrzMat = data.(currEnv).nevrz(:, 1:nUseCols);
+                % 
+                % azG    = squeeze(nanmean(reshape(azMat,    size(azMat,1),    groupSize_cols, []), 2)); % N x G
+                % nevrzG = squeeze(nanmean(reshape(nevrzMat, size(nevrzMat,1), groupSize_cols, []), 2)); % N x G
+                % 
+                % nGroups = size(azG, 2);
+                % 
+                % for g = 1:nGroups
+                %     rocDataG = calcBehaviorROC( ...
+                %         azG(:,g)    * params.rocMultiplier(id), ...
+                %         nevrzG(:,g) * params.rocMultiplier(id));
+                % 
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).X_by5{ss,g} = rocDataG.X;
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y_by5{ss,g} = rocDataG.Y;
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T_by5{ss,g} = rocDataG.T;
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC_by5(ss,g) = rocDataG.AUC;
+                % end
+                % 
                 % ================================================================
             else
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
             % ================================================================
-                % Deandra : placeholders so plotting grouped ROCs doesn't error
-                % Pre-fill 36 groups with empty cells for this session index
-                for g = 1:36
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).X_by5{ss,g} = [];
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y_by5{ss,g} = [];
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T_by5{ss,g} = [];
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC_by5(ss,g) = nan;  % optional
-                end
+                % % Deandra : placeholders so plotting grouped ROCs doesn't error
+                % % Pre-fill 36 groups with empty cells for this session index
+                % for g = 1:36
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).X_by5{ss,g} = [];
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y_by5{ss,g} = [];
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T_by5{ss,g} = [];
+                %     rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC_by5(ss,g) = nan;  % optional
+                % end
             % ================================================================
             end
         end
