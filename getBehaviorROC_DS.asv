@@ -88,22 +88,29 @@ for id = 1:length(params.rocID)
                     end
                     
                     
-                    % ================================================================
-                    % Deandra: Create 5-column groups out of lapData (36 groups) 
-                    lapDataCols = size(lapData,2)  / groupSize_cols;
-                    
-                    for i = 1:lapDataCols
-                        lapDataGroupedStart = groupSize_cols * i - (groupSize_cols - 1);
-                        lapDataGroupedEnd = groupSize_cols * i;
-
-                        lapDataGrouped = lapData(:,lapDataGroupedStart:lapDataGroupedEnd);
-
-                        disp(size(lapDataGrouped))
-
-                    end
-                    % ================================================================
-
-                    
+                    % % ================================================================
+                    % % Deandra: Create 5-column groups out of lapData (36 groups) 
+                    % lapDataCols = size(lapData,2)  / groupSize_cols; % creates a new variable that divides the number of columns by 5whoswhowhcwhh
+                    % lapDataBlockBins = cell(lapDataCols, 1); % creates a cell that a 5x1 matrix
+                    % 
+                    % 
+                    % for i = 1:lapDataCols % iterates through lapDataCols
+                    %     lapDataGroupedStart = groupSize_cols * i - (groupSize_cols - 1);
+                    %     lapDataGroupedEnd = groupSize_cols * i;
+                    % 
+                    %     blockBins = lapDataGroupedStart:lapDataGroupedEnd;
+                    %     lapDataBlockBins{i} = blockBins; % stores blockBins as value of i on that interation
+                    % 
+                    %     lapDataGrouped = lapData(:, blockBins);
+                    % 
+                    %     % --- To Test --- 
+                    %     disp(lapDataBlockBins{i})
+                    %     disp(size(lapDataGrouped))
+                    % 
+                    % end
+                    % 
+                    % % ================================================================
+                   
                     %get zone info
                     [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
 
@@ -151,6 +158,7 @@ for id = 1:length(params.rocID)
         else
             load(ROCfname);
         end
+      
 
         
         %% ROC type 1: use all trials and anticipatory zones vs primary control zones %%
