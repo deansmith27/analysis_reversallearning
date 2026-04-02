@@ -8,7 +8,7 @@ sessionInfo = [];
 
 
 % --- Deandra: Group-of-5 column feature extraction ---
-groupSize_cols = 5;
+groupSize_rows = 5;
 
 for id = 1:length(params.rocID)
     %loop through unique sessions
@@ -87,7 +87,7 @@ for id = 1:length(params.rocID)
                         lapData = diff(lapData,1,2);
                     end
                     
-                    
+                  
                  
                    
                     %get zone info
@@ -139,14 +139,17 @@ for id = 1:length(params.rocID)
         end
       
                % ================================================================
-                    % Deandra: Create 5-column groups out of lapData (36 groups) 
-                    lapDataCols = size(lapData,2)  / groupSize_cols; % creates a new variable that divides the number of columns by 5whoswhowhcwhh
-                    lapDataBlockBins = cell(lapDataCols, 1); % creates a cell that a 5x1 matrix
+                    % New Code that looks at rows (for laps)
+
+                    % Deandra: Create 5-row groups out of lapData (36 groups) 
+                    lapDataRows = floor(size(lapData,1)  / groupSize_rows); % creates a new variable that divides the number of rows by 5, floor is used to round to the nearest interger 
+
+                    lapDataBlockBins = cell(lapDataRows, 1); % creates a cell that is a 5x1 matrix
 
 
-                    for i = 1:lapDataCols % iterates through lapDataCols
-                        lapDataGroupedStart = groupSize_cols * i - (groupSize_cols - 1);
-                        lapDataGroupedEnd = groupSize_cols * i;
+                    for i = 1:lapDataRows % iterates through lapDataRows
+                        lapDataGroupedStart = groupSize_rows * i - (groupSize_rows - 1);
+                        lapDataGroupedEnd = groupSize_rows * i;
 
                         blockBins = lapDataGroupedStart:lapDataGroupedEnd;
                         lapDataBlockBins{i} = blockBins; % stores blockBins as value of i on that interation
@@ -160,6 +163,30 @@ for id = 1:length(params.rocID)
                     end
 
               % ================================================================
+
+              % % ================================================================
+              %       OLD CODE!!!
+              %       % Deandra: Create 5-column groups out of lapData (36 groups) 
+              %       lapDataCols = size(lapData,2)  / groupSize_cols; % creates a new variable that divides the number of columns by 5
+              %       lapDataBlockBins = cell(lapDataCols, 1); % creates a cell that is a 5x1 matrix
+              % 
+              % 
+              %       for i = 1:lapDataCols % iterates through lapDataCols
+              %           lapDataGroupedStart = groupSize_cols * i - (groupSize_cols - 1);
+              %           lapDataGroupedEnd = groupSize_cols * i;
+              % 
+              %           blockBins = lapDataGroupedStart:lapDataGroupedEnd;
+              %           lapDataBlockBins{i} = blockBins; % stores blockBins as value of i on that interation
+              % 
+              %           lapDataGrouped = lapData(:, blockBins);
+              % 
+              %           % --- To Test --- 
+              %           disp(lapDataBlockBins{i})
+              %           disp(size(lapDataGrouped))
+              % 
+              %       end
+              % 
+              % % ================================================================
         
         %% ROC type 1: use all trials and anticipatory zones vs primary control zones %%
         for ee = 1:length(params.environments)
