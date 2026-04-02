@@ -142,22 +142,28 @@ for id = 1:length(params.rocID)
                     % New Code that looks at rows (for laps)
 
                     % Deandra: Create 5-row groups out of lapData (36 groups) 
-                    lapDataRows = floor(size(lapData,1)  / groupSize_rows); % creates a new variable that divides the number of rows by 5, floor is used to round to the e
+                    num_lapDataRows =  size(lapData,1); % number of rows lapData contains
+                    lapDataRows = floor(num_lapDataRows/ groupSize_rows ) %  gets the number of full groups 
 
-                    lapDataBlockBins = cell(lapDataRows, 1); % creates a cell that is a 5x1 matrix
+                    lapDataRowGroups = cell(lapDataRows, 1); % creates a cell array
 
 
-                    for i = 1:lapDataRows % iterates through lapDataRows
+                    for i = 1:lapDataRows % iterates through lapDataRows by groups of 5
                         lapDataGroupedStart = groupSize_rows * i - (groupSize_rows - 1);
                         lapDataGroupedEnd = groupSize_rows * i;
 
-                        blockBins = lapDataGroupedStart:lapDataGroupedEnd;
-                        lapDataBlockBins{i} = blockBins; % stores blockBins as value of i on that interation
+                        rowIdx = lapDataGroupedStart:lapDataGroupedEnd; % creates a new variable that stores groups 
+                        lapDataRowGroups{i} = cellGroups; % stores lapDataCellGroups as value of i on that interation
 
-                        lapDataGrouped = lapData(:, blockBins);
+                       % still need to find a way for row 6 to be counted as its own group
+
+
+                        lapDataGrouped = lapData(cellGroups, :); % creates variable that takes all columns and rows for cellGroups
+                        
+
 
                         % --- To Test --- 
-                        disp(lapDataBlockBins{i})
+                        disp(lapDataRowGroups{i})
                         disp(size(lapDataGrouped))
 
                     end

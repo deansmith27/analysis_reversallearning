@@ -141,25 +141,31 @@ for id = 1:length(params.rocID)
                % ================================================================
                     % New Code that looks at rows (for laps)
 
-                    % Deandra: Create 5-row groups out of lapData (36 groups) 
-                    lapDataRows = floor(size(lapData,1)  / groupSize_rows); % creates a new variable that divides the number of rows by 5, floor is used to round to the nearest interger 
+                    % Deandra: Create 5-row groups out of lapData (36 groups)
+                    % creating the base for the rest of the code
+                    numRows =  size(lapData,1); % number of rows lapData contains
+                    numFullGroups = floor(numRows/ groupSize_rows ) %  gets the number of full groups 
 
-                    lapDataBlockBins = cell(lapDataRows, 1); % creates a cell that is a 5x1 matrix
+                    lapDataRowGroups = cell(numFullGroups, 1); % creates a cell array
 
 
-                    for i = 1:lapDataRows % iterates through lapDataRows
+                    % creating starts and ends of groups and grouping them
+                    for i = 1:numFullGroups % iterates through lapDataRows by groups of 5
                         lapDataGroupedStart = groupSize_rows * i - (groupSize_rows - 1);
                         lapDataGroupedEnd = groupSize_rows * i;
 
-                        blockBins = lapDataGroupedStart:lapDataGroupedEnd;
-                        lapDataBlockBins{i} = blockBins; % stores blockBins as value of i on that interation
+                        rowIdx = lapDataGroupedStart:lapDataGroupedEnd; % creates a new variable that stores groups 
 
-                        lapDataGrouped = lapData(:, blockBins);
+                        lapDataRowGroups{i} =lapData(rowIdx, :); % stores lapDataCellGroups as value of i on that interation                        
 
-                        % --- To Test --- 
-                        disp(lapDataBlockBins{i})
-                        disp(size(lapDataGrouped))
 
+                        % for leftover rows
+                        remainingRowsStart = numFullGroups * groupSize_rows + 1;
+                            if remainingRowsStart <= numRows
+                                rowIdx = remainingRowsStart:numRows;
+
+                                lapDataRowGroups{end+1} = lapData(rowIdx, :);
+                            end
                     end
 
               % ================================================================
@@ -206,6 +212,7 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).AUC(ss) = rocData.AUC;
                 
                 % % ================================================================
+                %% OLD CODE !!!!
                 % % Deandra: store ROC curves per 5-column group (36 groups) 
                 % % Convert N x 180 into N x 36 by averaging every 5 columns
                 % nColsAZ = size(data.(currEnv).az, 2);
@@ -247,6 +254,7 @@ for id = 1:length(params.rocID)
             else
                 rocOut.(currEnv).AUC(ss) = nan;
             % ================================================================
+            %% OLD CODE !!!!
             %     % Deandra : placeholders so plotting grouped ROCs doesn't error ---
             %     % Pre-fill 36 groups with empty cells for this session index
             % for g = 1:36
@@ -394,6 +402,7 @@ for id = 1:length(params.rocID)
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
 
                 % ================================================================
+                %% OLD CODE !!!!
                 % % Deandra: store ROC curves per 5-column group (36 groups) 
                 % % Convert N x 180 into N x 36 by averaging every 5 columns
                 % nColsAZ    = size(data.(currEnv).az, 2);
