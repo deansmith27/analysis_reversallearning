@@ -169,11 +169,11 @@ for id = 1:length(params.rocID)
                     end
                     disp(lapDataRowGroups)
               % ================================================================
-                % lap-to-group lookup code
-                    bp_lapGroups = []; % creates an empty break point vector 
+                    % lap-to-group lookup code
+                    bp_lapGroups = zeros(1, size(lapData, 1)); % creates an empty vector that is the lenth of lapData rows
                     for g = 1:numel(lapDataRowGroups) % loops through cell array (groups) to get the number of entries
                         rowsG = lapDataRowGroups{g}
-                        bp_lapGroups = [bp_lapGroups; rowsG]; % adds groups to break point vector created before the loop
+                        bp_lapGroups = [bp_lapGroups, rowsG(g)]; % adds groups to break point vector created before the loop on the row
 
                         grouped_data_az = nanmean(data.(currEnv).az(1:groups), 2);
                         grouped_data_cz = nanmean(data.(currEnv).cz(1:groups), 2);
