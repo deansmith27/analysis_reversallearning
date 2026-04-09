@@ -167,16 +167,18 @@ for id = 1:length(params.rocID)
                                 lapDataRowGroups{end+1} = lapData(rowIdx, :);
                             end
                     end
-
+                    disp(lapDataRowGroups)
               % ================================================================
-              % lap-to-group lookup code
-                for lp = 1:lapDataRowGroups
-                    groups = lp(1, :)
-                    grouped_data_az = nanmean(data.(currEnv).az(1:groups), 2);
-                    grouped_data_cz = nanmean(data.(currEnv).cz(1:groups), 2);
-                    grouped_data_nevrz = nanmean(data.(currEnv).nevrz(1:groups), 2);
+                % lap-to-group lookup code
+                    bp_lapGroups = []; % creates an empty break point vector 
+                    for g = 1:numel(lapDataRowGroups) % loops through cell array (groups) to get the number of entries
+                        rowsG = lapDataRowGroups{g}
+                        bp_lapGroups = [bp_lapGroups; rowsG]; 
 
-                end
+                        grouped_data_az = nanmean(data.(currEnv).az(1:groups), 2);
+                        grouped_data_cz = nanmean(data.(currEnv).cz(1:groups), 2);
+                        grouped_data_nevrz = nanmean(data.(currEnv).nevrz(1:groups), 2);
+                    end
               % ================================================================
 
               % % ================================================================
