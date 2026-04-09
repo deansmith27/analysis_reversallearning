@@ -144,7 +144,7 @@ for id = 1:length(params.rocID)
                     % Deandra: Create 5-row groups out of lapData (36 groups)
                     % creating the base for the rest of the code
                     numRows =  size(lapData,1); % number of rows lapData contains
-                    numFullGroups = floor(numRows/ groupSize_rows ) %  gets the number of full groups 
+                    numFullGroups = floor(numRows/ groupSize_rows); %  gets the number of full groups 
 
                     lapDataRowGroups = cell(numFullGroups, 1); % creates a cell array
 
@@ -156,7 +156,8 @@ for id = 1:length(params.rocID)
 
                         rowIdx = lapDataGroupedStart:lapDataGroupedEnd; % creates a new variable that stores groups 
 
-                        lapDataRowGroups{i} =lapData(rowIdx, :); % stores lapDataCellGroups as value of i on that interation                        
+                        lapDataGrouped =lapData(rowIdx, :);
+                        lapDataRowGroups{i} = lapDataGrouped; % stores lapDataCellGroups as value of i on that interation                        
 
 
                         % for leftover rows
@@ -170,15 +171,14 @@ for id = 1:length(params.rocID)
                     disp(lapDataRowGroups)
               % ================================================================
                     % lap-to-group lookup code
-                    bp_lapGroups = zeros(1, size(lapData, 1)); % creates an empty vector that is the lenth of lapData rows
+                    bp_lapGroups = zeros(1, size(lapData, 1)); % creates a vector of zeros that is the lenth of lapData rows
                     for g = 1:numel(lapDataRowGroups) % loops through cell array (groups) to get the number of entries
-                        rowsG = lapDataRowGroups{g}
-                        bp_lapGroups = [bp_lapGroups, rowsG(g)]; % adds groups to break point vector created before the loop on the row
-
-                        grouped_data_az = nanmean(data.(currEnv).az(1:groups), 2);
-                        grouped_data_cz = nanmean(data.(currEnv).cz(1:groups), 2);
-                        grouped_data_nevrz = nanmean(data.(currEnv).nevrz(1:groups), 2);
+                        rowsG = lapDataRowGroups{g};
+                        bp_lapGroups(rowsG) = g; % replaces indices if bp_lapGroups with each g (group)
                     end
+                    
+                    % debugging code
+                    disp(bp_lapGroups)
               % ================================================================
 
               % % ================================================================
