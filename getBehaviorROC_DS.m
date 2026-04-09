@@ -88,6 +88,67 @@ for id = 1:length(params.rocID)
                     end
                     
                   
+               % ================================================================
+                    % New Code that looks at rows (for laps)
+
+                    % Deandra: Create 5-row groups out of lapData 
+                    % creating the base for the rest of the code
+                    numRows =  size(lapData,1); % number of rows lapData contains
+                    numFullGroups = floor(numRows/ groupSize_rows); %  gets the number of full groups 
+
+                    lapDataRowGroups = cell(numFullGroups, 1); % creates a cell array
+
+
+                    % creating starts and ends of groups and grouping them
+                    for i = 1:numFullGroups % iterates through lapDataRows by groups of 5
+                        lapDataGroupedStart = groupSize_rows * i - (groupSize_rows - 1);
+                        lapDataGroupedEnd = groupSize_rows * i;
+
+                        rowIdx = lapDataGroupedStart:lapDataGroupedEnd; % creates a new variable that stores groups 
+
+                        lapDataRowGroups{i} = rowIdx;
+
+                        % for leftover rows
+                        remainingRowsStart = numFullGroups * groupSize_rows + 1;
+
+                            if remainingRowsStart <= numRows
+                                rowIdx = remainingRowsStart:numRows;
+
+                                lapDataRowGroups{end+1} = rowIdx;
+                            end
+                    end
+
+                    % debugging code
+                    % disp(lapDataRowGroups)
+              % ================================================================
+                    % lap-to-group lookup code
+                    bp_lapGroups = zeros(1, size(lapData, 1)); % creates a vector of zeros that is the lenth of lapData rows
+                    for g = 1:numel(lapDataRowGroups) % loops through cell array (groups) to get the number of entries
+                        rowsG = lapDataRowGroups{g};
+                        bp_lapGroups(rowsG) = g; % replaces indices if bp_lapGroups with each g (group)
+                    end
+                    
+                    % debugging code
+                    disp(bp_lapGroups)
+              % ================================================================
+                % Current enviornment and zones for row groups
+                dataNew = [];
+
+                    grouped_data_az = data.(currEnv).az;
+                    grouped_data_cz = data.(currEnv).cz;
+                    grouped_data_nevrz = data.(currEnv).nevrz;
+    
+                    for ee = 1:grouped_data_az
+                        ...
+                    end
+    
+                    for ee = 1:grouped_data_cz
+                        ...
+                    end
+                    
+                    for ee = 1:grouped_data_nevrz
+                        ...
+                    end
                  
                    
                     %get zone info
@@ -138,72 +199,7 @@ for id = 1:length(params.rocID)
             load(ROCfname);
         end
       
-               % ================================================================
-                    % New Code that looks at rows (for laps)
 
-                    % Deandra: Create 5-row groups out of lapData (36 groups)
-                    % creating the base for the rest of the code
-                    numRows =  size(lapData,1); % number of rows lapData contains
-                    numFullGroups = floor(numRows/ groupSize_rows); %  gets the number of full groups 
-
-                    lapDataRowGroups = cell(numFullGroups, 1); % creates a cell array
-
-
-                    % creating starts and ends of groups and grouping them
-                    for i = 1:numFullGroups % iterates through lapDataRows by groups of 5
-                        lapDataGroupedStart = groupSize_rows * i - (groupSize_rows - 1);
-                        lapDataGroupedEnd = groupSize_rows * i;
-
-                        rowIdx = lapDataGroupedStart:lapDataGroupedEnd; % creates a new variable that stores groups 
-
-                        lapDataGrouped =lapData(rowIdx, :);
-                        lapDataRowGroups{i} = lapDataGrouped; % stores lapDataCellGroups as value of i on that interation                        
-
-
-                        % for leftover rows
-                        remainingRowsStart = numFullGroups * groupSize_rows + 1;
-                            if remainingRowsStart <= numRows
-                                rowIdx = remainingRowsStart:numRows;
-
-                                lapDataRowGroups{end+1} = lapData(rowIdx, :);
-                            end
-                    end
-                    disp(lapDataRowGroups)
-              % ================================================================
-                    % lap-to-group lookup code
-                    bp_lapGroups = zeros(1, size(lapData, 1)); % creates a vector of zeros that is the lenth of lapData rows
-                    for g = 1:numel(lapDataRowGroups) % loops through cell array (groups) to get the number of entries
-                        rowsG = lapDataRowGroups{g};
-                        bp_lapGroups(rowsG) = g; % replaces indices if bp_lapGroups with each g (group)
-                    end
-                    
-                    % debugging code
-                    disp(bp_lapGroups)
-              % ================================================================
-
-              % % ================================================================
-              %       OLD CODE!!!
-              %       % Deandra: Create 5-column groups out of lapData (36 groups) 
-              %       lapDataCols = size(lapData,2)  / groupSize_cols; % creates a new variable that divides the number of columns by 5
-              %       lapDataBlockBins = cell(lapDataCols, 1); % creates a cell that is a 5x1 matrix
-              % 
-              % 
-              %       for i = 1:lapDataCols % iterates through lapDataCols
-              %           lapDataGroupedStart = groupSize_cols * i - (groupSize_cols - 1);
-              %           lapDataGroupedEnd = groupSize_cols * i;
-              % 
-              %           blockBins = lapDataGroupedStart:lapDataGroupedEnd;
-              %           lapDataBlockBins{i} = blockBins; % stores blockBins as value of i on that interation
-              % 
-              %           lapDataGrouped = lapData(:, blockBins);
-              % 
-              %           % --- To Test --- 
-              %           disp(lapDataBlockBins{i})
-              %           disp(size(lapDataGrouped))
-              % 
-              %       end
-              % 
-              % % ================================================================
         
         %% ROC type 1: use all trials and anticipatory zones vs primary control zones %%
         for ee = 1:length(params.environments)
