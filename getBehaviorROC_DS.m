@@ -131,11 +131,11 @@ for id = 1:length(params.rocID)
                     % debugging code
                     % disp(bp_lapGroups)
               % ================================================================
-                % Current enviornment and zones for row groups
-                dataNew = [];
+                % Creates place to store zone data for each group
+                groupData = struct(); %creates empty variable to hold fields of data 
 
                 for ee = 1:length(params.environments)
-                    groupNames = g{ee};
+                    group_currEnv = params.environments{ee}; % loops over the name of each enviornment type
 
                     for i = 1:numel(lapDataRowGroups)
                         grouped_data_az = [];
