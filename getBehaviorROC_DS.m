@@ -129,27 +129,22 @@ for id = 1:length(params.rocID)
                     end
                     
                     % debugging code
-                    disp(bp_lapGroups)
+                    % disp(bp_lapGroups)
               % ================================================================
                 % Current enviornment and zones for row groups
                 dataNew = [];
 
-                    grouped_data_az = data.(currEnv).az;
-                    grouped_data_cz = data.(currEnv).cz;
-                    grouped_data_nevrz = data.(currEnv).nevrz;
-    
-                    for ee = 1:grouped_data_az
-                        ...
-                    end
-    
-                    for ee = 1:grouped_data_cz
-                        ...
-                    end
-                    
-                    for ee = 1:grouped_data_nevrz
-                        ...
-                    end
-                 
+                for ee = 1:length(params.environments)
+                    groupNames = g{ee};
+
+                    for i = 1:numel(lapDataRowGroups)
+                        grouped_data_az = [];
+                        grouped_data_cz = [];
+                        grouped_data_nevrz = [];
+                    end 
+
+                end
+       
                    
                     %get zone info
                     [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
