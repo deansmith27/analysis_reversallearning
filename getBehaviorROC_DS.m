@@ -88,6 +88,10 @@ for id = 1:length(params.rocID)
                     end
                     
                   
+               
+                    %get zone info
+                    [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
+
                % ================================================================
                     % New Code that looks at rows (for laps)
 
@@ -138,21 +142,19 @@ for id = 1:length(params.rocID)
                     group_currEnv = params.environments{ee}; % loops over the name of each enviornment type
                     
                     
-                    % Still creating this 
                     for g = 1:numel(lapDataRowGroups)
-                        grouped_data_az = struct();
-                        grouped_data_cz = struct();
-                        grouped_data_nevrz = struct();
+                        groupData.(group_currEnv)(g).az = []; % creates a place for az data per enviornment and lap group
+                        groupData.(group_currEnv)(g).cz = []; % creates a place for cz data per enviornment and lap group
+                        groupData.(group_currEnv)(g).nevrz = [];% creates a place nevrz az data per enviornment and lap group
+
                     end 
 
                 end
               % ================================================================
+                      for lp = 1:size(lapData,1)
+                           currGroup = bp_lapGroups(lp) % Deandra
 
-                   
-                    %get zone info
-                    [params.Azones, params.Rzones, params.NRzones, params.NevRzones] = getZoneInfo_linearJLK(statsByLap.fileInfo, [params.iden num2str(animal)]);
 
-                    for lp = 1:size(lapData,1)
                         for zn = 1:length(params.Azones)
                             tmpBins = [];
                             tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
@@ -195,8 +197,66 @@ for id = 1:length(params.rocID)
 
         else
             load(ROCfname);
-        end
-      
+        end     
+
+% ================================================================
+
+% Deandra Code: Place laps into previously formed empty boxes
+ currGroup = bp_lapGroups(lp)
+groupData.(currEnv)(lapGrouped).az
+
+ % ================================================================
+%% 
+
+        %             for lp = 1:size(lapData,1)
+        % 
+        %                 for zn = 1:length(params.Azones)
+        %                     tmpBins = [];
+        %                     tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
+        %                     tmpBins = round(tmpBins/params.binsize_deg);%DC adding round to handle offset RZ with new projector
+        %                     data.(currEnv).az = [data.(currEnv).az; lapData(lp,tmpBins)];
+        %                 end
+        %                 for zn = 1:length(params.NRzones)
+        %                     tmpBins = [];
+        %                     tmpBins = params.NRzones(zn):params.binsize_deg:params.NRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
+        %                     tmpBins = round(tmpBins/params.binsize_deg);
+        %                     data.(currEnv).cz = [data.(currEnv).cz; lapData(lp,tmpBins)];
+        %                 end
+        %                 for zn = 1:length(params.NevRzones)
+        %                     if ~isnan(params.NevRzones(zn))
+        %                         tmpBins = [];
+        %                         tmpBins = params.NevRzones(zn):params.binsize_deg:params.NevRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
+        %                         tmpBins = round(tmpBins/params.binsize_deg);
+        %                         data.(currEnv).nevrz = [data.(currEnv).nevrz; lapData(lp,tmpBins)];
+        %                     else
+        %                         data.(currEnv).nevrz = [];
+        %                     end
+        %                 end
+        %             end
+        % 
+        %             %save info common to data structure
+        %             data.(currEnv).azBins_deg = params.Azones;
+        %             data.(currEnv).czBins_deg = params.NRzones;
+        %             data.(currEnv).nevrzBins_deg = params.NevRzones;
+        %             data.(currEnv).sessionInfo = [data.(currEnv).sessionInfo; sessionInfo(f,:)];
+        % 
+        %         end
+        %     end
+        % 
+        %     %save data
+        %     dir2save = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
+        %         num2str(sessionInfo(1,2)));
+        %     if ~isfolder(dir2save); mkdir(dir2save); end
+        %     save([dir2save, '\', params.rocID{id}, '.mat'], 'data', 'data');
+        % 
+        % 
+        % else
+        %     load(ROCfname);
+        % end
+        % 
+
+
+
         %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
         for ee = 1:length(params.environments)%trial block loop within this
             currEnv = params.environments{ee};
