@@ -152,20 +152,27 @@ for id = 1:length(params.rocID)
                 end
               % ================================================================
                       for lp = 1:size(lapData,1)
-                           currGroup = bp_lapGroups(lp) % Deandra
 
+                          % Deandra's code
+                           currGroup = bp_lapGroups(lp); %loops through each lap number using lookup vector and stores it in new vector
 
                         for zn = 1:length(params.Azones)
                             tmpBins = [];
                             tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
                             tmpBins = round(tmpBins/params.binsize_deg);%DC adding round to handle offset RZ with new projector
                             data.(currEnv).az = [data.(currEnv).az; lapData(lp,tmpBins)];
+                            % Deandra:  fills az box with az values
+                            groupData.(group_currEnv)(currGroup).az = [groupData.(group_currEnv)(currGroup).az; lapData(lp,tmpBins)]; 
+
                         end
                         for zn = 1:length(params.NRzones)
                             tmpBins = [];
                             tmpBins = params.NRzones(zn):params.binsize_deg:params.NRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
                             tmpBins = round(tmpBins/params.binsize_deg);
                             data.(currEnv).cz = [data.(currEnv).cz; lapData(lp,tmpBins)];
+                            % Deandra:  fills cz box with cz values
+                            groupData.(group_currEnv)(currGroup).cz = [groupData.(group_currEnv)(currGroup).cz; lapData(lp,tmpBins)];
+
                         end
                         for zn = 1:length(params.NevRzones)
                             if ~isnan(params.NevRzones(zn))
@@ -173,6 +180,9 @@ for id = 1:length(params.rocID)
                                 tmpBins = params.NevRzones(zn):params.binsize_deg:params.NevRzones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
                                 tmpBins = round(tmpBins/params.binsize_deg);
                                 data.(currEnv).nevrz = [data.(currEnv).nevrz; lapData(lp,tmpBins)];
+                                % Deandra: fills nevrz box with nevrz values
+                                groupData.(group_currEnv)(currGroup).nevrz = [groupData.(group_currEnv)(currGroup).nevrz; lapData(lp,tmpBins)];
+
                             else
                                 data.(currEnv).nevrz = [];
                             end
@@ -198,14 +208,18 @@ for id = 1:length(params.rocID)
         else
             load(ROCfname);
         end     
+size(data.og.az)
+size(data.og.cz)
+size(data.og.nevrz)
 
-% ================================================================
+% size(groupData.og(1).az)
+% groupData.og(1).az
+% size(groupData.og(1).cz)
+% size(groupData.og(1).nevrz)
 
-% Deandra Code: Place laps into previously formed empty boxes
- currGroup = bp_lapGroups(lp)
-groupData.(currEnv)(lapGrouped).az
 
- % ================================================================
+
+
 %% 
 
         %             for lp = 1:size(lapData,1)
