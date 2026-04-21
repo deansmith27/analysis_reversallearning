@@ -161,6 +161,11 @@ for id = 1:length(params.rocID)
                             tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
                             tmpBins = round(tmpBins/params.binsize_deg);%DC adding round to handle offset RZ with new projector
                             data.(currEnv).az = [data.(currEnv).az; lapData(lp,tmpBins)];
+
+                            % disp(currEnv)
+                            % disp(group_currEnv)
+                            strcmp(currEnv, group_currEnv)
+
                             % Deandra:  fills az box with az values
                             groupData.(group_currEnv)(currGroup).az = [groupData.(group_currEnv)(currGroup).az; lapData(lp,tmpBins)]; 
 
@@ -208,14 +213,29 @@ for id = 1:length(params.rocID)
         else
             load(ROCfname);
         end     
-size(data.og.az)
-size(data.og.cz)
-size(data.og.nevrz)
 
+% ================================================================
+% ensure enviornments exist within new variable groupData
+%fieldnames(groupData)
+
+% Checks of appended groups are empty
 % size(groupData.og(1).az)
 % groupData.og(1).az
 % size(groupData.og(1).cz)
 % size(groupData.og(1).nevrz)
+
+% Debugging code 
+% Checks if original groups are empty
+% size(data.og.az)
+% size(data.og.cz)
+% size(data.og.nevrz)
+
+% Checks of appended groups are empty w/ new enviornment
+% size(groupData.up(1).az)
+% groupData.up(1).az
+% size(groupData.up(1).cz)
+% size(groupData.up(1).nevrz)
+% ================================================================
 
 
 

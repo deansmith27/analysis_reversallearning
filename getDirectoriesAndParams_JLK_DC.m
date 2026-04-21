@@ -16,7 +16,7 @@ dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra
 dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\OutputStructs\';
 %spreadsheets with training or recording info
 %dirs.spreadsheet_rec = '\\ad.gatech.edu\bme\labs\singer\Josh\Spreadsheets\UpdateBehaviorSpreadsheet.csv'; %JLK commented out 10/2/24 because currently only one spreadsheet
-dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\UpdateBehaviorSpreadsheet_JKmice.csv'; 
+dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\UpdateBehaviorSpreadsheet_JKmice_copy.csv'; 
 %dirs.clusfolder = 'sorted\';
 %dirs.cluster_local = 'C:\Users\scushing6\Desktop\TempKilosort\';
 % dirs.kilosortPyEnv = 'C:\Users\scushing6\AppData\Local\anaconda3\envs\kilosort\python.exe';
