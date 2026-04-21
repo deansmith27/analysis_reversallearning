@@ -161,8 +161,9 @@ for id = 1:length(params.rocID)
                             tmpBins = params.Azones(zn):params.binsize_deg:params.Azones(zn)+statsByLap.fileInfo.cueSize-params.binsize_deg;
                             tmpBins = round(tmpBins/params.binsize_deg);%DC adding round to handle offset RZ with new projector
                             data.(currEnv).az = [data.(currEnv).az; lapData(lp,tmpBins)];
+
                             % Deandra:  fills az box with az values
-                            groupData.(group_currEnv)(currGroup).az = [groupData.(group_currEnv)(currGroup).az; lapData(lp,tmpBins)]; 
+                            groupData.(currEnv)(currGroup).az = [groupData.(currEnv)(currGroup).az; lapData(lp,tmpBins)]; 
 
                         end
                         for zn = 1:length(params.NRzones)
@@ -171,7 +172,7 @@ for id = 1:length(params.rocID)
                             tmpBins = round(tmpBins/params.binsize_deg);
                             data.(currEnv).cz = [data.(currEnv).cz; lapData(lp,tmpBins)];
                             % Deandra:  fills cz box with cz values
-                            groupData.(group_currEnv)(currGroup).cz = [groupData.(group_currEnv)(currGroup).cz; lapData(lp,tmpBins)];
+                            groupData.(currEnv)(currGroup).cz = [groupData.(currEnv)(currGroup).cz; lapData(lp,tmpBins)];
 
                         end
                         for zn = 1:length(params.NevRzones)
@@ -181,7 +182,7 @@ for id = 1:length(params.rocID)
                                 tmpBins = round(tmpBins/params.binsize_deg);
                                 data.(currEnv).nevrz = [data.(currEnv).nevrz; lapData(lp,tmpBins)];
                                 % Deandra: fills nevrz box with nevrz values
-                                groupData.(group_currEnv)(currGroup).nevrz = [groupData.(group_currEnv)(currGroup).nevrz; lapData(lp,tmpBins)];
+                                groupData.(currEnv)(currGroup).nevrz = [groupData.(currEnv)(currGroup).nevrz; lapData(lp,tmpBins)];
 
                             else
                                 data.(currEnv).nevrz = [];
@@ -208,8 +209,40 @@ for id = 1:length(params.rocID)
         else
             load(ROCfname);
         end     
-fieldnames(groupData)
-fieldnames(groupData)
+
+% ================================================================
+% ensure enviornments exist within new variable groupData
+% fieldnames(groupData)
+
+% Checks of appended groups are empty
+% size(groupData.og(1).az)
+% groupData.og(1).az
+% size(groupData.og(1).cz)
+% size(groupData.og(1).nevrz)
+
+% Debugging code 
+% Checks if original groups are empty
+% size(data.og.az)
+% size(data.og.cz)
+% size(data.og.nevrz)
+
+% Checks of appended groups are empty w/ new enviornment
+% size(groupData.up(1).az)
+% groupData.up(1).az
+% size(groupData.up(1).cz)
+% size(groupData.up(1).nevrz)
+
+% Checks of appended groups are empty for group 2
+% size(groupData.og(2).az)
+% groupData.og(2).az
+% size(groupData.og(2).cz)
+% size(groupData.og(2).nevrz)
+
+% ================================================================
+
+
+
+
 %% 
 
         %             for lp = 1:size(lapData,1)
@@ -264,11 +297,11 @@ fieldnames(groupData)
         %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
         for ee = 1:length(params.environments)%trial block loop within this
             currEnv = params.environments{ee};
-            if ~isempty(data.(currEnv).az) %if session exists
+            if ~isempty(groupData.(currEnv).az) %if session exists
                 %reshape to Nx1 structure and combine AZ and CZ data into one
-                data_az = nanmean(data.(currEnv).az, 2);
-                data_cz = nanmean(data.(currEnv).cz, 2);
-                rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
+                groupData_az = nanmean(groupData.(currEnv).az, 2);
+                groupData_cz = nanmean(groupData.(currEnv).cz, 2);
+                roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
 
 
                 rocOut.(currEnv).mdl{ss}.trialblock = rocData.mdl;
