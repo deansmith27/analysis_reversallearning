@@ -295,8 +295,11 @@ for id = 1:length(params.rocID)
 
 
         %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
+        % loop for enviornments
         for ee = 1:length(params.environments)%trial block loop within this
             currEnv = params.environments{ee};
+            % loop for groups within enviornments
+            for g = 
             if ~isempty(groupData.(currEnv).az) %if session exists
                 %reshape to Nx1 structure and combine AZ and CZ data into one
                 groupData_az = nanmean(groupData.(currEnv).az, 2);
