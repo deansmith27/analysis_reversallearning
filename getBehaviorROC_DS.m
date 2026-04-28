@@ -301,7 +301,7 @@ for id = 1:length(params.rocID)
             
             for g = 1:length(groupData.(currEnv))  % loops through groups from each enviornment
 
-                if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).cz) %if az session exists within current group and if az session exists  within current group
+                if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).cz) %if az session exists within current group and if cz session exists  within current group
 
                     %reshape to Nx1 structure and combine AZ and CZ data into one
                     groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
@@ -309,16 +309,16 @@ for id = 1:length(params.rocID)
                     roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
     
     
-                    rocOut.(currEnv).mdl{ss}.trialblock = rocData.mdl;
-                    rocOut.(currEnv).scores{ss}.trialblock = rocData.scores;
-                    rocOut.(currEnv).X{ss}.trialblock = rocData.X;
-                    rocOut.(currEnv).Y{ss}.trialblock = rocData.Y;
-                    rocOut.(currEnv).T{ss}.trialblock = rocData.T;
-                    rocOut.(currEnv).AUC(ss).trialblock = rocData.AUC;
+                    rocOut.(currEnv)(g).mdl{ss}.trialblock = rocData.mdl;
+                    rocOut.(currEnv)(g).scores{ss}.trialblock = rocData.scores;
+                    rocOut.(currEnv)(g).X{ss}.trialblock = rocData.X;
+                    rocOut.(currEnv)(g).Y{ss}.trialblock = rocData.Y;
+                    rocOut.(currEnv)(g).T{ss}.trialblock = rocData.T;
+                    rocOut.(currEnv)(g).AUC(ss).trialblock = rocData.AUC;
                 
                 
             else
-                rocOut.(currEnv).AUC(ss) = nan;
+                rocOut.(currEnv)(g).AUC(ss) = nan;
            
             end
         end
