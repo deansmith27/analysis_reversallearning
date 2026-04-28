@@ -309,12 +309,12 @@ for id = 1:length(params.rocID)
                     roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
     
     
-                    rocOut.(currEnv)(g).mdl{ss}.trialblock = rocData.mdl;
-                    rocOut.(currEnv)(g).scores{ss}.trialblock = rocData.scores;
-                    rocOut.(currEnv)(g).X{ss}.trialblock = rocData.X;
-                    rocOut.(currEnv)(g).Y{ss}.trialblock = rocData.Y;
-                    rocOut.(currEnv)(g).T{ss}.trialblock = rocData.T;
-                    rocOut.(currEnv)(g).AUC(ss).trialblock = rocData.AUC;
+                    rocOut.(currEnv)(g).mdl{ss}.trialblock = roc_groupData.mdl;
+                    rocOut.(currEnv)(g).scores{ss}.trialblock = roc_groupData.scores;
+                    rocOut.(currEnv)(g).X{ss}.trialblock = roc_groupData.X;
+                    rocOut.(currEnv)(g).Y{ss}.trialblock = roc_groupData.Y;
+                    rocOut.(currEnv)(g).T{ss}.trialblock = roc_groupData.T;
+                    rocOut.(currEnv)(g).AUC(ss).trialblock = roc_groupData.AUC;
                 
                 
             else
