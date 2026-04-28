@@ -5,22 +5,22 @@ function [dirs, params] = getDirectoriesAndParams_JLK_DC()
 dirs.rawdata = '\\ad.gatech.edu\bme\labs\singer\RawData\DAlesion\';
 dirs.processeddata = '\\ad.gatech.edu\bme\labs\singer\ProcessedData\VR_Novelty_DAlesion\';
 %dirs.filters = '\\ad.gatech.edu\bme\labs\singer\Data Extraction and PreProcessing\Intan\Filtering\';
-dirs.code = '\\ad.gatech.edu\bme\labs\singer\Danielle\code\AnalysisCode\Neuropixels_analyses\';
+dirs.code = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\AnalysisCode\Neuropixels_analyses\';
 %behavior
-dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\Annular FAM\';
-dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\Danielle\Behavior\sessionData\';
-dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\Danielle\Danielle\TrackFigures\RewardZones.mat';
+dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\Behavior\Annular FAM\';
+dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\Behavior\sessionData\';
+dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\TrackFigures\RewardZones.mat';
 %save results
-dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\Figures\';
-dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\Figures\behavior\';
-dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\OutputStructs\';
+dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Figures\';
+dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Figures\behavior\';
+dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\OutputStructs\';
 %spreadsheets with training or recording info
 %dirs.spreadsheet_rec = '\\ad.gatech.edu\bme\labs\singer\Josh\Spreadsheets\UpdateBehaviorSpreadsheet.csv'; %JLK commented out 10/2/24 because currently only one spreadsheet
-dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\UpdateBehaviorSpreadsheet_JKmice_copy.csv'; 
+dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\UpdateBehaviorSpreadsheet_JKmice_copy.csv'; 
 %dirs.clusfolder = 'sorted\';
 %dirs.cluster_local = 'C:\Users\scushing6\Desktop\TempKilosort\';
 % dirs.kilosortPyEnv = 'C:\Users\scushing6\AppData\Local\anaconda3\envs\kilosort\python.exe';
-% dirs.kilosortPyScript = 'Y:\singer\Danielle\Code\AnalysisCode\Neuropixels_analyses\runKilosort4.py';
+% dirs.kilosortPyScript = 'Y:\singer\\01_PEOPLEDanielle\Code\AnalysisCode\Neuropixels_analyses\runKilosort4.py';
 
 %% parameters for analyses
 %general

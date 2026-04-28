@@ -297,22 +297,23 @@ for id = 1:length(params.rocID)
         %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
         % loop for enviornments
         for ee = 1:length(params.environments)%trial block loop within this
-            currEnv = params.environments{ee};
-            % loop for groups within enviornments
-            for g = 
-            if ~isempty(groupData.(currEnv).az) %if session exists
-                %reshape to Nx1 structure and combine AZ and CZ data into one
-                groupData_az = nanmean(groupData.(currEnv).az, 2);
-                groupData_cz = nanmean(groupData.(currEnv).cz, 2);
-                roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
+            currEnv = params.environments{ee}; % gets current enviornment
+            
+            for g = 1:length(groupData.currEnv))  % loops through groups from each enviornment
 
-
-                rocOut.(currEnv).mdl{ss}.trialblock = rocData.mdl;
-                rocOut.(currEnv).scores{ss}.trialblock = rocData.scores;
-                rocOut.(currEnv).X{ss}.trialblock = rocData.X;
-                rocOut.(currEnv).Y{ss}.trialblock = rocData.Y;
-                rocOut.(currEnv).T{ss}.trialblock = rocData.T;
-                rocOut.(currEnv).AUC(ss).trialblock = rocData.AUC;
+                if ~isempty(group.(currEnv).az) %if session exists
+                    %reshape to Nx1 structure and combine AZ and CZ data into one
+                    groupData_az = nanmean(group.(currEnv).az, 2);
+                    groupData_cz = nanmean(group.(currEnv).cz, 2);
+                    roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
+    
+    
+                    rocOut.(currEnv).mdl{ss}.trialblock = rocData.mdl;
+                    rocOut.(currEnv).scores{ss}.trialblock = rocData.scores;
+                    rocOut.(currEnv).X{ss}.trialblock = rocData.X;
+                    rocOut.(currEnv).Y{ss}.trialblock = rocData.Y;
+                    rocOut.(currEnv).T{ss}.trialblock = rocData.T;
+                    rocOut.(currEnv).AUC(ss).trialblock = rocData.AUC;
                 
                 
             else

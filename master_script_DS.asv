@@ -53,7 +53,7 @@ if createBehaviorStructs
 
     for i = 1:size(allindex,1) %loop through every session
         addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\vr_novelty_behavior\commonfunc')
-        addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\vr_novelty_behavior\functions')
+        addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\functions')
         %%%%% session info %%%%%
         subj = [params.iden num2str(allindex(i,1))];
         sessDate = num2str(allindex(i,2));
@@ -128,7 +128,7 @@ if createBehaviorStructs
     %%%%%%%%%%%%%%%%
     %%%%% ROCs %%%%%
     %%%%%%%%%%%%%%%%
-    addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\vr_novelty_behavior\functions')
+    addpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\vr_novelty_behavior\functions')
     
     getBehaviorROC_DS(allindex,dirs,uniqSess,params)
 
@@ -250,7 +250,7 @@ if gatherNeuralData
                     %%%%% create cell_metrics, noiseLevel, session, and spikes structs %%%%%
                     if ~isfile([processedDataPath '\kilosort4\' sprintf('%s_%s.cell_metrics.cellinfo.mat', subj, sessDate)]) || params.rewrite.cell_metrics
                         sprintf('Running CellExplorer for %s_%s_%s', subj, sessDate, sessNum)
-                        addpath(genpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\CellExplorer'));
+                        addpath(genpath('\\ad.gatech.edu\bme\labs\singer\Danielle\code\CellExplorer'));
                         CellExplorer_Pipeline_DC(subj, sessDate, processedDataPath, params)%for Neuropixels
                     end
 
