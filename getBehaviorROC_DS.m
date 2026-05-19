@@ -547,7 +547,7 @@ for id = 1:length(params.rocID)
             % Deandra's updated code
             if exist('groupData', 'var') && isifield(groupData, currEnv)
                 for g = 1:length(groupData.(currEnv))
-                    variable_name2 = sprintf('s_fiveGroup%d', currEnv, g)
+                    variable_name = sprintf('s_UAZvNevRZ_fiveGroup%d', currEnv, g)
            
                     if isfield(groupData.(currEnv)(g), 'nevrz') && ~isempty(groupData.(currEnv)(g).nevrz)
 
@@ -556,18 +556,19 @@ for id = 1:length(params.rocID)
                         roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
                         
                         % come back to this
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).mdl{ss} = roc_groupData.mdl;
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).scores{ss} = roc_groupData.scores;
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).X{ss} = roc_groupData.X;
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).Y{ss} = roc_groupData.Y;
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).T{ss} = roc_groupData.T;
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = roc_groupData.AUC;
+                        rocOut.(variable_name).mdl{ss} = roc_groupData.mdl;
+                        rocOut.(variable_name).scores{ss} = roc_groupData.scores;
+                        rocOut.(variable_name).X{ss} = roc_groupData.X;
+                        rocOut.(variable_name).Y{ss} = roc_groupData.Y;
+                        rocOut.(variable_name).T{ss} = roc_groupData.T;
+                        rocOut.(variable_name).AUC(ss) = roc_groupData.AUC;
 
 
                     else
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = nan;
+                        rocOut.(variable_name).AUC(ss) = nan;
                     end
                 end
+            end
         % -------------------------------------------------------
 
         end
@@ -673,9 +674,15 @@ for id = 1:length(params.rocID)
   
         % -------------------------------------------------------
         % Deandra's Variables:
-        ROC.og_num = [placeholder];
-        ROC.up_num = [placeholder];
-        % Unsure if I would create new variables for the last three 
+        rocOutfields = fieldnames(rocOut); % gets all of the words inside of rocOut
+
+        for fIdx = 1:length(rocOutfields)
+            currField = rocOutfields{fIdx}; % pulls out current field name based on location in the loop
+
+            if contains(currField, '_five_')
+                ROC.(currField) = rocOut.(currField); % copies matching field from rocOut into ROC
+            end
+        end
         % -------------------------------------------------------
 
         filedir = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC');

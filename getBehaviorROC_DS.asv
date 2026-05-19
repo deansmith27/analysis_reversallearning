@@ -544,32 +544,32 @@ for id = 1:length(params.rocID)
             end
         % -------------------------------------------------------
 
-             % Deandra's updated code
+            % Deandra's updated code
             if exist('groupData', 'var') && isifield(groupData, currEnv)
                 for g = 1:length(groupData.(currEnv))
-                    variable_name2 = sprintf('s_fiveGroup%d', currEnv, g)
+                    variable_name2 = sprintf('s_UAZvNevRZ_fiveGroup%d', currEnv, g)
            
                     if isfield(groupData.(currEnv)(g), 'nevrz') && ~isempty(groupData.(currEnv)(g).nevrz)
-                    %reshape to Nx1 structure and combine AZ and CZ data into one
-                    groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
-                    groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
-                    roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
 
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).mdl{ss} = roc_groupData.mdl;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).scores{ss} = roc_groupData.scores;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).X{ss} = roc_groupData.X;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).Y{ss} = roc_groupData.Y;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).T{ss} = roc_groupData.T;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = roc_groupData.AUC;
+                        groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
+                        groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
+                        roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
+                        
+                        % come back to this
+                        rocOut.(variable_name2).mdl{ss} = roc_groupData.mdl;
+                        rocOut.(variable_name2).scores{ss} = roc_groupData.scores;
+                        rocOut.(variable_name2).X{ss} = roc_groupData.X;
+                        rocOut.(variable_name2).Y{ss} = roc_groupData.Y;
+                        rocOut.(variable_name2).T{ss} = roc_groupData.T;
+                        rocOut.(variable_name2).AUC(ss) = roc_groupData.AUC;
 
 
                     else
-                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = nan;
+                        rocOut.(variable_name2).AUC(ss) = nan;
                     end
                 end
-
+            end
         % -------------------------------------------------------
-
 
         end
 
@@ -674,8 +674,15 @@ for id = 1:length(params.rocID)
   
         % -------------------------------------------------------
         % Deandra's Variables:
-        ROC.og_num = [placeholder];
-        ROC.up_num = [placeholder];
+        rocOutfields = fieldnames(rocOut);
+
+        for fIdx = 1:length(rocOutfields)
+            currField = rocOutfields{fIdx};
+
+            if contains(currField, '_five_')
+                ROC.(currField) = rocOut.(currField);
+            end
+        e
         % Unsure if I would create new variables for the last three 
         % -------------------------------------------------------
 
