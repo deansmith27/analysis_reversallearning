@@ -2,14 +2,14 @@ function [dirs, params] = getDirectoriesAndParams_JLK_DC()
 %% JLK default directories for analyses, last checked 10/15/24
 %updated from NJ
 %ephys
-dirs.rawdata = '\\ad.gatech.edu\bme\labs\singer\RawData\DAlesion\';
-dirs.processeddata = '\\ad.gatech.edu\bme\labs\singer\ProcessedData\VR_Novelty_DAlesion\';
+dirs.rawdata = '\\ad.gatech.edu\bme\labs\singer\03_DATA_IMAGES\RawData\DAlesion\';
+dirs.processeddata = '\\ad.gatech.edu\bme\labs\singer\03_DATA_IMAGES\ProcessedData\VR_Novelty_DAlesion\';
 %dirs.filters = '\\ad.gatech.edu\bme\labs\singer\Data Extraction and PreProcessing\Intan\Filtering\';
 dirs.code = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\AnalysisCode\Neuropixels_analyses\';
 %behavior
-dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\Behavior\Annular FAM\';
-dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\Behavior\sessionData\';
-dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\TrackFigures\RewardZones.mat';
+dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\Behavior\Annular FAM\';
+dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\Behavior\sessionData\';
+dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\TrackFigures\RewardZones.mat';
 %save results
 dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Figures\';
 dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Figures\behavior\';

@@ -184,20 +184,18 @@ if doROCPlots
         print(gcf,figname,'-dpng','-r300')
     end%if isfield(ROC.nov2_all,'X')
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Deandra's code to insert new ROC's %%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Deandra's Code 
     % Toggle to enable these grouped ROC figures
-    % doGroupedROC36 = 1;
-    % 
-    % if doGroupedROC36
-    % 
-    %     groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
-    % 
-    %     plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids); % ROC type 1
-    %     plotGroupedROCsForField(ROC.up_UAZvNevRZ, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
-    % 
-    % end
+    doGroupedROC36 = 1;
+
+    if doGroupedROC36
+
+        groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
+
+        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids); % ROC type 1
+        plotGroupedROCsForField(ROC.up_UAZvNevRZ, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
+
+    end
     
 end%if doROCPlots
 

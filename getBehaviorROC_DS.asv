@@ -293,35 +293,70 @@ for id = 1:length(params.rocID)
         % 
 
 
+ 
+        %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zone
+        % This is attempt two with added with want to create new variable
+        % ROC type 1: use all trials and anticipatory zones vs primary control zones %%
+        for ee = 1:length(params.environments)
+            currEnv = params.environments{ee};
+            if ~isempty(data.(currEnv).az) %if session exists
+                %reshape to Nx1 structure and combine AZ and CZ data into one
+                data_az = nanmean(data.(currEnv).az, 2);
+                data_cz = nanmean(data.(currEnv).cz, 2);
+                rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_cz*params.rocMultiplier(id));
 
-        %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
-        % loop for enviornments
-        for ee = 1:length(params.environments)%trial block loop within this
-            currEnv = params.environments{ee}; % gets current enviornment
-            
-            for g = 1:length(groupData.(currEnv))  % loops through groups from each enviornment
 
-                if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).cz) %if az session exists within current group and if cz session exists  within current group
+                rocOut.(currEnv).mdl{ss} = rocData.mdl;
+                rocOut.(currEnv).scores{ss} = rocData.scores;
+                rocOut.(currEnv).X{ss} = rocData.X;
+                rocOut.(currEnv).Y{ss} = rocData.Y;
+                rocOut.(currEnv).T{ss} = rocData.T;
+                rocOut.(currEnv).AUC(ss) = rocData.AUC;
 
-                    %reshape to Nx1 structure and combine AZ and CZ data into one
-                    groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
-                    groupData_cz = nanmean(groupData.(currEnv)(g).cz, 2);
-                    roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
-    
-    
-                    rocOut.(currEnv)(g).mdl{ss}.trialblock = roc_groupData.mdl;
-                    rocOut.(currEnv)(g).scores{ss}.trialblock = roc_groupData.scores;
-                    rocOut.(currEnv)(g).X{ss}.trialblock = roc_groupData.X;
-                    rocOut.(currEnv)(g).Y{ss}.trialblock = roc_groupData.Y;
-                    rocOut.(currEnv)(g).T{ss}.trialblock = roc_groupData.T;
-                    rocOut.(currEnv)(g).AUC(ss).trialblock = roc_groupData.AUC;
-                
-                
-                else
-                    rocOut.(currEnv)(g).AUC(ss) = nan;
-                end
+
+            else
+                rocOut.(currEnv).AUC(ss) = nan;
+
             end
+
+            % Deandra's updated code
+            for i = 1:length(groupData)
+                variable_name = strcmp( currEnv_five_%r, i)
+            end
+
         end
+%% 
+ 
+
+        % %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
+        % % loop for enviornments
+        % for ee = 1:length(params.environments)%trial block loop within this
+        %     currEnv = params.environments{ee}; % gets current enviornment
+        % 
+        %     for g = 1:length(groupData.(currEnv))  % loops through groups from each enviornment
+        % 
+        %         if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).cz) %if az session exists within current group and if cz session exists  within current group
+        % 
+        %             %reshape to Nx1 structure and combine AZ and CZ data into one
+        %             % Deandra: reshapes because of the 2 and now there is an average across columns (one value per row)
+        %             groupData_az = nanmean(groupData.(currEnv)(g).az, 2); % takes the averages across columns, ignoring NaN values while extracting on az values of the currEnv in groupData
+        %             groupData_cz = nanmean(groupData.(currEnv)(g).cz, 2);
+        %             roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
+        % 
+        % 
+        %             rocOut.(currEnv)(g).mdl{ss}.trialblock = roc_groupData.mdl;
+        %             rocOut.(currEnv)(g).scores{ss}.trialblock = roc_groupData.scores;
+        %             rocOut.(currEnv)(g).X{ss}.trialblock = roc_groupData.X;
+        %             rocOut.(currEnv)(g).Y{ss}.trialblock = roc_groupData.Y;
+        %             rocOut.(currEnv)(g).T{ss}.trialblock = roc_groupData.T;
+        %             rocOut.(currEnv)(g).AUC(ss).trialblock = roc_groupData.AUC;
+        % 
+        % 
+        %         else
+        %             rocOut.(currEnv)(g).AUC(ss).trialblock = nan;
+        %         end
+        %     end
+        % end
         %% 
         
         % %% ROC type 1: use all trials and anticipatory zones vs primary control zones %%
@@ -466,33 +501,56 @@ for id = 1:length(params.rocID)
         %     end
         % end
 
- %% Deandra's ROC type 4: use all trials and update anticipatory zones vs never rewarded control zones
+        %% Deandra's ROC type 4: use all trials and update anticipatory zones vs never rewarded control zones
+        % This is attempt two with added with want to create new variable
         for ee = 2 %only update sessions
-            currEnv = params.environments{ee};  % gets current enviornment
+            currEnv = params.environments{ee};
+            if isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
+                %reshape to Nx1 structure and combine AZ and CZ data into one
+                data_az = nanmean(data.(currEnv).az, 2);
+                data_nevrz = nanmean(data.(currEnv).nevrz, 2);
+                rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
 
-            for g = 1:length(groupData.(currEnv))  % loops through groups from each enviornment
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).scores{ss} = rocData.scores;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).X{ss} = rocData.X;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y{ss} = rocData.Y;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T{ss} = rocData.T;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
 
-                if isfield(groupData.(currEnv)(g), 'nevrz') && ~isempty(groupData.(currEnv)(g.nevrz)
-                    %reshape to Nx1 structure and combine AZ and CZ data into one
-                    data_az = nanmean(data.(currEnv).az, 2);
-                    data_nevrz = nanmean(data.(currEnv).nevrz, 2);
-                    rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
-    
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).scores{ss} = rocData.scores;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).X{ss} = rocData.X;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y{ss} = rocData.Y;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T{ss} = rocData.T;
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
-    
-                   
-                else
-                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
-               
-                end
+
+            else
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
+
             end
         end
-       
+     % %% Deandra's ROC type 4: use all trials and update anticipatory zones vs never rewarded control zones
+     %    for ee = 2 %only update sessions
+     %        currEnv = params.environments{ee};  % gets current enviornment
+     % 
+     %        for g = 1:length(groupData.(currEnv))  % loops through groups from each enviornment
+     % 
+     %            if isfield(groupData.(currEnv)(g), 'nevrz') && ~isempty(groupData.(currEnv)(g).nevrz)
+     %                %reshape to Nx1 structure and combine AZ and CZ data into one
+     %                groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
+     %                groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
+     %                roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
+     % 
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).mdl{ss} = roc_groupData.mdl;
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).scores{ss} = roc_groupData.scores;
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).X{ss} = roc_groupData.X;
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).Y{ss} = roc_groupData.Y;
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).T{ss} = roc_groupData.T;
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = roc_groupData.AUC;
+     % 
+     % 
+     %            else
+     %                rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = nan;
+     % 
+     %            end
+     %        end
+     %    end
+     % 
         % %% ROC type 4: use all trials and update anticipatory zones vs never rewarded control zones
         % for ee = 2 %only update sessions
         %     currEnv = params.environments{ee};
