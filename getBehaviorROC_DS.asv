@@ -318,14 +318,34 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).AUC(ss) = nan;
 
             end
+        % -------------------------------------------------------
 
             % Deandra's updated code
-            for i = 1:length(groupData)
-                variable_name = strcmp( currEnv_five_%r, i)
+            if exist('groupData', 'var') && isifield(groupData, currEnv)
+                for g = 1:length(groupData.(currEnv))
+                    variable_name = sprintf('s_fiveGroup%d', currEnv, g);
+
+                    if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).cz)
+                      groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
+                      groupData_cz = nanmean(groupData.(currEnv)(g).cz, 2);
+                      roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
+                        
+                      % Stored grouped ROC outputs using the new dynamic field name
+                       rocOut.(variable_name).mdl{ss}.trialblock = roc_groupData.mdl;
+                       rocOut.(variable_name).scores{ss}.trialblock = roc_groupData.scores;
+                       rocOut.(variable_name).X{ss}.trialblock = roc_groupData.X;
+                       rocOut.(variable_name).Y{ss}.trialblock = roc_groupData.Y;
+                       rocOut.(variable_name).T{ss}.trialblock = roc_groupData.T;
+                       rocOut.(variable_name).AUC(ss).trialblock = roc_groupData.AUC;
+                    else
+                       rocOut.(variable_name).AUC(ss).trialblock = nan;
+                    end
+                end
             end
+        % -------------------------------------------------------
 
         end
-%% 
+%%  
  
 
         % %% Deandra's ROC type 1: use all trials and anticipatory zones vs primary control zones %%
@@ -521,9 +541,39 @@ for id = 1:length(params.rocID)
 
             else
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
-
             end
+        % -------------------------------------------------------
+
+             % Deandra's updated code
+            if exist('groupData', 'var') && isifield(groupData, currEnv)
+                for g = 1:length(groupData.(currEnv))
+                    variable_name2 = sprintf('s_fiveGroup%d', currEnv, g)
+           
+                    if isfield(groupData.(currEnv)(g), 'nevrz') && ~isempty(groupData.(currEnv)(g).nevrz)
+                    %reshape to Nx1 structure and combine AZ and CZ data into one
+                    groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
+                    groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
+                    roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
+
+                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).mdl{ss} = roc_groupData.mdl;
+                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).scores{ss} = roc_groupData.scores;
+                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).X{ss} = roc_groupData.X;
+                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).Y{ss} = roc_groupData.Y;
+                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).T{ss} = roc_groupData.T;
+                    rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = roc_groupData.AUC;
+
+
+                    else
+                        rocOut.(sprintf('%s_UAZvNevRZ', currEnv))(g).AUC(ss) = nan;
+                    end
+                end
+
+        % -------------------------------------------------------
+
+
         end
+
+
      % %% Deandra's ROC type 4: use all trials and update anticipatory zones vs never rewarded control zones
      %    for ee = 2 %only update sessions
      %        currEnv = params.environments{ee};  % gets current enviornment
@@ -621,6 +671,13 @@ for id = 1:length(params.rocID)
         ROC.nov2_all = rocOut.nov2;
         %ROC.nov2_half1 = rocOut.nov2_half1;
         %ROC.nov2_half2 = rocOut.nov2_half2;
+  
+        % -------------------------------------------------------
+        % Deandra's Variables:
+        ROC.og_num = [placeholder];
+        ROC.up_num = [placeholder];
+        % Unsure if I would create new variables for the last three 
+        % -------------------------------------------------------
 
         filedir = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC');
 
