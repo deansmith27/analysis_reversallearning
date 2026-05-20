@@ -21,11 +21,17 @@ for id = 1:length(params.rocID)
         temp{ss,1} = sessionInfo;
 
         ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
-            num2str(sessionInfo(1,2)), [params.rocID{id} 'NEW.mat']);
+            num2str(sessionInfo(1,2)), [params.rocID{id} 'NEW.mat']); % Deandra: "NEW" added to added to the end of saved file 
 
         %get latest file with name that contains the specified string if
         % exist, make speed/lickrate AZ vs NRZ distributiuon file if not
         % adapted from getBehaviorDistributionAZvsNRZ_JLK
+        
+        % Deandra: code added to prevent the reuse of data from old sessions
+        data = [];
+        groupData = [];
+        % ------------------------------------------------------------------
+
         if ~exist(ROCfname, 'file') || params.rewrite.ROC
 
             %%%%% make save path if not already created %%%%%
@@ -111,16 +117,17 @@ for id = 1:length(params.rocID)
                         rowIdx = lapDataGroupedStart:lapDataGroupedEnd; % creates a new variable that stores groups 
 
                         lapDataRowGroups{i} = rowIdx;
-
-                        % for leftover rows
-                        remainingRowsStart = numFullGroups * groupSize_rows + 1;
-
-                            if remainingRowsStart <= numRows
-                                rowIdx = remainingRowsStart:numRows;
-
-                                lapDataRowGroups{end+1} = rowIdx;
-                            end
                     end
+
+                     % for leftover rows
+                     remainingRowsStart = numFullGroups * groupSize_rows + 1;
+                     
+                     if remainingRowsStart <= numRows
+                         rowIdx = remainingRowsStart:numRows;
+
+                          lapDataRowGroups{end+1} = rowIdx;
+                     end
+                    
 
                     % debugging code
                     % disp(lapDataRowGroups)
@@ -203,7 +210,9 @@ for id = 1:length(params.rocID)
             dir2save = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
                 num2str(sessionInfo(1,2)));
             if ~isfolder(dir2save); mkdir(dir2save); end
-            save([dir2save, '\', params.rocID{id}, '.mat'], 'data', 'groupData'); % Deandra: added on so that groupData is saved 
+            
+            save(ROCfname, 'data', 'groupData'); % new save added because of "NEW" being added to the end of each file
+            % save([dir2save, '\', params.rocID{id}, '.mat'], 'data', 'groupData'); % Deandra: added on so that groupData is saved 
 
 
         else
@@ -547,8 +556,8 @@ for id = 1:length(params.rocID)
             % Deandra's updated code
             if exist('groupData', 'var') && isfield(groupData, currEnv)
                 for g = 1:length(groupData.(currEnv))
-                    
-                    variable_name = sprintf('%s_UAZvNevRZ_five_%d', currEnv, g)
+
+                    variable_name = sprintf('%s_UAZvNevRZ_five_%d', currEnv, g);
            
                     if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).nevrz)
 
