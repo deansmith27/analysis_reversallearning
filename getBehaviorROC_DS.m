@@ -203,7 +203,7 @@ for id = 1:length(params.rocID)
             dir2save = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
                 num2str(sessionInfo(1,2)));
             if ~isfolder(dir2save); mkdir(dir2save); end
-            save([dir2save, '\', params.rocID{id}, '.mat'], 'data', 'data');
+            save([dir2save, '\', params.rocID{id}, '.mat'], 'data', 'groupData'); % Deandra: added on so that groupData is saved 
 
 
         else
@@ -321,24 +321,25 @@ for id = 1:length(params.rocID)
         % -------------------------------------------------------
 
             % Deandra's updated code
-            if exist('groupData', 'var') && isifield(groupData, currEnv)
+            if exist('groupData', 'var') && isfield(groupData, currEnv)
                 for g = 1:length(groupData.(currEnv))
-                    variable_name = sprintf('s_fiveGroup%d', currEnv, g);
+                    variable_name = sprintf('%s_five_%d', currEnv, g);
 
                     if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).cz)
+
                       groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
                       groupData_cz = nanmean(groupData.(currEnv)(g).cz, 2);
                       roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
                         
                       % Stored grouped ROC outputs using the new dynamic field name
-                       rocOut.(variable_name).mdl{ss}.trialblock = roc_groupData.mdl;
-                       rocOut.(variable_name).scores{ss}.trialblock = roc_groupData.scores;
-                       rocOut.(variable_name).X{ss}.trialblock = roc_groupData.X;
-                       rocOut.(variable_name).Y{ss}.trialblock = roc_groupData.Y;
-                       rocOut.(variable_name).T{ss}.trialblock = roc_groupData.T;
-                       rocOut.(variable_name).AUC(ss).trialblock = roc_groupData.AUC;
+                       rocOut.(variable_name).mdl{ss}= roc_groupData.mdl;
+                       rocOut.(variable_name).scores{ss} = roc_groupData.scores;
+                       rocOut.(variable_name).X{ss} = roc_groupData.X;
+                       rocOut.(variable_name).Y{ss} = roc_groupData.Y;
+                       rocOut.(variable_name).T{ss} = roc_groupData.T;
+                       rocOut.(variable_name).AUC(ss) = roc_groupData.AUC;
                     else
-                       rocOut.(variable_name).AUC(ss).trialblock = nan;
+                       rocOut.(variable_name).AUC(ss) = nan;
                     end
                 end
             end
@@ -526,7 +527,6 @@ for id = 1:length(params.rocID)
         for ee = 2 %only update sessions
             currEnv = params.environments{ee};
             if isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
-                %reshape to Nx1 structure and combine AZ and CZ data into one
                 data_az = nanmean(data.(currEnv).az, 2);
                 data_nevrz = nanmean(data.(currEnv).nevrz, 2);
                 rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
@@ -545,11 +545,12 @@ for id = 1:length(params.rocID)
         % -------------------------------------------------------
 
             % Deandra's updated code
-            if exist('groupData', 'var') && isifield(groupData, currEnv)
+            if exist('groupData', 'var') && isfield(groupData, currEnv)
                 for g = 1:length(groupData.(currEnv))
-                    variable_name = sprintf('s_UAZvNevRZ_fiveGroup%d', currEnv, g)
+                    
+                    variable_name = sprintf('%s_UAZvNevRZ_five_%d', currEnv, g)
            
-                    if isfield(groupData.(currEnv)(g), 'nevrz') && ~isempty(groupData.(currEnv)(g).nevrz)
+                    if ~isempty(groupData.(currEnv)(g).az) && ~isempty(groupData.(currEnv)(g).nevrz)
 
                         groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
                         groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
