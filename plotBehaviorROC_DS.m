@@ -183,7 +183,8 @@ if doROCPlots
         figname = fullfile(figdir, sprintf('nov2_%s_ROC_across_sessions',rocID));
         print(gcf,figname,'-dpng','-r300')
     end%if isfield(ROC.nov2_all,'X')
-    
+ 
+    % ----------------------------------------------------------------------------------------------
     % Deandra's Code 
     % Toggle to enable these grouped ROC figures
     doGroupedROC36 = 1;
@@ -192,11 +193,15 @@ if doROCPlots
 
         groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
 
-        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids); % ROC type 1
-        plotGroupedROCsForField(ROC.up_UAZvNevRZ, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
+        plotGroupedROCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1: og_five_1, og_five_2, etc.
+        plotGroupedROCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4: up_UAZvNevRZ_five_1, etc.
+
+        plotGroupedROCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
+        plotGroupedROCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
+        plotGroupedROCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
 
     end
-    
+    % ----------------------------------------------------------------------------------------------  
 end%if doROCPlots
 
 if doAUCIndPlots
@@ -406,17 +411,17 @@ if doAUCIndPlots
     figname = fullfile(figdir, sprintf('%s_AUC_across_sessions',rocID));
     print(gcf,figname,'-dpng','-r300')
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Deandra's code to insert new IndAUCS's %%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % ----------------------------------------------------------------------------
+    %% Deandra: Code to insert new IndAUCS's %%
     % Toggle to enable these grouped ROC figures
     % doGroupedIndROC36 = 1;
     % 
     % if doGroupedIndROC36
     % 
-    %     groupsToPlot = 1:36;  % can be changed for less ROCs to be generated
-    %     plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
+    %     plotGroupedAUCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids);
+    %     plotGroupedAUCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids);
     % end
+    % ----------------------------------------------------------------------------
 end%if doAUCIndPlots
 
 if doAUCGroupUpdatePlots
@@ -543,13 +548,13 @@ if doAUCGroupUpdatePlots
     %% Deandra's code to insert new UpdateAUCS's %%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Toggle to enable these grouped ROC figures
-    doGroupedUpdateROC36 = 1;
-
-    if doGroupedUpdateROC36
-
-        groupsToPlot = 1:36;  % can be changed for less ROCs to be generated
-        plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
-    end
+    % doGroupedUpdateROC36 = 1;
+    % 
+    % if doGroupedUpdateROC36
+    % 
+    %     groupsToPlot = 1:36;  % can be changed for less ROCs to be generated
+    %     plotGroupedROCsForField(ROC.og_all, 'og_all', groupsToPlot, rocID, params, ids);
+    % end
 
 end%if doAUCGroupUpdatePlots
 
@@ -706,78 +711,97 @@ end%if doAUCGroupUpdatePlots
 % % % % figname = fullfile(figdir, sprintf('%s_AUC_across_sessions_first5last5',rocID));
 % % % % print(gcf,figname,'-dpdf','-r300')
 
-cd('\\ad.gatech.edu\bme\labs\singer\UndergradProjects\Deandra\analysis_reversallearning');
+cd('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\analysis_reversallearning');
 end%function
 
-%%%%%%%%%%%%%%%%%%%%
-%% Deandra's code %%
-%%%%%%%%%%%%%%%%%%%%
-% function plotGroupedROCsForField(ROCfield, fieldLabel, groupsToPlot, rocID, params, ids)
-% % Creates one ROC-curve figure per group index in groupsToPlot
-%     if ~isfield(ROCfield, 'X_by5') || ~isfield(ROCfield, 'Y_by5')
-%         fprintf('No X_by5/Y_by5 found for %s; skipping grouped ROC plots.\n', fieldLabel);
-%         return;
-%     end
-% 
-% 
-%     nSess = size(ROCfield.X_by5, 1);
-% 
-%     for g = groupsToPlot
-% 
-%         figure('Name', sprintf('%s %s group %d', fieldLabel, rocID, g));
-%         hold on
-% 
-% 
-%         for r = 1:nSess
-%             % safety checks, cell exists and is non-empty
-%             if size(ROCfield.X_by5,2) >= g && size(ROCfield.Y_by5,2) >= g
-%                 if ~isempty(ROCfield.X_by5{r,g}) && ~isempty(ROCfield.Y_by5{r,g})
-%                     plot(ROCfield.X_by5{r,g}, ROCfield.Y_by5{r,g}, 'LineWidth', 1);
-%                 end
-%             end
-%         end
-% 
-%         % Chance line
-%         plot(0:0.1:1, 0:0.1:1, '-k');
-% 
-% 
-%         title(sprintf('%s %s ROC (group %d: cols %d-%d) %s %s', ...
-%             fieldLabel, rocID, g, (g-1)*5+1, g*5, params.iden, ids));
-% 
-%         xlabel('False positive rate');
-%         ylabel('True positive rate');
-%         legend('Box','off');
-% 
-%     end
-% 
-% end
-% 
-% function plotGroupedAUCsForField(ROCfield, fieldLabel, groupsToPlot, rocID, params, ids)
-% % plotGroupedAUCsForField
-% % Creates one AUC figure per group index in groupsToPlot.
-% 
-%     if ~isfield(ROCfield, 'AUC_by5')
-%         fprintf('No AUC_by5 found for %s; skipping grouped AUC plots.\n', fieldLabel);
-%         return;
-%     end
-% 
-%     A = ROCfield.AUC_by5;  % nSessions x nGroups
-% 
-%     for g = groupsToPlot
-%         figure('Name', sprintf('%s %s AUC group %d', fieldLabel, rocID, g));
-%         hold on
-% 
-%         if size(A,2) >= g
-%             plot(A(:,g), '-o', 'LineWidth', 1);
-%         else
-%             plot(nan(size(A,1),1), '-o', 'LineWidth', 1);
-%         end
-% 
-%         ylim([0 1]);
-%         xlabel('Session index (ss)');
-%         ylabel('AUC');
-%         title(sprintf('%s %s AUC (group %d: cols %d-%d) %s %s', ...
-%             fieldLabel, rocID, g, (g-1)*5+1, g*5, params.iden, ids));
-%         legend('Box','off');
-%     end
-% end
+% -----------------------------------------------------------------------------------
+% Deandra: Helper function to create each respective ROC curve s
+function plotGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
+
+    for g = groupsToPlot
+
+        currField = sprintf('%s_five_%d', fieldPrefix, g);
+
+        if ~isfield(ROC, currField)
+            continue;
+        end
+
+        if ~isfield(ROC.(currField), 'X') || ~isfield(ROC.(currField), 'Y')
+            continue;
+        end
+
+        figure('Name', sprintf('%s %s group %d', fieldPrefix, rocID, g));
+        hold on
+
+        colors = hsv(length(ROC.(currField).X));
+        colorctr = 0;
+
+        for r = 1:length(ROC.(currField).X)
+
+            if length(ROC.(currField).AUC) >= r && ~isnan(ROC.(currField).AUC(r))
+                if ~isempty(ROC.(currField).X{r}) && ~isempty(ROC.(currField).Y{r})
+
+                    colorctr = colorctr + 1;
+
+                    if colorctr > size(colors, 1)
+                        colorctr = 1;
+                    end
+
+                    plot(ROC.(currField).X{r}, ROC.(currField).Y{r}, ...
+                        'Color', colors(colorctr,:), 'LineWidth', 2);
+                end
+            end
+        end
+
+        plot(0:0.1:1, 0:0.1:1, '-k');
+
+        title(sprintf('%s %s ROC group %d: %s %s', ...
+            fieldPrefix, rocID, g, params.iden, ids));
+
+        xlabel('False positive rate');
+        ylabel('True positive rate');
+        legend('Box','off');
+
+        figname = sprintf('%s_%s_ROC_five_%d', fieldPrefix, rocID, g);
+        print(gcf, figname, '-dpng', '-r300');
+
+    end
+
+end
+% -----------------------------------------------------------------------------------
+% Deandra: Creates one AUC figure across group-of-5 chunks.
+function plotGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
+
+    figure('Name', sprintf('%s %s grouped AUC', fieldPrefix, rocID));
+    hold on
+
+    lgdNames = {};
+
+    for g = groupsToPlot
+
+        currField = sprintf('%s_five_%d', fieldPrefix, g);
+
+        if isfield(ROC, currField) && isfield(ROC.(currField), 'AUC')
+
+            plot(ROC.(currField).AUC, 'LineWidth', 1.5);
+            lgdNames = [lgdNames {sprintf('%s five %d', fieldPrefix, g)}];
+
+        end
+    end
+
+    xlabel('Session index');
+    ylabel('AUC');
+    ylim([0 1]);
+
+    title(sprintf('%s %s AUC by five-lap group: %s %s', ...
+        fieldPrefix, rocID, params.iden, ids));
+
+    if ~isempty(lgdNames)
+        legend(lgdNames, 'Box', 'off', 'Location', 'southeast', 'FontSize', 6);
+    end
+
+    figname = sprintf('%s_%s_AUC_by_five_group', fieldPrefix, rocID);
+    print(gcf, figname, '-dpng', '-r300');
+
+end
+% -----------------------------------------------------------------------------------
