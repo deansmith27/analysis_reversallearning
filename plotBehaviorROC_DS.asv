@@ -907,7 +907,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
         plot(commonX, avgY, 'Color', colorList(colorCtr,:), 'LineWidth', 2);
 
-        lgdNames = [lgdNames {sprintf('%d%s 5 set of trials', g, suffix)}];
+        lgdNames = [lgdNames {sprintf('%dth 5 set of trials', suffix, g)}];
 
     end
 
