@@ -25,7 +25,7 @@ dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra
 %% parameters for analyses
 %general
 params.iden = 'JK'; %JK for default Josh's mice
-params.animals = [23];
+params.animals = [23]; %23 removed 
 params.datesincl = [];
 params.datesexcl = [];
 params.recday = [];

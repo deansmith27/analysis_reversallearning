@@ -128,61 +128,61 @@ if doROCPlots
 %%%%        print(gcf,figname,'-dpng','-r300')
 %%%%    end
 
-    %novel vs control zones (novel reward zones + 30 deg)
-    if isfield(ROC.nov_all,'X')
-        figure
-        hold on
-        colors = [];
-        colors = hsv(length(ROC.nov_all.X));
-        colorctr = 0;
-        newanctr = 0;
-        for r = 1:length(ROC.nov_all.AUC)
-            if r >= find(~isnan(ROC.nov_all.AUC),1,'first') && r <= length(ROC.nov_all.AUC)/2
-                colorctr = colorctr + 1;
-                plot(ROC.nov_all.X{r}, ROC.nov_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
-            elseif r > length(ROC.nov_all.AUC)/2 && ~isnan(ROC.nov_all.AUC(r))
-                newanctr = newanctr + 1;
-                if newanctr == 1
-                    colorctr = 0;
-                end
-                colorctr = colorctr + 1;
-                plot(ROC.nov_all.X{r}, ROC.nov_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
-            end
-        end
-        legend('Box','off')
-        plot(0:.1:1,0:.1:1,'-k')
-        title(sprintf('Novel Zones %s ROC: %s %s',rocID,params.iden,ids))
-        figname = fullfile(figdir, sprintf('nov_%s_ROC_across_sessions',rocID));
-        print(gcf,figname,'-dpng','-r300')
-    end%if isfield(ROC.nov_all,'X')
-
-    %novel2 vs control zones (novel2 reward zones + 30 deg)
-    if isfield(ROC.nov2_all,'X')
-        figure
-        hold on
-        colors = [];
-        colors = hsv(length(ROC.nov2_all.X));
-        colorctr = 0;
-        newanctr = 0;
-        for r = 1:length(ROC.nov2_all.AUC)
-            if r >= find(~isnan(ROC.nov2_all.AUC),1,'first') && r <= length(ROC.nov2_all.AUC)/2
-                colorctr = colorctr + 1;
-                plot(ROC.nov2_all.X{r}, ROC.nov2_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
-            elseif r > length(ROC.nov2_all.AUC)/2 && ~isnan(ROC.nov2_all.AUC(r))
-                newanctr = newanctr + 1;
-                if newanctr == 1
-                    colorctr = 0;
-                end
-                colorctr = colorctr + 1;
-                plot(ROC.nov2_all.X{r}, ROC.nov2_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
-            end
-        end
-        legend('Box','off')
-        plot(0:.1:1,0:.1:1,'-k')
-        title(sprintf('Novel2 Zones %s ROC: %s %s',rocID,params.iden,ids))
-        figname = fullfile(figdir, sprintf('nov2_%s_ROC_across_sessions',rocID));
-        print(gcf,figname,'-dpng','-r300')
-    end%if isfield(ROC.nov2_all,'X')
+    % %novel vs control zones (novel reward zones + 30 deg)
+    % if isfield(ROC.nov_all,'X')
+    %     figure
+    %     hold on
+    %     colors = [];
+    %     colors = hsv(length(ROC.nov_all.X));
+    %     colorctr = 0;
+    %     newanctr = 0;
+    %     for r = 1:length(ROC.nov_all.AUC)
+    %         if r >= find(~isnan(ROC.nov_all.AUC),1,'first') && r <= length(ROC.nov_all.AUC)/2
+    %             colorctr = colorctr + 1;
+    %             plot(ROC.nov_all.X{r}, ROC.nov_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
+    %         elseif r > length(ROC.nov_all.AUC)/2 && ~isnan(ROC.nov_all.AUC(r))
+    %             newanctr = newanctr + 1;
+    %             if newanctr == 1
+    %                 colorctr = 0;
+    %             end
+    %             colorctr = colorctr + 1;
+    %             plot(ROC.nov_all.X{r}, ROC.nov_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
+    %         end
+    %     end
+    %     legend('Box','off')
+    %     plot(0:.1:1,0:.1:1,'-k')
+    %     title(sprintf('Novel Zones %s ROC: %s %s',rocID,params.iden,ids))
+    %     figname = fullfile(figdir, sprintf('nov_%s_ROC_across_sessions',rocID));
+    %     print(gcf,figname,'-dpng','-r300')
+    % end%if isfield(ROC.nov_all,'X')
+    % 
+    % %novel2 vs control zones (novel2 reward zones + 30 deg)
+    % if isfield(ROC.nov2_all,'X')
+    %     figure
+    %     hold on
+    %     colors = [];
+    %     colors = hsv(length(ROC.nov2_all.X));
+    %     colorctr = 0;
+    %     newanctr = 0;
+    %     for r = 1:length(ROC.nov2_all.AUC)
+    %         if r >= find(~isnan(ROC.nov2_all.AUC),1,'first') && r <= length(ROC.nov2_all.AUC)/2
+    %             colorctr = colorctr + 1;
+    %             plot(ROC.nov2_all.X{r}, ROC.nov2_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
+    %         elseif r > length(ROC.nov2_all.AUC)/2 && ~isnan(ROC.nov2_all.AUC(r))
+    %             newanctr = newanctr + 1;
+    %             if newanctr == 1
+    %                 colorctr = 0;
+    %             end
+    %             colorctr = colorctr + 1;
+    %             plot(ROC.nov2_all.X{r}, ROC.nov2_all.Y{r},'Color',colors(colorctr,:),'LineWidth', 2)
+    %         end
+    %     end
+    %     legend('Box','off')
+    %     plot(0:.1:1,0:.1:1,'-k')
+    %     title(sprintf('Novel2 Zones %s ROC: %s %s',rocID,params.iden,ids))
+    %     figname = fullfile(figdir, sprintf('nov2_%s_ROC_across_sessions',rocID));
+    %     print(gcf,figname,'-dpng','-r300')
+    % end%if isfield(ROC.nov2_all,'X')
  
     % ----------------------------------------------------------------------------------------------
     % Deandra's Code 
@@ -197,8 +197,8 @@ if doROCPlots
         plotAverageGroupedROCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
 
         plotAverageGroupedROCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
-        plotAverageGroupedROCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
-        plotAverageGroupedROCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
+        % plotAverageGroupedROCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
+        % plotAverageGroupedROCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
     end
     % ----------------------------------------------------------------------------------------------  
 end%if doROCPlots
@@ -918,22 +918,22 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
     ylabel('True positive rate');
 
     if strcmp(fieldPrefix, 'og')
-        comparisonTitle = sprintf('Original AZ vs Non RZ %s by five-lap group', rocID);
+        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
     
     elseif strcmp(fieldPrefix, 'up')
-        comparisonTitle = sprintf('Update AZ vs Original RZ %s by five-lap group', rocID);
+        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
     
     elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
-        comparisonTitle = sprintf('Update AZ vs Never RZ %s by five-lap group', rocID);
+        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
     
-    elseif strcmp(fieldPrefix, 'nov')
-        comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group', rocID);
-    
-    elseif strcmp(fieldPrefix, 'nov2')
-        comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group', rocID);
+    % elseif strcmp(fieldPrefix, 'nov')
+    %     comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group', rocID);
+    % 
+    % elseif strcmp(fieldPrefix, 'nov2')
+    %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group', rocID);
     
     else
-        comparisonTitle = sprintf('%s %s by five-lap group', fieldPrefix, rocID);
+        comparisonTitle = sprintf('%s %s by Five-Lap ROC: %s%s', fieldPrefix, rocID,params.iden,ids);
     end
     
     title(comparisonTitle, 'Interpreter', 'none');

@@ -154,7 +154,7 @@ for id = 1:length(params.rocID)
                     % debugging code
                     % disp(bp_lapGroups)
               % ================================================================
-                % fix: Creates place to store zone data for each group
+                % fix: sCreates place to store zone data for each group
                 for g = 1:numel(lapDataRowGroups)
 
                     if length(groupData.(currEnv)) < g

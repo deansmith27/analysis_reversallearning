@@ -808,7 +808,6 @@ end%function
 % average ROC curve for one group-of-5 laps.
 function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
     
-    % Deandra: Change title here
     figure('Name', sprintf('%s %s averaged grouped ROC', fieldPrefix, rocID));
     hold on
 
@@ -918,9 +917,26 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
     xlabel('False positive rate');
     ylabel('True positive rate');
 
-    % Deandra: Change title here
-    title(sprintf('%s %s averaged ROC by five-lap group: %s %s', ...
-        fieldPrefix, rocID, params.iden, ids));
+    if strcmp(fieldPrefix, 'og')
+        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
+    
+    elseif strcmp(fieldPrefix, 'up')
+        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
+    
+    elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
+        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
+    
+    % elseif strcmp(fieldPrefix, 'nov')
+    %     comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group', rocID);
+    % 
+    % elseif strcmp(fieldPrefix, 'nov2')
+    %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group', rocID);
+    
+    else
+        comparisonTitle = sprintf('%s %s by Five-Lap ROC: %s%s', fieldPrefix, rocID,params.iden,ids);
+    end
+    
+    title(comparisonTitle, 'Interpreter', 'none');
 
     if ~isempty(lgdNames)
         legend(lgdNames, 'Box', 'off', 'Location', 'southeast', 'FontSize', 6, 'Interpreter', 'none');
