@@ -131,6 +131,7 @@ if createBehaviorStructs
     addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\vr_novelty_behavior\functions')
     
     getBehaviorROC_DS(allindex,dirs,uniqSess,params)
+    
 
 end%if createBehaviorStructs
 

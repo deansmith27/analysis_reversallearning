@@ -60,6 +60,18 @@ for id = 1:length(params.rocID)
                 end
             end
 
+            % fix
+            groupData = [];
+            for ee = 1:length(params.environments)
+                group_currEnv = params.environments{ee};
+            
+                groupData.(group_currEnv) = struct( ...
+                    'az', {}, ...
+                    'cz', {}, ...
+                    'nevrz', {} ...
+                );
+            end
+
             %loop through files
             files = sessionInfo(:,3);
             for f = 1:length(files)
@@ -142,20 +154,15 @@ for id = 1:length(params.rocID)
                     % debugging code
                     % disp(bp_lapGroups)
               % ================================================================
-                % Creates place to store zone data for each group
-                groupData = struct(); %creates empty variable to hold fields of data 
+                % fix: Creates place to store zone data for each group
+                for g = 1:numel(lapDataRowGroups)
 
-                for ee = 1:length(params.environments)
-                    group_currEnv = params.environments{ee}; % loops over the name of each enviornment type
-                    
-                    
-                    for g = 1:numel(lapDataRowGroups)
-                        groupData.(group_currEnv)(g).az = []; % creates a place for az data per enviornment and lap group
-                        groupData.(group_currEnv)(g).cz = []; % creates a place for cz data per enviornment and lap group
-                        groupData.(group_currEnv)(g).nevrz = [];% creates a place nevrz az data per enviornment and lap group
-
-                    end 
-
+                    if length(groupData.(currEnv)) < g
+                        groupData.(currEnv)(g).az = [];
+                        groupData.(currEnv)(g).cz = [];
+                        groupData.(currEnv)(g).nevrz = [];
+                    end
+                
                 end
               % ================================================================
                       for lp = 1:size(lapData,1)
@@ -706,3 +713,4 @@ for id = 1:length(params.rocID)
 end%id
 
 end%function
+
