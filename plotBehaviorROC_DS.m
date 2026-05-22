@@ -825,14 +825,14 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
         currField = sprintf('%s_five_%d', fieldPrefix, g);
         
         % Counter
-        if g == 1 || g == 12 || g == 13
+        if g == 11 || g == 12 || g == 13
             suffix = 'th';
         else
-            lastDigit = mod(g,groupsToPlot);
+            lastDigit = mod(g,10);
             if lastDigit >= 1 && lastDigit <= 3
                 suffix = suffixes{lastDigit};
             else
-                suffixes{4};
+                suffix = suffixes{4};
             end
         end
 
@@ -907,7 +907,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
         plot(commonX, avgY, 'Color', colorList(colorCtr,:), 'LineWidth', 2);
 
-        lgdNames = [lgdNames {sprintf('%d%s 5 set of trials', g, suffix)}];
+        lgdNames = [lgdNames {sprintf('%d%s 5 trials', g, suffix)}];
 
     end
 
@@ -917,6 +917,8 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
     xlabel('False positive rate');
     ylabel('True positive rate');
 
+    % Deandra: Change title here
+    
     title(sprintf('%s %s averaged ROC by five-lap group: %s %s', ...
         fieldPrefix, rocID, params.iden, ids));
 
