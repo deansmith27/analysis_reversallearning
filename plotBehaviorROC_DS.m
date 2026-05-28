@@ -188,17 +188,32 @@ if doROCPlots
     % Deandra's Code 
     % Toggle to enable these grouped ROC figures
     doGroupedROC36 = 1;
-
+    doGroupedAUC36 = 1;
+    
     if doGroupedROC36
-
+    
         groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
-
+    
         plotAverageGroupedROCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1
         plotAverageGroupedROCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
-
+    
         plotAverageGroupedROCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
         % plotAverageGroupedROCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
         % plotAverageGroupedROCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
+    
+    end
+    
+    if doGroupedAUC36
+    
+        groupsToPlot = 1:36;  % can be changed for less AUCs to be generated
+    
+        plotAverageGroupedAUCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1 AUC
+        plotAverageGroupedAUCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4 AUC
+    
+        plotAverageGroupedAUCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
+        % plotAverageGroupedAUCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
+        % plotAverageGroupedAUCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
+    
     end
     % ----------------------------------------------------------------------------------------------  
 end%if doROCPlots
@@ -265,68 +280,68 @@ if doAUCIndPlots
         end
     end
 
-    %original reward zones vs never rewarded control zones
-    if sum(~isnan(ROC.up_ORZvNevRZ.AUC)) == 1
-        plot(ROC.up_ORZvNevRZ.AUC, '*', 'Color', [1 .6 .6])
-        lgdNames = [lgdNames {'ORZvNevRZ'}];
-    elseif sum(~isnan(ROC.up_ORZvNevRZ.AUC)) > 1
-        plot(ROC.up_ORZvNevRZ.AUC,  '-', 'Color', [1 .6 .6])
-        lgdNames = [lgdNames {'ORZvNevRZ'}];
-        %deal with separated single days
-        tmpDiffs = find(diff(~isnan([ROC.up_ORZvNevRZ.AUC nan])));
-        tmpDiffsToPlot = [];
-        for d = 1:length(tmpDiffs)-1
-            if tmpDiffs(d+1) - tmpDiffs(d) == -2
-                tmpDiffsToPlot = [tmpDiffsToPlot tmpDiffs(d+1)];
-            end
-        end
-        if ~isempty(tmpDiffsToPlot)
-            plot(tmpDiffsToPlot,ROC.up_ORZvNevRZ.AUC(tmpDiffsToPlot), '*', 'Color', [1 .6 .6])
-            lgdNames = [lgdNames {'ORZvNevRZ'}];
-        end
-    end
+    % %original reward zones vs never rewarded control zones
+    % if sum(~isnan(ROC.up_ORZvNevRZ.AUC)) == 1
+    %     plot(ROC.up_ORZvNevRZ.AUC, '*', 'Color', [1 .6 .6])
+    %     lgdNames = [lgdNames {'ORZvNevRZ'}];
+    % elseif sum(~isnan(ROC.up_ORZvNevRZ.AUC)) > 1
+    %     plot(ROC.up_ORZvNevRZ.AUC,  '-', 'Color', [1 .6 .6])
+    %     lgdNames = [lgdNames {'ORZvNevRZ'}];
+    %     %deal with separated single days
+    %     tmpDiffs = find(diff(~isnan([ROC.up_ORZvNevRZ.AUC nan])));
+    %     tmpDiffsToPlot = [];
+    %     for d = 1:length(tmpDiffs)-1
+    %         if tmpDiffs(d+1) - tmpDiffs(d) == -2
+    %             tmpDiffsToPlot = [tmpDiffsToPlot tmpDiffs(d+1)];
+    %         end
+    %     end
+    %     if ~isempty(tmpDiffsToPlot)
+    %         plot(tmpDiffsToPlot,ROC.up_ORZvNevRZ.AUC(tmpDiffsToPlot), '*', 'Color', [1 .6 .6])
+    %         lgdNames = [lgdNames {'ORZvNevRZ'}];
+    %     end
+    % end
 
-    %novel anticipatory zones vs control zones (novel reward zones + 30 deg)
-    if sum(~isnan(ROC.nov_all.AUC)) == 1
-        plot(ROC.nov_all.AUC, '*m')
-        lgdNames = [lgdNames {'NovAZvNonRZ'}];
-    elseif sum(~isnan(ROC.nov_all.AUC)) > 1
-        plot(ROC.nov_all.AUC, '-m')
-        lgdNames = [lgdNames {'NovAZvNonRZ'}];
-        %deal with separated single days
-        tmpDiffs = find(diff(~isnan([ROC.nov_all.AUC nan])));
-        tmpDiffsToPlot = [];
-        for d = 1:length(tmpDiffs)-1
-            if tmpDiffs(d+1) - tmpDiffs(d) == -2
-                tmpDiffsToPlot = [tmpDiffsToPlot tmpDiffs(d+1)];
-            end
-        end
-        if ~isempty(tmpDiffsToPlot)
-            plot(tmpDiffsToPlot,ROC.nov_all.AUC(tmpDiffsToPlot), '*m')
-            lgdNames = [lgdNames {'NovAZvNonRZ'}];
-        end
-    end
-
-    %novel2 anticipatory zones vs control zones (novel2 reward zones + 30 deg)
-    if sum(~isnan(ROC.nov2_all.AUC)) == 1
-        plot(ROC.nov2_all.AUC, '*y')
-        lgdNames = [lgdNames {'Nov2AZvNonRZ'}];
-    elseif sum(~isnan(ROC.nov2_all.AUC)) > 1
-        plot(ROC.nov2_all.AUC, '-y')
-        lgdNames = [lgdNames {'Nov2AZvNonRZ'}];
-        %deal with separated single days
-        tmpDiffs = find(diff(~isnan([ROC.nov2_all.AUC nan])));
-        tmpDiffsToPlot = [];
-        for d = 1:length(tmpDiffs)-1
-            if tmpDiffs(d+1) - tmpDiffs(d) == -2
-                tmpDiffsToPlot = [tmpDiffsToPlot tmpDiffs(d+1)];
-            end
-        end
-        if ~isempty(tmpDiffsToPlot)
-            plot(tmpDiffsToPlot,ROC.nov2_all.AUC(tmpDiffsToPlot), '*y')
-            lgdNames = [lgdNames {'Nov2AZvNonRZ'}];
-        end
-    end
+    % %novel anticipatory zones vs control zones (novel reward zones + 30 deg)
+    % if sum(~isnan(ROC.nov_all.AUC)) == 1
+    %     plot(ROC.nov_all.AUC, '*m')
+    %     lgdNames = [lgdNames {'NovAZvNonRZ'}];
+    % elseif sum(~isnan(ROC.nov_all.AUC)) > 1
+    %     plot(ROC.nov_all.AUC, '-m')
+    %     lgdNames = [lgdNames {'NovAZvNonRZ'}];
+    %     %deal with separated single days
+    %     tmpDiffs = find(diff(~isnan([ROC.nov_all.AUC nan])));
+    %     tmpDiffsToPlot = [];
+    %     for d = 1:length(tmpDiffs)-1
+    %         if tmpDiffs(d+1) - tmpDiffs(d) == -2
+    %             tmpDiffsToPlot = [tmpDiffsToPlot tmpDiffs(d+1)];
+    %         end
+    %     end
+    %     if ~isempty(tmpDiffsToPlot)
+    %         plot(tmpDiffsToPlot,ROC.nov_all.AUC(tmpDiffsToPlot), '*m')
+    %         lgdNames = [lgdNames {'NovAZvNonRZ'}];
+    %     end
+    % end
+    % 
+    % %novel2 anticipatory zones vs control zones (novel2 reward zones + 30 deg)
+    % if sum(~isnan(ROC.nov2_all.AUC)) == 1
+    %     plot(ROC.nov2_all.AUC, '*y')
+    %     lgdNames = [lgdNames {'Nov2AZvNonRZ'}];
+    % elseif sum(~isnan(ROC.nov2_all.AUC)) > 1
+    %     plot(ROC.nov2_all.AUC, '-y')
+    %     lgdNames = [lgdNames {'Nov2AZvNonRZ'}];
+    %     %deal with separated single days
+    %     tmpDiffs = find(diff(~isnan([ROC.nov2_all.AUC nan])));
+    %     tmpDiffsToPlot = [];
+    %     for d = 1:length(tmpDiffs)-1
+    %         if tmpDiffs(d+1) - tmpDiffs(d) == -2
+    %             tmpDiffsToPlot = [tmpDiffsToPlot tmpDiffs(d+1)];
+    %         end
+    %     end
+    %     if ~isempty(tmpDiffsToPlot)
+    %         plot(tmpDiffsToPlot,ROC.nov2_all.AUC(tmpDiffsToPlot), '*y')
+    %         lgdNames = [lgdNames {'Nov2AZvNonRZ'}];
+    %     end
+    % end
 
     %add number label for each subject
     lbls = [];
@@ -357,7 +372,7 @@ if doAUCIndPlots
         for s = 1:size(ROC.sessInfo{r},1)
             %load session info
             sessionInfo = ROC.sessInfo{r}(s,:);
-            f1 = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(sessionInfo(1))], ...
+            f1 = fullfile(dirs.loadoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(sessionInfo(1))], ...
                 [num2str(sessionInfo(2)) '_' num2str(sessionInfo(3)) '_' num2str(sessionInfo(4))], 'statsByLap.mat');
             lapData = load(f1);
             lapData = lapData.statsByLap;
@@ -387,18 +402,18 @@ if doAUCIndPlots
             hold on
             plot(r, ROC.up_all.AUC(r),'xk')
             plot(r, ROC.up_UAZvNevRZ.AUC(r),'xk')
-            plot(r, ROC.up_ORZvNevRZ.AUC(r),'xk')
+            % plot(r, ROC.up_ORZvNevRZ.AUC(r),'xk')
         end
-        if dayNovTrNum < 4
-            figure(AUCfig)
-            hold on
-            plot(r, ROC.nov_all.AUC(r),'xk')
-        end
-        if dayNov2TrNum < 4
-            figure(AUCfig)
-            hold on
-            plot(r, ROC.nov2_all.AUC(r),'xk')
-        end
+        % if dayNovTrNum < 4
+        %     figure(AUCfig)
+        %     hold on
+        %     plot(r, ROC.nov_all.AUC(r),'xk')
+        % end
+        % if dayNov2TrNum < 4
+        %     figure(AUCfig)
+        %     hold on
+        %     plot(r, ROC.nov2_all.AUC(r),'xk')
+        % end
 
     end%sessions
 
@@ -462,7 +477,7 @@ if doAUCGroupUpdatePlots
                 ogDataPerAn(g,an,:) = ROC.og_all.AUC(upDay(an)-1:upDay(an));
                 upDataPerAn(g,an,1:upFinalSess(an)-upDay(an)+1) = ROC.up_all.AUC(upDay(an):upFinalSess(an));
                 upUAZvNevRZDataPerAn(g,an,1:upFinalSess(an)-upDay(an)+1) = ROC.up_UAZvNevRZ.AUC(upDay(an):upFinalSess(an));
-                upORZvNevRZDataPerAn(g,an,1:upFinalSess(an)-upDay(an)+1) = ROC.up_ORZvNevRZ.AUC(upDay(an):upFinalSess(an));
+                % upORZvNevRZDataPerAn(g,an,1:upFinalSess(an)-upDay(an)+1) = ROC.up_ORZvNevRZ.AUC(upDay(an):upFinalSess(an));
             end%an
         end%if sum(mice2use) > 0
     end%g
@@ -949,3 +964,152 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
 end
 % -----------------------------------------------------------------------------------
+% Deandra: Helper function to create ONE AUC plot where each line is the
+% average ROC curve for one group-of-5 laps.
+function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
+    
+    figure('Name', sprintf('%s %s averaged grouped AUC', fieldPrefix, rocID));
+    hold on
+
+    groupNumsToPlot = [];
+    aucAvgToPlot = [];
+    aucSEMToPlot = [];
+    aucNToPlot = [];
+
+    xTickLabels = {};
+
+    suffixes = {'st', 'nd', 'rd', 'th'};
+
+    for g = groupsToPlot
+
+        currField = sprintf('%s_five_%d', fieldPrefix, g);
+
+        % Create ordinal suffix for group label.
+        if g == 11 || g == 12 || g == 13
+            suffix = 'th';
+        else
+            lastDigit = mod(g, 10);
+
+            if lastDigit >= 1 && lastDigit <= 3
+                suffix = suffixes{lastDigit};
+            else
+                suffix = suffixes{4};
+            end
+        end
+
+        % Skip this group if the field does not exist in ROC.
+        if ~isfield(ROC, currField)
+            continue;
+        end
+
+        % Skip this group if it does not have AUC data.
+        if ~isfield(ROC.(currField), 'AUC')
+            continue;
+        end
+
+        thisAUC = ROC.(currField).AUC;
+
+        % Make sure AUC is a row vector.
+        thisAUC = thisAUC(:)';
+
+        % Remove NaN values.
+        validAUC = thisAUC(~isnan(thisAUC));
+
+        % Skip this group if there are no valid AUC values.
+        if isempty(validAUC)
+            continue;
+        end
+
+        % Average AUC across sessions for this five-lap group.
+        aucAvg = nanmean(validAUC);
+
+        % SEM across sessions.
+        if length(validAUC) > 1
+            aucSEM = nanstd(validAUC, 0) / sqrt(length(validAUC));
+        else
+            aucSEM = 0;
+        end
+
+        % Store plotting values.
+        groupNumsToPlot = [groupNumsToPlot g];
+        aucAvgToPlot = [aucAvgToPlot aucAvg];
+        aucSEMToPlot = [aucSEMToPlot aucSEM];
+        aucNToPlot = [aucNToPlot length(validAUC)];
+
+        xTickLabels = [xTickLabels {sprintf('%d%s', g, suffix)}];
+
+    end
+
+    % If no valid AUCs were found, still create a figure that says so.
+    if isempty(groupNumsToPlot)
+
+        text(0.5, 0.5, sprintf('No valid AUC data found for %s', fieldPrefix), ...
+            'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', 'middle', ...
+            'FontSize', 12);
+
+        xlim([0 1]);
+        ylim([0 1]);
+
+    else
+
+        % Plot average AUC by five-lap group with SEM error bars.
+        errorbar(groupNumsToPlot, aucAvgToPlot, aucSEMToPlot, '-o', ...
+            'LineWidth', 1.5, ...
+            'MarkerSize', 5);
+
+        % Add a reference line at AUC = 0.5.
+        plot([min(groupNumsToPlot) max(groupNumsToPlot)], [0.5 0.5], '--k');
+
+        xlim([min(groupNumsToPlot) - 0.5, max(groupNumsToPlot) + 0.5]);
+        ylim([0 1]);
+
+        xticks(groupNumsToPlot);
+        xticklabels(xTickLabels);
+        xtickangle(45);
+
+        % Optional: label each point with the number of sessions used.
+        for i = 1:length(groupNumsToPlot)
+            text(groupNumsToPlot(i), aucAvgToPlot(i), sprintf(' n=%d', aucNToPlot(i)), ...
+                'VerticalAlignment', 'bottom', ...
+                'FontSize', 7);
+        end
+
+    end
+
+    xlabel('Five-lap group');
+    ylabel('Average AUC across sessions');
+
+    if strcmp(fieldPrefix, 'og')
+        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap AUC: %s%s', ...
+            rocID, params.iden, ids);
+
+    elseif strcmp(fieldPrefix, 'up')
+        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap AUC: %s%s', ...
+            rocID, params.iden, ids);
+
+    elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
+        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap AUC: %s%s', ...
+            rocID, params.iden, ids);
+
+    elseif strcmp(fieldPrefix, 'nov')
+        comparisonTitle = sprintf('Novel AZ vs Non RZ %s by Five-Lap AUC: %s%s', ...
+            rocID, params.iden, ids);
+
+    elseif strcmp(fieldPrefix, 'nov2')
+        comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by Five-Lap AUC: %s%s', ...
+            rocID, params.iden, ids);
+
+    else
+        comparisonTitle = sprintf('%s %s by Five-Lap AUC: %s%s', ...
+            fieldPrefix, rocID, params.iden, ids);
+    end
+
+    title(comparisonTitle, 'Interpreter', 'none');
+
+    figname = sprintf('%s_%s_average_AUC_by_five_group', fieldPrefix, rocID);
+    print(gcf, figname, '-dpng', '-r300');
+
+end 
+% -----------------------------------------------------------------------------------
+

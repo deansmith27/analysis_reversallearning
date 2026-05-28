@@ -11,12 +11,13 @@ dirs.virmenrawdata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\Behavior\An
 dirs.virmensessiondata = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\Behavior\sessionData\';
 dirs.rewardzones = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\TrackFigures\RewardZones.mat';
 %save results
-dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Figures\';
-dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Figures\behavior\';
-dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\OutputStructs\';
+dirs.savefigures = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\Figures\';
+dirs.savefiguresbeh = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\Figures\behavior\';
+dirs.saveoutputstructs = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\OutputStructs\';
+dirs.loadoutputstructs = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Josh\OutputStructs\';
 %spreadsheets with training or recording info
 %dirs.spreadsheet_rec = '\\ad.gatech.edu\bme\labs\singer\Josh\Spreadsheets\UpdateBehaviorSpreadsheet.csv'; %JLK commented out 10/2/24 because currently only one spreadsheet
-dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\UpdateBehaviorSpreadsheet_JKmice_copy.csv'; 
+dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra\Full_UpdateBehaviorSpreadsheet.csv'; 
 %dirs.clusfolder = 'sorted\';
 %dirs.cluster_local = 'C:\Users\scushing6\Desktop\TempKilosort\';
 % dirs.kilosortPyEnv = 'C:\Users\scushing6\AppData\Local\anaconda3\envs\kilosort\python.exe';
@@ -25,7 +26,10 @@ dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra
 %% parameters for analyses
 %general
 params.iden = 'JK'; %JK for default Josh's mice
-params.animals = [23]; %23 removed 
+params.animals = []; %23 removed 
+params.controlGroup = [7 8 12 20 21 22 23 24 25];%APOE3
+params.experimentalGroup = [5 6 9 10 12 13 14 15 18 19];%APOE4
+params.testedMice = [14 15 18 19 20 21 22 23 24 25];
 params.datesincl = [];
 params.datesexcl = [];
 params.recday = [];

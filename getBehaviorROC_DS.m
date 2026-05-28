@@ -78,10 +78,12 @@ for id = 1:length(params.rocID)
                 currFile = files(f);
                 sessionType = sessionInfo(f,4);
 
-                datafname = fullfile(dirs.saveoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(animal)], ...
+                datafname = fullfile(dirs.loadoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(animal)], ...
                     [num2str(sessDate) '_' num2str(currFile) '_' num2str(sessionType)], 'statsByLap.mat');
                 if isfile(datafname)
                     load(datafname)
+                else
+                    fprintf(['cannot locate ' ': ' params.iden num2str(allindex(i,1)) '_' num2str(allindex(i,2)) '_' num2str(allindex(i,3)) '... \n'])
                 end
 
                 if ~isempty(statsByLap)
