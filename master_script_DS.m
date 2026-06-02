@@ -39,7 +39,7 @@ end
 [uniqSess, ind] = unique(allindex(:,1:2), 'rows'); %define session as one date
 
 %% Specify what you want to analyze here %%
-createBehaviorStructs = 1;
+createBehaviorStructs = 0;
 plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
@@ -129,8 +129,37 @@ if createBehaviorStructs
     %%%%% ROCs %%%%%
     %%%%%%%%%%%%%%%%
     addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\vr_novelty_behavior\functions')
-    
-   getBehaviorROC_DS(allindex,dirs,uniqSess,params)
+   
+    %%
+    % lastSS = size(uniqSess, 1);
+    % lastAnimal = uniqSess(lastSS, 1);
+    % lastDate = uniqSess(lastSS, 2);
+    % 
+    % fprintf('\nLast row in uniqSess:\n');
+    % fprintf('ss=%d, animal=%d, date=%d\n', lastSS, lastAnimal, lastDate);
+    % 
+    % fprintf('\nMatching rows in allindex, any status:\n');
+    % disp(allindex(allindex(:,1) == lastAnimal & allindex(:,2) == lastDate, :));
+    % 
+    % fprintf('\nMatching rows in allindex, active only column 6 == 2:\n');
+    % disp(allindex(allindex(:,1) == lastAnimal & allindex(:,2) == lastDate & allindex(:,6) == 2, :));
+    % 
+    %%
+        % animal = 34;      % replace with spreadsheet animal
+        % sessDate = 260517; % replace with spreadsheet date
+        % 
+        % fprintf('Rows in allindex for animal/date, any status:\n');
+        % disp(allindex(allindex(:,1)==animal & allindex(:,2)==sessDate, :))
+        % 
+        % fprintf('Rows in allindex for animal/date, active only:\n');
+        % disp(allindex(allindex(:,1)==animal & allindex(:,2)==sessDate & allindex(:,6)==2, :))
+        % 
+        % fprintf('Rows in uniqSess for animal/date:\n');
+        % disp(uniqSess(uniqSess(:,1)==animal & uniqSess(:,2)==sessDate, :))
+
+        
+  %%
+   getBehaviorROC_DS(allindex,dirs,uniqSess,params);
     
 
 end%if createBehaviorStructs

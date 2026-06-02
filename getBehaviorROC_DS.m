@@ -18,6 +18,7 @@ for id = 1:length(params.rocID)
         sessDate = uniqSess(ss, 2);
         tempidx = find(ismember(allindex(:,1), animal) & ismember(allindex(:,2), sessDate) & ismember(allindex(:,6), 2));%include this animal, this date, active only
         sessionInfo = allindex(tempidx, :);
+        
         temp{ss,1} = sessionInfo;
 
         ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
@@ -83,7 +84,7 @@ for id = 1:length(params.rocID)
                 if isfile(datafname)
                     load(datafname)
                 else
-                    fprintf(['cannot locate ' ': ' params.iden num2str(allindex(i,1)) '_' num2str(allindex(i,2)) '_' num2str(allindex(i,3)) '... \n'])
+                    fprintf(['cannot locate ' ': ' params.iden num2str(allindex(f,1)) '_' num2str(allindex(f,2)) '_' num2str(allindex(f,3)) '... \n'])
                 end
 
                 if ~isempty(statsByLap)
