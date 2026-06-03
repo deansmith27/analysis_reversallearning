@@ -392,13 +392,7 @@ if doAUCIndPlots
             sessionInfo = ROC.sessInfo{r}(s,:);
             f1 = fullfile(dirs.loadoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(sessionInfo(1))], ...
                 [num2str(sessionInfo(2)) '_' num2str(sessionInfo(3)) '_' num2str(sessionInfo(4))], 'statsByLap.mat');
-            
-            % Deandra code for if file is not found in Josh's output
-            % structs folder
-            if ~exist(f1, 'file')
-                continue
-            end
-
+            % Deandra code for if file is not found in Josh's ou
             lapData = load(f1);
             lapData = lapData.statsByLap;
 

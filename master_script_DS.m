@@ -1,6 +1,7 @@
 %created by JLK on 6/10/25
 %last check JLK on 6/30/25
-
+clear all
+close all
 %% Set data directories, params, and sessions to use %%
 %Note: selectindextable_JLK filter options: animal, id, datesincluded, datesexcluded, SessionNum,
 % SessionType (1 = passive, 2 = active, 3 = rest), Track (1 = "TrackA"
@@ -160,7 +161,6 @@ if createBehaviorStructs
         
   %%
    getBehaviorROC_DS(allindex,dirs,uniqSess,params);
-    
 
 end%if createBehaviorStructs
 
@@ -186,8 +186,8 @@ if plotBehavior
     %  4 = laps from novel2 sessions only.
     
     for an = length(params.animals)
-        plotByDateOrType = 2; %0 = by date, 1 = by original day number, 2 = by update day number, 3 = by novel day number, 4 = by novel2 day number
-        plotDate = [2501103]; %define date to plot for each mouse (rows = mice, columns = days)
+        plotByDateOrType = 1; %0 = by date, 1 = by original day number, 2 = by update day number, 3 = by novel day number, 4 = by novel2 day number
+        plotDate = [251114]; %define date to plot for each mouse (rows = mice, columns = days)
         whichDay = [1]; %1 = first original/update/novel/novel2 day, 0 = day before update/novel/novel2 day
         sessionToPlot = 2; %0 = plot all, 1 = only plot original sessions on a given day, 2 = only plot update session on a given day, 3 = only plot novel session on a given day, 4 = only plot novel2 session on a given day
         doSessionPlots = 0; %plot data across all sessions for this mouse
@@ -222,7 +222,7 @@ if plotBehavior
         ROCtoPlotInd = find(contains({dirROC.name}, ['ROC' '_' params.rocID{id}]),1,'last');%most recent data
         ROCtoPlot = load([dirROC(1).folder '\' dirROC(ROCtoPlotInd(1)).name]);
         ROC = ROCtoPlot.ROC;
-        doROCPlots = 0; %ROC plots across sessions/animals, separated by track
+        doROCPlots = 1; %ROC plots across sessions/animals, separated by track
         doAUCIndPlots = 1; %AUC plots across sessions for each animal
         doAUCGroupUpdatePlots = 1;%AUC plots across original sessions and update sessions by control vs. experimental group
         plotBehaviorROC_DS(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)

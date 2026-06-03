@@ -26,7 +26,7 @@ dirs.spreadsheet = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\UndergradS\Deandra
 %% parameters for analyses
 %general
 params.iden = 'JK'; %JK for default Josh's mice
-params.animals = []; %23 removed 
+params.animals = [5 6 7 8 9 10 12 13 14 15 18 19 20 21 22 23 24 ]; %23 removed 5 6 7 8 9 10 12 13 14 15 18 19 20 21 22 23 24 
 params.controlGroup = [7 8 12 20 21 22 23 24 25];%APOE3
 params.experimentalGroup = [5 6 9 10 12 13 14 15 18 19];%APOE4
 params.testedMice = [14 15 18 19 20 21 22 23 24 25];

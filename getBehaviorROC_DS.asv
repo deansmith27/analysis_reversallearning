@@ -9,7 +9,6 @@ sessionInfo = [];
 
 % --- Deandra: Group-of-5 column feature extraction ---
 groupSize_rows = 5;
-% -----------------------------------------------------
 
 for id = 1:length(params.rocID)
     %loop through unique sessions
@@ -19,17 +18,14 @@ for id = 1:length(params.rocID)
         sessDate = uniqSess(ss, 2);
         tempidx = find(ismember(allindex(:,1), animal) & ismember(allindex(:,2), sessDate) & ismember(allindex(:,6), 2));%include this animal, this date, active only
         sessionInfo = allindex(tempidx, :);
-        
-        % Danielle: Code to stop it from breaking if sessionInfo is empty
+
         if isempty(sessionInfo)
             continue
-        end
+            
         
         temp{ss,1} = sessionInfo;   
         
-        % Danielle debug code:
-        % disp(['making ROC', num2str(animal), ' ', num2str(sessionInfo(1,2)), ' ', params.rocID{id}])
-
+        disp(['making ROC', num2str(animal), ' ', num2str(sessionInfo(1,2)), ' ', params.rocID{id}])
         ROCfname = fullfile(dirs.saveoutputstructs, 'Data\Behavior\ROC', [params.iden num2str(animal)], ...
             num2str(sessionInfo(1,2)), [params.rocID{id} 'NEW.mat']); % Deandra: "NEW" added to added to the end of saved file 
         filename = "your_spreadsheet.xlsx";
