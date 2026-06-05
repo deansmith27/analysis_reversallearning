@@ -1,4 +1,4 @@
-function plotBehaviorROC_DS(allindex,uniqSess, dirs, ROC, rocID, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots)
+function plotBehaviorROC_DS(allindex,uniqSess, dirs, ROC, rocID, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots, doGroupedROCby5, doGroupedAUCby5)
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %%%%% Saving Info %%%%%
@@ -197,40 +197,38 @@ if doROCPlots
     %     figname = fullfile(figdir, sprintf('nov2_%s_ROC_across_sessions',rocID));
     %     print(gcf,figname,'-dpng','-r300')
     % end%if isfield(ROC.nov2_all,'X')
- 
+
+end%if doROCPlots
+
     % ----------------------------------------------------------------------------------------------
     % Deandra's Code 
-    % Toggle to enable these grouped ROC figures
-    doGroupedROC36 = 1;
-    doGroupedAUC36 = 1;
     
-    if doGroupedROC36
+if doGroupedROCby5
     
-        groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
+   groupsToPlot = 1:36;  % can be changed for less ROCs to be generated, end number is 36
     
-        plotAverageGroupedROCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1
-        plotAverageGroupedROCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
+   plotAverageGroupedROCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1
+   plotAverageGroupedROCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4
     
-        plotAverageGroupedROCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
-        % plotAverageGroupedROCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
-        % plotAverageGroupedROCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
+   plotAverageGroupedROCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
+   % plotAverageGroupedROCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
+   % plotAverageGroupedROCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
     
-    end
+end
     
-    if doGroupedAUC36
+if doGroupedAUCby5
     
-        groupsToPlot = 1:36;  % can be changed for less AUCs to be generated
+   groupsToPlot = 1:36;  % can be changed for less AUCs to be generated
     
-        plotAverageGroupedAUCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1 AUC
-        plotAverageGroupedAUCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4 AUC
+   plotAverageGroupedAUCsFromROC(ROC, 'og', groupsToPlot, rocID, params, ids); % ROC type 1 AUC
+   plotAverageGroupedAUCsFromROC(ROC, 'up_UAZvNevRZ', groupsToPlot, rocID, params, ids); % ROC type 4 AUC
     
-        plotAverageGroupedAUCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
-        % plotAverageGroupedAUCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
-        % plotAverageGroupedAUCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
+   plotAverageGroupedAUCsFromROC(ROC, 'up', groupsToPlot, rocID, params, ids);
+   % plotAverageGroupedAUCsFromROC(ROC, 'nov', groupsToPlot, rocID, params, ids);
+   % plotAverageGroupedAUCsFromROC(ROC, 'nov2', groupsToPlot, rocID, params, ids);
     
-    end
+end
     % ----------------------------------------------------------------------------------------------  
-end%if doROCPlots
 
 if doAUCIndPlots
 
@@ -880,12 +878,18 @@ end%function
 % average ROC curve for one group-of-5 laps.
 function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
     
+% SOS
+    if ids ismember(params.controlGroup)
+        controlGroup = ids;
+    end
+    if ids ismember(params.experimentalGroup)
+        experimentalGroup = ismember(params.experimentalGroup);
+    end 
+
     figure('Name', sprintf('%s %s averaged grouped ROC', fieldPrefix, rocID));
     hold on
 
     % Common X-axis for averaging ROC curves.
-    % ROC curves can have different threshold points, so they need to be
-    % interpolated onto the same X values before averaging.
     commonX = 0:0.01:1;
 
     lgdNames = {};
@@ -988,26 +992,34 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
     xlabel('False positive rate');
     ylabel('True positive rate');
+    
+    % Deandra: title formatting
+    idList = strings(1, length(params.animals));
+
+    for i = 1:length(params.animals)
+        idList(i) = sprintf('%s%d', params.iden, i);
+    end
+    idListStr = strjoin(idList, ', ');
 
     if strcmp(fieldPrefix, 'og')
-        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
-    
+        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap ROC: %s', rocID, idListStr);
+
     elseif strcmp(fieldPrefix, 'up')
-        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
-    
+        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap ROC: %s', rocID, idListStr);
+
     elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
-        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap ROC: %s%s', rocID,params.iden,ids);
-    
-    % elseif strcmp(fieldPrefix, 'nov')
-    %     comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group', rocID);
-    % 
-    % elseif strcmp(fieldPrefix, 'nov2')
-    %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group', rocID);
-    
+        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap ROC: %s', rocID, idListStr);
+
+        % elseif strcmp(fieldPrefix, 'nov')
+        %     comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group', rocID);
+        %
+        % elseif strcmp(fieldPrefix, 'nov2')
+        %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group', rocID);
+
     else
-        comparisonTitle = sprintf('%s %s by Five-Lap ROC: %s%s', fieldPrefix, rocID,params.iden,ids);
+        comparisonTitle = sprintf('%s %s by Five-Lap ROC: %s', fieldPrefix, rocID, idListStr);
     end
-    
+
     title(comparisonTitle, 'Interpreter', 'none');
 
     if ~isempty(lgdNames)
@@ -1024,7 +1036,7 @@ end
 % Deandra: Helper function to create ONE AUC plot where each line is the
 % average ROC curve for one group-of-5 laps.
 function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
-    
+
     figure('Name', sprintf('%s %s averaged grouped AUC', fieldPrefix, rocID));
     hold on
 
@@ -1137,29 +1149,37 @@ function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
     xlabel('Five-lap group');
     ylabel('Average AUC across sessions');
 
+    % Deandra: title formatting
+    idList = strings(1, length(params.animals));
+
+    for i = 1:length(params.animals)
+        idList(i) = sprintf('%s%d', params.iden, i);
+    end
+    idListStr = strjoin(idList, ', ');
+
     if strcmp(fieldPrefix, 'og')
-        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap AUC: %s%s', ...
-            rocID, params.iden, ids);
+        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap AUC: %s', ...
+            rocID, idListStr);
 
     elseif strcmp(fieldPrefix, 'up')
-        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap AUC: %s%s', ...
-            rocID, params.iden, ids);
+        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap AUC: %s', ...
+            rocID, idListStr);
 
     elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
-        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap AUC: %s%s', ...
-            rocID, params.iden, ids);
+        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap AUC: %s', ...
+            rocID, idListStr);
 
     elseif strcmp(fieldPrefix, 'nov')
-        comparisonTitle = sprintf('Novel AZ vs Non RZ %s by Five-Lap AUC: %s%s', ...
-            rocID, params.iden, ids);
+        comparisonTitle = sprintf('Novel AZ vs Non RZ %s by Five-Lap AUC: %s', ...
+            rocID, idListStr);
 
     elseif strcmp(fieldPrefix, 'nov2')
-        comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by Five-Lap AUC: %s%s', ...
-            rocID, params.iden, ids);
+        comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by Five-Lap AUC: %s,', ...
+            rocID, idListStr);
 
     else
-        comparisonTitle = sprintf('%s %s by Five-Lap AUC: %s%s', ...
-            fieldPrefix, rocID, params.iden, ids);
+        comparisonTitle = sprintf('%s %s by Five-Lap AUC: %s', ...
+            fieldPrefix, rocID, idListStr);
     end
 
     title(comparisonTitle, 'Interpreter', 'none');
