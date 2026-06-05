@@ -191,7 +191,7 @@ if plotBehavior
         whichDay = [1]; %1 = first original/update/novel/novel2 day, 0 = day before update/novel/novel2 day
         sessionToPlot = 2; %0 = plot all, 1 = only plot original sessions on a given day, 2 = only plot update session on a given day, 3 = only plot novel session on a given day, 4 = only plot novel2 session on a given day
         doSessionPlots = 0; %plot data across all sessions for this mouse
-        doLapPlots = 1;  %plot data across all laps on a given day for this mouse
+        doLapPlots = 0;  %plot data across all laps on a given day for this mouse
         plotLapByBlock = 1; %0 = plot all laps individually, 1 = plot by blocks of 5, 2 = plot by block of specific trials
         numTrPerBlock = params.numTrPerBlock;
         whichBlocks = 'all'; %used with plotLapByBlock = 1; options = 'all', 'firstLast'

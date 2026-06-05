@@ -877,316 +877,434 @@ end%function
 % Deandra: Helper function to create ONE ROC plot where each line is the
 % average ROC curve for one group-of-5 laps.
 function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
-    
-% SOS
-    if ids ismember(params.controlGroup)
-        controlGroup = ids;
-    end
-    if ids ismember(params.experimentalGroup)
-        experimentalGroup = ismember(params.experimentalGroup);
-    end 
 
-    figure('Name', sprintf('%s %s averaged grouped ROC', fieldPrefix, rocID));
-    hold on
+
+    % Define the two animal cohorts 
+    cohortFieldNames = {'controlGroup', 'experimentalGroup'};
+    cohortTitleNames = {'Control Group', 'Experimental Group'};
+    cohortAnimalLists = {params.controlGroup, params.experimentalGroup};
+
 
     % Common X-axis for averaging ROC curves.
     commonX = 0:0.01:1;
 
-    lgdNames = {};
-    colorList = hsv(length(groupsToPlot));
-    colorCtr = 0;
-    
     suffixes = {'st', 'nd', 'rd', 'th'};
-    for g = groupsToPlot
-        currField = sprintf('%s_five_%d', fieldPrefix, g);
-        
-        % Counter
-        if g == 11 || g == 12 || g == 13
-            suffix = 'th';
+
+    % Make one averaged grouped ROC figure for each cohort.
+    for cohortIdx = 1:length(cohortFieldNames)
+
+        cohortFieldName = cohortFieldNames{cohortIdx};
+        cohortTitleName = cohortTitleNames{cohortIdx};
+        cohortAnimals = cohortAnimalLists{cohortIdx};
+
+        figure('Name', sprintf('%s %s averaged grouped ROC %s', fieldPrefix, rocID, cohortTitleName));
+        hold on
+
+        lgdNames = {};
+
+        % Allows for each line to be a different color depending on the fieldname SOS
+        if strcmp(cohortFieldName, 'controlGroup')
+            colorList = summer(length(groupsToPlot));
+        elseif strcmp(cohortFieldName, 'experimentalGroup')
+            colorList = autumn(length(groupsToPlot));  
         else
-            lastDigit = mod(g,10);
-            if lastDigit >= 1 && lastDigit <= 3
-                suffix = suffixes{lastDigit};
+            colorList = spring(length(groupsToPlot));
+        end
+
+        colorCtr = 0;
+        usedAnimalsForFigure = [];
+
+        for g = groupsToPlot
+            currField = sprintf('%s_five_%d', fieldPrefix, g);
+
+            % Counter suffix for legend labels.
+            if g == 11 || g == 12 || g == 13
+                suffix = 'th';
             else
-                suffix = suffixes{4};
+                lastDigit = mod(g,10);
+                if lastDigit >= 1 && lastDigit <= 3
+                    suffix = suffixes{lastDigit};
+                else
+                    suffix = suffixes{4};
+                end
             end
-        end
 
+            % Skip this five-lap group if the field does not exist in ROC.
+            if ~isfield(ROC, currField)
+                continue;
+            end
 
-        % Skip this group if the field does not exist in ROC.
-        if ~isfield(ROC, currField)
-            continue;
-        end
+            % Skip this group if it does not have X/Y ROC curve data or AUC data.
+            if ~isfield(ROC.(currField), 'X') || ~isfield(ROC.(currField), 'Y') || ~isfield(ROC.(currField), 'AUC')
+                continue;
+            end
 
-        % Skip this group if it does not have X/Y ROC curve data.
-        if ~isfield(ROC.(currField), 'X') || ~isfield(ROC.(currField), 'Y')
-            continue;
-        end
+            % Store each valid session's ROC curve after interpolation.
+            yInterpAllSessions = [];
+            lineAnimals = [];
 
-        % Store each session's ROC curve after interpolation.
-        yInterpAllSessions = [];
+            for r = 1:length(ROC.(currField).X)
 
-        for r = 1:length(ROC.(currField).X)
+                % Match this ROC session back to its animal ID. ROC.sessInfo{r}
+                % stores the allindex rows used for session r, and column 1 is
+                % the animal number.
+                if ~isfield(ROC, 'sessInfo') || length(ROC.sessInfo) < r || isempty(ROC.sessInfo{r})
+                    continue;
+                end
 
-            % Only use sessions with valid AUC, X, and Y data.
-            if length(ROC.(currField).AUC) >= r && ~isnan(ROC.(currField).AUC(r))
+                thisAnimal = ROC.sessInfo{r}(1, 1);
 
-                if ~isempty(ROC.(currField).X{r}) && ~isempty(ROC.(currField).Y{r})
+                % Only include this session in the current cohort's figure.
+                if ~ismember(thisAnimal, cohortAnimals)
+                    continue;
+                end
 
-                    thisX = ROC.(currField).X{r};
-                    thisY = ROC.(currField).Y{r};
+                % Only use sessions with valid AUC, X, and Y data.
+                if length(ROC.(currField).AUC) >= r && ~isnan(ROC.(currField).AUC(r))
 
-                    % Make sure X and Y are column vectors.
-                    thisX = thisX(:);
-                    thisY = thisY(:);
+                    if ~isempty(ROC.(currField).X{r}) && ~isempty(ROC.(currField).Y{r})
 
-                    % Remove NaN values.
-                    validIdx = ~isnan(thisX) & ~isnan(thisY);
-                    thisX = thisX(validIdx);
-                    thisY = thisY(validIdx);
+                        thisX = ROC.(currField).X{r};
+                        thisY = ROC.(currField).Y{r};
 
-                    % interp1 needs unique X values.
-                    % ROC curves can sometimes contain repeated X values.
-                    [thisX_unique, uniqueIdx] = unique(thisX, 'stable');
-                    thisY_unique = thisY(uniqueIdx);
+                        % Make sure X and Y are column vectors.
+                        thisX = thisX(:);
+                        thisY = thisY(:);
 
-                    % Only interpolate if there are enough points.
-                    if length(thisX_unique) >= 2
+                        % Remove NaN values.
+                        validIdx = ~isnan(thisX) & ~isnan(thisY);
+                        thisX = thisX(validIdx);
+                        thisY = thisY(validIdx);
 
-                        % Interpolate this session's ROC curve onto commonX.
-                        % Values outside the observed X range are filled with NaN
-                        % so they do not affect nanmean.
-                        thisY_interp = interp1(thisX_unique, thisY_unique, commonX, 'linear', nan);
+                        % interp1 needs unique X values. ROC curves can
+                        % sometimes contain repeated X values.
+                        [thisX_unique, uniqueIdx] = unique(thisX, 'stable');
+                        thisY_unique = thisY(uniqueIdx);
 
-                        % Store this interpolated curve.
-                        yInterpAllSessions = [yInterpAllSessions; thisY_interp];
+                        % Only interpolate if there are enough points.
+                        if length(thisX_unique) >= 2
 
+                            % Interpolate this session's ROC curve onto commonX.
+                            % Values outside the observed X range are filled with
+                            % NaN so they do not affect nanmean.
+                            thisY_interp = interp1(thisX_unique, thisY_unique, commonX, 'linear', nan);
+
+                            % Store this interpolated curve.
+                            yInterpAllSessions = [yInterpAllSessions; thisY_interp];
+                            lineAnimals = unique([lineAnimals thisAnimal]);
+                            usedAnimalsForFigure = unique([usedAnimalsForFigure thisAnimal]);
+
+                        end
                     end
                 end
             end
+
+            % If no valid sessions existed for this group/cohort, skip plotting it.
+            if isempty(yInterpAllSessions)
+                continue;
+            end
+
+            % Average the ROC curve for this five-lap group across sessions
+            % from only the current cohort.
+            avgY = nanmean(yInterpAllSessions, 1);
+
+            % Plot one averaged ROC curve for this group.
+            colorCtr = colorCtr + 5;
+
+            if colorCtr > size(colorList, 1)
+                colorCtr = 1;
+            end
+
+            plot(commonX, avgY, 'Color', colorList(colorCtr,:), 'LineWidth', 2);
+
+            nSessions = size(yInterpAllSessions, 1);
+            nAnimals = length(unique(lineAnimals));
+            lgdNames = [lgdNames {sprintf('%d%s 5 trials, sessions=%d, animals=%d', g, suffix, nSessions, nAnimals)}];
+
         end
 
-        % If no valid sessions existed for this group, skip plotting it.
-        if isempty(yInterpAllSessions)
-            continue;
+        % Chance line.
+        plot(0:0.1:1, 0:0.1:1, '-k');
+
+        xlabel('False positive rate');
+        ylabel('True positive rate');
+
+        % Use only animals that contributed valid ROC curves to the title.
+        if isempty(usedAnimalsForFigure)
+            idListStr = 'no valid animals';
+        else
+            idList = strings(1, length(usedAnimalsForFigure));
+
+            for i = 1:length(usedAnimalsForFigure)
+                idList(i) = sprintf('%s%d', params.iden, usedAnimalsForFigure(i));
+            end
+
+            idListStr = strjoin(idList, ', ');
         end
 
-        % Average the ROC curve for this group across sessions.
-        avgY = nanmean(yInterpAllSessions, 1);
+        if strcmp(fieldPrefix, 'og')
+            comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap ROC - %s: %s', rocID, cohortTitleName, idListStr);
 
-        % Plot one averaged ROC curve for this group.
-        colorCtr = colorCtr + 1;
+        elseif strcmp(fieldPrefix, 'up')
+            comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap ROC - %s: %s', rocID, cohortTitleName, idListStr);
 
-        if colorCtr > size(colorList, 1)
-            colorCtr = 1;
+        elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
+            comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap ROC - %s: %s', rocID, cohortTitleName, idListStr);
+
+            % elseif strcmp(fieldPrefix, 'nov')
+            %     comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group - %s', rocID, cohortTitleName);
+            %
+            % elseif strcmp(fieldPrefix, 'nov2')
+            %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group - %s', rocID, cohortTitleName);
+
+        else
+            comparisonTitle = sprintf('%s %s by Five-Lap ROC - %s: %s', fieldPrefix, rocID, cohortTitleName, idListStr);
         end
 
-        plot(commonX, avgY, 'Color', colorList(colorCtr,:), 'LineWidth', 2);
+        title(comparisonTitle, 'Interpreter', 'none');
 
-        lgdNames = [lgdNames {sprintf('%d%s 5 trials', g, suffix)}];
+        if ~isempty(lgdNames)
+            legend(lgdNames, 'Box', 'off', 'Location', 'southeast', 'FontSize', 6, 'Interpreter', 'none');
+        else
+            legend('Box','off');
+            text(0.5, 0.5, sprintf('No valid ROC data found for %s - %s', fieldPrefix, cohortTitleName), ...
+                'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'middle', ...
+                'FontSize', 12);
+        end
+
+        figname = sprintf('%s_%s_%s_average_ROC_by_five_group', fieldPrefix, rocID, cohortFieldName);
+        print(gcf, figname, '-dpng', '-r300');
 
     end
-
-    % Chance line.
-    plot(0:0.1:1, 0:0.1:1, '-k');
-
-    xlabel('False positive rate');
-    ylabel('True positive rate');
-    
-    % Deandra: title formatting
-    idList = strings(1, length(params.animals));
-
-    for i = 1:length(params.animals)
-        idList(i) = sprintf('%s%d', params.iden, i);
-    end
-    idListStr = strjoin(idList, ', ');
-
-    if strcmp(fieldPrefix, 'og')
-        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap ROC: %s', rocID, idListStr);
-
-    elseif strcmp(fieldPrefix, 'up')
-        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap ROC: %s', rocID, idListStr);
-
-    elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
-        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap ROC: %s', rocID, idListStr);
-
-        % elseif strcmp(fieldPrefix, 'nov')
-        %     comparisonTitle = sprintf('Novel AZ vs Non RZ %s by five-lap group', rocID);
-        %
-        % elseif strcmp(fieldPrefix, 'nov2')
-        %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group', rocID);
-
-    else
-        comparisonTitle = sprintf('%s %s by Five-Lap ROC: %s', fieldPrefix, rocID, idListStr);
-    end
-
-    title(comparisonTitle, 'Interpreter', 'none');
-
-    if ~isempty(lgdNames)
-        legend(lgdNames, 'Box', 'off', 'Location', 'southeast', 'FontSize', 6, 'Interpreter', 'none');
-    else
-        legend('Box','off');
-    end
-
-    figname = sprintf('%s_%s_average_ROC_by_five_group', fieldPrefix, rocID);
-    print(gcf, figname, '-dpng', '-r300');
 
 end
 % -----------------------------------------------------------------------------------
-% Deandra: Helper function to create ONE AUC plot where each line is the
-% average ROC curve for one group-of-5 laps.
+% Deandra: Helper function to create ONE AUC plot where each point is the
+% average AUC for one group-of-5 laps.
 function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, params, ids)
 
-    figure('Name', sprintf('%s %s averaged grouped AUC', fieldPrefix, rocID));
-    hold on
-
-    groupNumsToPlot = [];
-    aucAvgToPlot = [];
-    aucSEMToPlot = [];
-    aucNToPlot = [];
-
-    xTickLabels = {};
+    % Define the two animal cohorts.
+    cohortFieldNames = {'controlGroup', 'experimentalGroup'};
+    cohortTitleNames = {'Control Group', 'Experimental Group'};
+    cohortAnimalLists = {params.controlGroup, params.experimentalGroup};
 
     suffixes = {'st', 'nd', 'rd', 'th'};
 
-    for g = groupsToPlot
+    % Make one averaged grouped AUC figure for each cohort.
+    for cohortIdx = 1:length(cohortFieldNames)
 
-        currField = sprintf('%s_five_%d', fieldPrefix, g);
+        cohortFieldName = cohortFieldNames{cohortIdx};
+        cohortTitleName = cohortTitleNames{cohortIdx};
+        cohortAnimals = cohortAnimalLists{cohortIdx};
 
-        % Create ordinal suffix for group label.
-        if g == 11 || g == 12 || g == 13
-            suffix = 'th';
+        % color logic
+        if strcmp(cohortFieldName, 'controlGroup')
+            aucColorList = autumn(length(groupsToPlot));
+
+        elseif strcmp(cohortFieldName, 'experimentalGroup')
+            aucColorList = winter(length(groupsToPlot));
+
         else
-            lastDigit = mod(g, 10);
+            aucColorList = spring(length(groupsToPlot));
+        end
 
-            if lastDigit >= 1 && lastDigit <= 3
-                suffix = suffixes{lastDigit};
+        aucLineColor = aucColorList(round(size(aucColorList, 1) / 2), :);
+
+        figure('Name', sprintf('%s %s averaged grouped AUC %s', fieldPrefix, rocID, cohortTitleName));
+        hold on
+
+        groupNumsToPlot = [];
+        aucAvgToPlot = [];
+        aucSEMToPlot = [];
+        aucNToPlot = [];
+        aucAnimalNToPlot = [];
+        xTickLabels = {};
+        usedAnimalsForFigure = [];
+
+        for g = groupsToPlot
+
+            currField = sprintf('%s_five_%d', fieldPrefix, g);
+
+            % Create ordinal suffix for group label.
+            if g == 11 || g == 12 || g == 13
+                suffix = 'th';
             else
-                suffix = suffixes{4};
+                lastDigit = mod(g, 10);
+
+                if lastDigit >= 1 && lastDigit <= 3
+                    suffix = suffixes{lastDigit};
+                else
+                    suffix = suffixes{4};
+                end
             end
+
+            % Skip this five-lap group if the field does not exist in ROC.
+            if ~isfield(ROC, currField)
+                continue;
+            end
+
+            % Skip this group if it does not have AUC data.
+            if ~isfield(ROC.(currField), 'AUC')
+                continue;
+            end
+
+            thisAUC = ROC.(currField).AUC;
+            thisAUC = thisAUC(:)';
+            validAUC = [];
+            lineAnimals = [];
+
+            for r = 1:length(thisAUC)
+
+                % Match this AUC session back to its animal ID. ROC.sessInfo{r}
+                % stores the allindex rows used for session r, and column 1 is
+                % the animal number.
+                if ~isfield(ROC, 'sessInfo') || length(ROC.sessInfo) < r || isempty(ROC.sessInfo{r})
+                    continue;
+                end
+
+                thisAnimal = ROC.sessInfo{r}(1, 1);
+
+                % Only include this session in the current cohort's figure.
+                if ~ismember(thisAnimal, cohortAnimals)
+                    continue;
+                end
+
+                % Only use sessions with valid AUC values.
+                if ~isnan(thisAUC(r))
+                    validAUC = [validAUC thisAUC(r)];
+                    lineAnimals = unique([lineAnimals thisAnimal]);
+                    usedAnimalsForFigure = unique([usedAnimalsForFigure thisAnimal]);
+
+                end
+
+            end
+
+            % Skip this group if there are no valid AUC values for this cohort.
+            if isempty(validAUC)
+                continue;
+            end
+
+            % Average AUC across sessions for this five-lap group from only
+            % the current cohort.
+            aucAvg = nanmean(validAUC);
+
+            % SEM across sessions.
+            if length(validAUC) > 1
+                aucSEM = nanstd(validAUC, 0) / sqrt(length(validAUC));
+            else
+                aucSEM = 0;
+            end
+
+            % Store plotting values.
+            groupNumsToPlot = [groupNumsToPlot g];
+            aucAvgToPlot = [aucAvgToPlot aucAvg];
+            aucSEMToPlot = [aucSEMToPlot aucSEM];
+
+            % Number of valid sessions contributing to this AUC point.
+            aucNToPlot = [aucNToPlot length(validAUC)];
+
+            % Number of unique animals contributing to this AUC point.
+            aucAnimalNToPlot = [aucAnimalNToPlot length(unique(lineAnimals))];
+
+            xTickLabels = [xTickLabels {sprintf('%d%s', g, suffix)}];
+
         end
 
-        % Skip this group if the field does not exist in ROC.
-        if ~isfield(ROC, currField)
-            continue;
-        end
+        % If no valid AUCs were found, still create and save a figure that says so.
+        if isempty(groupNumsToPlot)
 
-        % Skip this group if it does not have AUC data.
-        if ~isfield(ROC.(currField), 'AUC')
-            continue;
-        end
+            text(0.5, 0.5, sprintf('No valid AUC data found for %s - %s', fieldPrefix, cohortTitleName), ...
+                'HorizontalAlignment', 'center', ...
+                'VerticalAlignment', 'middle', ...
+                'FontSize', 12);
 
-        thisAUC = ROC.(currField).AUC;
+            xlim([0 1]);
+            ylim([0 1]);
 
-        % Make sure AUC is a row vector.
-        thisAUC = thisAUC(:)';
-
-        % Remove NaN values.
-        validAUC = thisAUC(~isnan(thisAUC));
-
-        % Skip this group if there are no valid AUC values.
-        if isempty(validAUC)
-            continue;
-        end
-
-        % Average AUC across sessions for this five-lap group.
-        aucAvg = nanmean(validAUC);
-
-        % SEM across sessions.
-        if length(validAUC) > 1
-            aucSEM = nanstd(validAUC, 0) / sqrt(length(validAUC));
         else
-            aucSEM = 0;
+
+            errorbar(groupNumsToPlot, aucAvgToPlot, aucSEMToPlot, '-o', ...
+                'Color', aucLineColor, ...
+                'MarkerEdgeColor', aucLineColor, ...
+                'MarkerFaceColor', aucLineColor, ...
+                'LineWidth', 1.5, ...
+                'MarkerSize', 5);
+
+            % Add a reference line at AUC = 0.5.
+            plot([min(groupNumsToPlot) max(groupNumsToPlot)], [0.5 0.5], '--k');
+
+            xlim([min(groupNumsToPlot) - 0.5, max(groupNumsToPlot) + 0.5]);
+            ylim([0 1]);
+
+            xticks(groupNumsToPlot);
+            xticklabels(xTickLabels);
+            xtickangle(45);
+
+            % Label each point with the number of sessions and animals used.
+            for i = 1:length(groupNumsToPlot)
+
+                labelY = aucAvgToPlot(i) + 0.02;
+
+                if labelY > 0.98
+                    labelY = aucAvgToPlot(i) - 0.04;
+                end
+
+                text(groupNumsToPlot(i), labelY, sprintf('s=%d, a=%d', aucNToPlot(i), aucAnimalNToPlot(i)), ...
+                    'HorizontalAlignment', 'center', ...
+                    'VerticalAlignment', 'bottom', ...
+                    'FontSize', 7);
+
+            end
+
         end
 
-        % Store plotting values.
-        groupNumsToPlot = [groupNumsToPlot g];
-        aucAvgToPlot = [aucAvgToPlot aucAvg];
-        aucSEMToPlot = [aucSEMToPlot aucSEM];
-        aucNToPlot = [aucNToPlot length(validAUC)];
+        xlabel('Five-lap group');
+        ylabel('Average AUC across sessions');
 
-        xTickLabels = [xTickLabels {sprintf('%d%s', g, suffix)}];
+        % Use only animals that contributed valid AUCs to the title.
+        if isempty(usedAnimalsForFigure)
+            idListStr = 'no valid animals';
+        else
+            idList = strings(1, length(usedAnimalsForFigure));
 
-    end
+            for i = 1:length(usedAnimalsForFigure)
+                idList(i) = sprintf('%s%d', params.iden, usedAnimalsForFigure(i));
+            end
 
-    % If no valid AUCs were found, still create a figure that says so.
-    if isempty(groupNumsToPlot)
-
-        text(0.5, 0.5, sprintf('No valid AUC data found for %s', fieldPrefix), ...
-            'HorizontalAlignment', 'center', ...
-            'VerticalAlignment', 'middle', ...
-            'FontSize', 12);
-
-        xlim([0 1]);
-        ylim([0 1]);
-
-    else
-
-        % Plot average AUC by five-lap group with SEM error bars.
-        errorbar(groupNumsToPlot, aucAvgToPlot, aucSEMToPlot, '-o', ...
-            'LineWidth', 1.5, ...
-            'MarkerSize', 5);
-
-        % Add a reference line at AUC = 0.5.
-        plot([min(groupNumsToPlot) max(groupNumsToPlot)], [0.5 0.5], '--k');
-
-        xlim([min(groupNumsToPlot) - 0.5, max(groupNumsToPlot) + 0.5]);
-        ylim([0 1]);
-
-        xticks(groupNumsToPlot);
-        xticklabels(xTickLabels);
-        xtickangle(45);
-
-        % Optional: label each point with the number of sessions used.
-        for i = 1:length(groupNumsToPlot)
-            text(groupNumsToPlot(i), aucAvgToPlot(i), sprintf(' n=%d', aucNToPlot(i)), ...
-                'VerticalAlignment', 'bottom', ...
-                'FontSize', 7);
+            idListStr = strjoin(idList, ', ');
         end
 
+        if strcmp(fieldPrefix, 'og')
+            comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap AUC - %s: %s', ...
+                rocID, cohortTitleName, idListStr);
+
+        elseif strcmp(fieldPrefix, 'up')
+            comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap AUC - %s: %s', ...
+                rocID, cohortTitleName, idListStr);
+
+        elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
+            comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap AUC - %s: %s', ...
+                rocID, cohortTitleName, idListStr);
+
+        elseif strcmp(fieldPrefix, 'nov')
+            comparisonTitle = sprintf('Novel AZ vs Non RZ %s by Five-Lap AUC - %s: %s', ...
+                rocID, cohortTitleName, idListStr);
+
+        elseif strcmp(fieldPrefix, 'nov2')
+            comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by Five-Lap AUC - %s: %s', ...
+                rocID, cohortTitleName, idListStr);
+
+        else
+            comparisonTitle = sprintf('%s %s by Five-Lap AUC - %s: %s', ...
+                fieldPrefix, rocID, cohortTitleName, idListStr);
+        end
+
+        title(comparisonTitle, 'Interpreter', 'none');
+
+        figname = sprintf('%s_%s_%s_average_AUC_by_five_group', fieldPrefix, rocID, cohortFieldName);
+        print(gcf, figname, '-dpng', '-r300');
+
     end
 
-    xlabel('Five-lap group');
-    ylabel('Average AUC across sessions');
-
-    % Deandra: title formatting
-    idList = strings(1, length(params.animals));
-
-    for i = 1:length(params.animals)
-        idList(i) = sprintf('%s%d', params.iden, i);
-    end
-    idListStr = strjoin(idList, ', ');
-
-    if strcmp(fieldPrefix, 'og')
-        comparisonTitle = sprintf('Original AZ vs Non RZ %s by Five-Lap AUC: %s', ...
-            rocID, idListStr);
-
-    elseif strcmp(fieldPrefix, 'up')
-        comparisonTitle = sprintf('Update AZ vs Original RZ %s by Five-Lap AUC: %s', ...
-            rocID, idListStr);
-
-    elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
-        comparisonTitle = sprintf('Update AZ vs Never RZ %s by Five-Lap AUC: %s', ...
-            rocID, idListStr);
-
-    elseif strcmp(fieldPrefix, 'nov')
-        comparisonTitle = sprintf('Novel AZ vs Non RZ %s by Five-Lap AUC: %s', ...
-            rocID, idListStr);
-
-    elseif strcmp(fieldPrefix, 'nov2')
-        comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by Five-Lap AUC: %s,', ...
-            rocID, idListStr);
-
-    else
-        comparisonTitle = sprintf('%s %s by Five-Lap AUC: %s', ...
-            fieldPrefix, rocID, idListStr);
-    end
-
-    title(comparisonTitle, 'Interpreter', 'none');
-
-    figname = sprintf('%s_%s_average_AUC_by_five_group', fieldPrefix, rocID);
-    print(gcf, figname, '-dpng', '-r300');
-
-end 
-% -----------------------------------------------------------------------------------
-
+end
