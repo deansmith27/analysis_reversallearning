@@ -942,21 +942,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
             % Store each valid session's ROC curve after interpolation.
             % yInterpAllSessions = [];
             % lineAnimals = [];
-            % Store each valid session's ROC curve after interpolation.
-            %debug - uncomment the above
-            yInterpAllSessions = [];
             
-            % DIAGNOSTIC:
-            % Store the session-level AUC values that correspond to the exact same
-            % sessions used to build this plotted ROC line.
-            validAUCForThisROCLine = [];
-            
-            % DIAGNOSTIC:
-            % Store the animal IDs for the exact same sessions used to build this
-            % plotted ROC line.
-            animalsForThisROCLine = [];
-
-
 
             for r = 1:length(ROC.(currField).X)
 
