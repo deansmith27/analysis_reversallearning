@@ -940,23 +940,8 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
             end
 
             % Store each valid session's ROC curve after interpolation.
-            % yInterpAllSessions = [];
-            % lineAnimals = [];
-            % Store each valid session's ROC curve after interpolation.
-            %debug - uncomment the above
             yInterpAllSessions = [];
-            
-            % DIAGNOSTIC:
-            % Store the session-level AUC values that correspond to the exact same
-            % sessions used to build this plotted ROC line.
-            validAUCForThisROCLine = [];
-            
-            % DIAGNOSTIC:
-            % Store the animal IDs for the exact same sessions used to build this
-            % plotted ROC line.
-            animalsForThisROCLine = [];
-
-
+            lineAnimals = [];
 
             for r = 1:length(ROC.(currField).X)
 
@@ -1094,34 +1079,6 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
     end
 
 end
-% -----------------------------------------------------------------------------------
-% Debugging 
-% ============================================================
-% DIAGNOSTIC SETUP
-% Add this near the top of plotAverageGroupedROCsFromROC,
-% after suffixes/commonX are defined, but before the cohort loop.
-% ============================================================
-
-diagnoseROCvsAUC = true;
-
-diagnosticRows = {};
-
-diagnosticVarNames = { ...
-    'fieldPrefix', ...
-    'cohortFieldName', ...
-    'fiveLapGroup', ...
-    'nSessions', ...
-    'nAnimals', ...
-    'meanStoredSessionAUC', ...
-    'aucFromPlottedAverageROC_validRange', ...
-    'aucFromPlottedAverageROC_full01Filled', ...
-    'diff_validRange_minus_storedAUC', ...
-    'diff_full01Filled_minus_storedAUC', ...
-    'nValidCommonXPoints' ...
-};
-
-diagnosticCsvName = sprintf('%s_%s_ROC_vs_AUC_diagnostic.csv', fieldPrefix, rocID);
-
 % -----------------------------------------------------------------------------------
 
 % Deandra: Helper function to create ONE AUC plot where each point is the
