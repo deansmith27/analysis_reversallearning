@@ -574,9 +574,9 @@ for id = 1:length(params.rocID)
                 rocData = calcBehaviorROC(data_nevrz*params.rocMultiplier(id), data_az*params.rocMultiplier(id));
                 
                  % Deandra code insertion (AUC debug)
-                if isfield(rocData, 'X') && ~isempty(rocData.X)
-                    [Xsorted, sortIdx] = sort(rocData.X);
-                    Ysorted = rocData.Y(sortIdx);
+                if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)
+                    [Xsorted, sortIdx] = sort(roc_groupData.X);
+                    Ysorted = roc_groupData.Y(sortIdx);
                     computedAUC = trapz(Xsorted, Ysorted);
                     % If AUC is still below 0.5, the curve is geometrically inverted — flip it
                     if computedAUC < 0.5
