@@ -567,10 +567,10 @@ for id = 1:length(params.rocID)
                 data_nevrz = nanmean(data.(currEnv).nevrz, 2);
                 rocData = calcBehaviorROC(data_nevrz*params.rocMultiplier(id), data_az*params.rocMultiplier(id))
 
-                 if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)  
-                    [Xsorted, sortIdx] = sort(roc_groupData.X);     
-                    Ysorted = roc_groupData.Y(sortIdx);     
-                    roc_groupData.AUC = trapz(Xsorted, Ysorted); 
+                 if isfield(rocData, 'X') && ~isempty(rocData.X)  
+                    [Xsorted, sortIdx] = sort(rocData.X);     
+                    Ysorted = rocData.Y(sortIdx);     
+                    rocData.AUC = trapz(Xsorted, Ysorted); 
                  end
 
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
