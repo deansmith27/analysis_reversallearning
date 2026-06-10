@@ -360,6 +360,12 @@ for id = 1:length(params.rocID)
                       groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
                       groupData_cz = nanmean(groupData.(currEnv)(g).cz, 2);
                       roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
+
+                       if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)  
+                            [Xsorted, sortIdx] = sort(roc_groupData.X);     
+                            Ysorted = roc_groupData.Y(sortIdx);     
+                            roc_groupData.AUC = trapz(Xsorted, Ysorted); 
+                        end
                         
                       % Stored grouped ROC outputs using the new dynamic field name
                        rocOut.(variable_name).mdl{ss}= roc_groupData.mdl;
@@ -559,7 +565,13 @@ for id = 1:length(params.rocID)
             if isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
                 data_az = nanmean(data.(currEnv).az, 2);
                 data_nevrz = nanmean(data.(currEnv).nevrz, 2);
-                rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
+                rocData = calcBehaviorROC(data_nevrz*params.rocMultiplier(id), data_az*params.rocMultiplier(id))
+
+                 if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)  
+                    [Xsorted, sortIdx] = sort(roc_groupData.X);     
+                    Ysorted = roc_groupData.Y(sortIdx);     
+                    roc_groupData.AUC = trapz(Xsorted, Ysorted); 
+                 end
 
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).scores{ss} = rocData.scores;
@@ -585,6 +597,12 @@ for id = 1:length(params.rocID)
                         groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
                         groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
                         roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
+                        
+                        if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)  
+                            [Xsorted, sortIdx] = sort(roc_groupData.X);     
+                            Ysorted = roc_groupData.Y(sortIdx);     
+                            roc_groupData.AUC = trapz(Xsorted, Ysorted); 
+                        end
                         
                         % come back to this
                         rocOut.(variable_name).mdl{ss} = roc_groupData.mdl;

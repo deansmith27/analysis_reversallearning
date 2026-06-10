@@ -890,6 +890,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
     suffixes = {'st', 'nd', 'rd', 'th'};
 
+
     % Make one averaged grouped ROC figure for each cohort.
     for cohortIdx = 1:length(cohortFieldNames)
 
@@ -902,7 +903,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
         lgdNames = {};
 
-        % Allows for each line to be a different color depending on the fieldname SOS
+        % Allows for each line to be a different color depending on the fieldname 
         if strcmp(cohortFieldName, 'controlGroup')
             colorList = summer(length(groupsToPlot));
         elseif strcmp(cohortFieldName, 'experimentalGroup')
@@ -1006,7 +1007,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
 
             % Average the ROC curve for this five-lap group across sessions
             % from only the current cohort.
-            avgY = nanmean(yInterpAllSessions, 1);
+            avgY = nanmean(yInterpAllSessions, 1); 
 
             % Plot one averaged ROC curve for this group.
             colorCtr = colorCtr + 5;
@@ -1077,7 +1078,6 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
         print(gcf, figname, '-dpng', '-r300');
 
     end
-
 end
 % -----------------------------------------------------------------------------------
 
@@ -1122,6 +1122,7 @@ function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
         aucAnimalNToPlot = [];
         xTickLabels = {};
         usedAnimalsForFigure = [];
+       
 
         for g = groupsToPlot
 
@@ -1154,6 +1155,8 @@ function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
             thisAUC = thisAUC(:)';
             validAUC = [];
             lineAnimals = [];
+
+            
 
             for r = 1:length(thisAUC)
 
@@ -1211,7 +1214,8 @@ function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
             xTickLabels = [xTickLabels {sprintf('%d%s', g, suffix)}];
 
         end
-
+        
+       
         % If no valid AUCs were found, still create and save a figure that says so.
         if isempty(groupNumsToPlot)
 
