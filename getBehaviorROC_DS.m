@@ -369,8 +369,14 @@ for id = 1:length(params.rocID)
                             % If AUC is still below 0.5, the curve is geometrically inverted — flip it
                             if computedAUC < 0.5
                                 computedAUC = 1 - computedAUC;
+                                Xsorted = 1 - Xsorted;
+                                Ysorted = 1 - Ysorted;
+                                [Xsorted, sortIdx2] = sort(Xsorted);
+                                Ysorted = Ysorted(sortIdx2);
                             end
                             roc_groupData.AUC = computedAUC;
+                            roc_groupData.X = Xsorted;
+                            roc_groupData.Y = Ysorted;
                         end
                         
                       % Stored grouped ROC outputs using the new dynamic field name
@@ -581,8 +587,14 @@ for id = 1:length(params.rocID)
                     % If AUC is still below 0.5, the curve is geometrically inverted — flip it
                     if computedAUC < 0.5
                         computedAUC = 1 - computedAUC;
+                        Xsorted = 1 - Xsorted;
+                        Ysorted = 1 - Ysorted;
+                        [Xsorted, sortIdx2] = sort(Xsorted);
+                        Ysorted = Ysorted(sortIdx2);
                     end
-                    roc_groupData.AUC = computedAUC;
+                    rocData.AUC = computedAUC;
+                    rocData.X = Xsorted;
+                    rocData.Y = Ysorted;
                 end
                  % ----------------------------
 
@@ -619,8 +631,14 @@ for id = 1:length(params.rocID)
                             % If AUC is still below 0.5, the curve is geometrically inverted — flip it
                             if computedAUC < 0.5
                                 computedAUC = 1 - computedAUC;
+                                Xsorted = 1 - Xsorted;
+                                Ysorted = 1 - Ysorted;
+                                [Xsorted, sortIdx2] = sort(Xsorted);
+                                Ysorted = Ysorted(sortIdx2);
                             end
                             roc_groupData.AUC = computedAUC;
+                            roc_groupData.X = Xsorted;
+                            roc_groupData.Y = Ysorted;
                         end
                         
                         % come back to this
