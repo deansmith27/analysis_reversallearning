@@ -1,6 +1,4 @@
 function [ROC] = getBehaviorROC_DS(allindex,dirs,uniqSess,params)
-%adapted from getNovelBehaviorROC_JLK and getBehaviorDistributionAZvsNRZ_JLK
-
 %% create or load ROC data for each session %%
 
 ROC = [];
@@ -342,10 +340,18 @@ for id = 1:length(params.rocID)
                 rocOut.(currEnv).Y{ss} = rocData.Y;
                 rocOut.(currEnv).T{ss} = rocData.T;
                 rocOut.(currEnv).AUC(ss) = rocData.AUC;
+                rocOut.(currEnv).rawAUC(ss) = rocData.AUC;
+                rocOut.(currEnv).flippedAUC(ss) = 1 - rocData.AUC;
+                rocOut.(currEnv).absAUC(ss) = max(rocData.AUC, 1 - rocData.AUC);
+                rocOut.(currEnv).wasBelowChance(ss) = rocData.AUC < 0.5;
 
 
             else
                 rocOut.(currEnv).AUC(ss) = nan;
+                rocOut.(currEnv).rawAUC(ss) = nan;
+                rocOut.(currEnv).flippedAUC(ss) = nan;
+                rocOut.(currEnv).absAUC(ss) = nan;
+                rocOut.(currEnv).wasBelowChance(ss) = false;
 
             end
         % -------------------------------------------------------
@@ -360,24 +366,6 @@ for id = 1:length(params.rocID)
                       groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
                       groupData_cz = nanmean(groupData.(currEnv)(g).cz, 2);
                       roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_cz*params.rocMultiplier(id));
-
-                       %AUC debug
-                        if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)
-                            [Xsorted, sortIdx] = sort(roc_groupData.X);
-                            Ysorted = roc_groupData.Y(sortIdx);
-                            computedAUC = trapz(Xsorted, Ysorted);
-                            % If AUC is still below 0.5, the curve is geometrically inverted — flip it
-                            if computedAUC < 0.5
-                                computedAUC = 1 - computedAUC;
-                                Xsorted = 1 - Xsorted;
-                                Ysorted = 1 - Ysorted;
-                                [Xsorted, sortIdx2] = sort(Xsorted);
-                                Ysorted = Ysorted(sortIdx2);
-                            end
-                            roc_groupData.AUC = computedAUC;
-                            roc_groupData.X = Xsorted;
-                            roc_groupData.Y = Ysorted;
-                        end
                         
                       % Stored grouped ROC outputs using the new dynamic field name
                        rocOut.(variable_name).mdl{ss}= roc_groupData.mdl;
@@ -386,8 +374,16 @@ for id = 1:length(params.rocID)
                        rocOut.(variable_name).Y{ss} = roc_groupData.Y;
                        rocOut.(variable_name).T{ss} = roc_groupData.T;
                        rocOut.(variable_name).AUC(ss) = roc_groupData.AUC;
+                       rocOut.(variable_name).rawAUC(ss) = roc_groupData.AUC;
+                       rocOut.(variable_name).flippedAUC(ss) = 1 - roc_groupData.AUC;
+                       rocOut.(variable_name).absAUC(ss) = max(roc_groupData.AUC, 1 - roc_groupData.AUC);
+                       rocOut.(variable_name).wasBelowChance(ss) = roc_groupData.AUC < 0.5;
                     else
                        rocOut.(variable_name).AUC(ss) = nan;
+                       rocOut.(variable_name).rawAUC(ss) = nan;
+                       rocOut.(variable_name).flippedAUC(ss) = nan;
+                       rocOut.(variable_name).absAUC(ss) = nan;
+                       rocOut.(variable_name).wasBelowChance(ss) = false;
                     end
                 end
             end
@@ -577,26 +573,7 @@ for id = 1:length(params.rocID)
             if isfield(data.(currEnv), 'nevrz') && ~isempty(data.(currEnv).nevrz)
                 data_az = nanmean(data.(currEnv).az, 2);
                 data_nevrz = nanmean(data.(currEnv).nevrz, 2);
-                rocData = calcBehaviorROC(data_nevrz*params.rocMultiplier(id), data_az*params.rocMultiplier(id));
-                
-                 % Deandra code insertion (AUC debug)
-                if isfield(rocData, 'X') && ~isempty(rocData.X)
-                    [Xsorted, sortIdx] = sort(rocData.X);
-                    Ysorted = rocData.Y(sortIdx);
-                    computedAUC = trapz(Xsorted, Ysorted);
-                    % If AUC is still below 0.5, the curve is geometrically inverted — flip it
-                    if computedAUC < 0.5
-                        computedAUC = 1 - computedAUC;
-                        Xsorted = 1 - Xsorted;
-                        Ysorted = 1 - Ysorted;
-                        [Xsorted, sortIdx2] = sort(Xsorted);
-                        Ysorted = Ysorted(sortIdx2);
-                    end
-                    rocData.AUC = computedAUC;
-                    rocData.X = Xsorted;
-                    rocData.Y = Ysorted;
-                end
-                 % ----------------------------
+                rocData = calcBehaviorROC(data_az*params.rocMultiplier(id), data_nevrz*params.rocMultiplier(id));
 
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).mdl{ss} = rocData.mdl;
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).scores{ss} = rocData.scores;
@@ -604,10 +581,18 @@ for id = 1:length(params.rocID)
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).Y{ss} = rocData.Y;
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).T{ss} = rocData.T;
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = rocData.AUC;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).rawAUC(ss) = rocData.AUC;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).flippedAUC(ss) = 1 - rocData.AUC;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).absAUC(ss) = max(rocData.AUC, 1 - rocData.AUC);
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).wasBelowChance(ss) = rocData.AUC < 0.5;
 
 
             else
                 rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).AUC(ss) = nan;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).rawAUC(ss) = nan;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).flippedAUC(ss) = nan;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).absAUC(ss) = nan;
+                rocOut.(sprintf('%s_UAZvNevRZ', currEnv)).wasBelowChance(ss) = false;
             end
         % -------------------------------------------------------
 
@@ -621,25 +606,7 @@ for id = 1:length(params.rocID)
 
                         groupData_az = nanmean(groupData.(currEnv)(g).az, 2);
                         groupData_nevrz = nanmean(groupData.(currEnv)(g).nevrz, 2);
-                        roc_groupData = calcBehaviorROC(groupData_nevrz*params.rocMultiplier(id), groupData_az*params.rocMultiplier(id));
-                        
-                        % code to fix AUCs
-                        if isfield(roc_groupData, 'X') && ~isempty(roc_groupData.X)
-                            [Xsorted, sortIdx] = sort(roc_groupData.X);
-                            Ysorted = roc_groupData.Y(sortIdx);
-                            computedAUC = trapz(Xsorted, Ysorted);
-                            % If AUC is still below 0.5, the curve is geometrically inverted — flip it
-                            if computedAUC < 0.5
-                                computedAUC = 1 - computedAUC;
-                                Xsorted = 1 - Xsorted;
-                                Ysorted = 1 - Ysorted;
-                                [Xsorted, sortIdx2] = sort(Xsorted);
-                                Ysorted = Ysorted(sortIdx2);
-                            end
-                            roc_groupData.AUC = computedAUC;
-                            roc_groupData.X = Xsorted;
-                            roc_groupData.Y = Ysorted;
-                        end
+                        roc_groupData = calcBehaviorROC(groupData_az*params.rocMultiplier(id), groupData_nevrz*params.rocMultiplier(id));
                         
                         % come back to this
                         rocOut.(variable_name).mdl{ss} = roc_groupData.mdl;
@@ -648,10 +615,18 @@ for id = 1:length(params.rocID)
                         rocOut.(variable_name).Y{ss} = roc_groupData.Y;
                         rocOut.(variable_name).T{ss} = roc_groupData.T;
                         rocOut.(variable_name).AUC(ss) = roc_groupData.AUC;
+                        rocOut.(variable_name).rawAUC(ss) = roc_groupData.AUC;
+                        rocOut.(variable_name).flippedAUC(ss) = 1 - roc_groupData.AUC;
+                        rocOut.(variable_name).absAUC(ss) = max(roc_groupData.AUC, 1 - roc_groupData.AUC);
+                        rocOut.(variable_name).wasBelowChance(ss) = roc_groupData.AUC < 0.5;
 
 
                     else
                         rocOut.(variable_name).AUC(ss) = nan;
+                        rocOut.(variable_name).rawAUC(ss) = nan;
+                        rocOut.(variable_name).flippedAUC(ss) = nan;
+                        rocOut.(variable_name).absAUC(ss) = nan;
+                        rocOut.(variable_name).wasBelowChance(ss) = false;
                     end
                 end
             end

@@ -222,11 +222,11 @@ if plotBehavior
         ROCtoPlotInd = find(contains({dirROC.name}, ['ROC' '_' params.rocID{id}]),1,'last');%most recent data
         ROCtoPlot = load([dirROC(1).folder '\' dirROC(ROCtoPlotInd(1)).name]);
         ROC = ROCtoPlot.ROC;
-        doROCPlots = 0; %ROC plots across sessions/animals, separated by track
-        doAUCIndPlots = 0; %AUC plots across sessions for each animal
-        doAUCGroupUpdatePlots = 0;%AUC plots across original sessions and update sessions by control vs. experimental group
-        doGroupedROCby5 = 1; % Deandra: toggle for grouped ROCs by 5
-        doGroupedAUCby5 = 1; % Deandra: toggle for grouped AUCs by 5
+        doROCPlots = 0 %ROC plots across sessions/animals, separated by track
+        doAUCIndPlots = 1; %AUC plots across sessions for each animal
+        doAUCGroupUpdatePlots = 1;%AUC plots across original sessions and update sessions by control vs. experimental group
+        doGroupedROCby5 = 0; % Deandra: toggle for grouped ROCs by 5
+        doGroupedAUCby5 = 0; % Deandra: toggle for grouped AUCs by 5
         plotBehaviorROC_DS(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots, doGroupedROCby5, doGroupedAUCby5)
     end
 
