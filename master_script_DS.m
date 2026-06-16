@@ -44,6 +44,9 @@ createBehaviorStructs = 0;
 plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
+% Deandra new function for Stephanie's choice analyzer
+choiceAnalyzer = 0;
+
 
 %% Create behavior data structs %%
 if createBehaviorStructs
@@ -232,6 +235,15 @@ if plotBehavior
 
 end%if plotBehavior
 
+%% Choice Analysis %%
+% Deandra choice analysis code
+if choiceAnalyzer
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% Choice Analysis %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+end
 %% Gather neural data %%
 if gatherNeuralData
 
