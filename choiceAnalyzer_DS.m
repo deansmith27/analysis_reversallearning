@@ -5,10 +5,18 @@ function [output 1, output2] = choiceAnalyzer_DS(input1, input2)
 % need to add python package and module equivalents up here
     % emphasis on the modules update_project.general.results_io,
     % update_project.general.timeseries, and
-    % update_project.base_analysis_class !!!!!!!!!!!!!!!!!!!!!
+    % update_project.base_analysis_class (these are file paths)
 
-% creating the class
-classdef ChoiceAnalyzer(imported item that needs to be added)
+% 0a.Creating BaseAnalysisClass that is the input into ChoiceAnalyzer
+classdef BaseAnalysisClass
+    properties
+    end
+end
+
+
+
+% 1.creating the ChoiceAnalyzer class
+classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
     properties
         nwbfile
         session_id
