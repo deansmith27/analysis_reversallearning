@@ -1,4 +1,6 @@
-function [output 1, output2] = choiceAnalyzer_DS(input1, input2)
+function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder) 
+% input should maybe be helper functions created, input should be whatever otiginal .py returns
+
 % Created by DS on 06/16/26
 % Python adaptation of Stephanie Prince's choice_analyzer python code 
 
@@ -21,7 +23,17 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
         nwbfile
         session_id
         target_var = 'choice'; 
+
+        % setup paramas
         velocity_only = False;
+        mask_value = -9999
+        params = dictionary([batch_size, epochs, regularizer, learning_rate, predict_update] , [32, 20, None, 0.1, True])
+        grid_search_params = dictionary([batch_size, epochs, regularizer, learning_rate, predict_update], [{20 50 100, 10 20 30}, (regularizer = {[], 0.01, 0.1}),
+                                                    ("L2Regularization", 0.1), {0.01 0.1}, False])
+        % setup data
+        trials_df = trialsTable = nwbfile.intervals_trials.toTable(); % check format of this and the below
+        session_ts =
+
     end
         
     methods
@@ -39,10 +51,22 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
                 obj.velocity_only = velocity_only;
             end
         end
+        % 2. run_analysis function 
+        % 3. _grid_search function
+        % 4. get_dynamic_choice function 
+        % 5. _get_classifier function 
+        % 6. _setup_data function
+        % 7._pad_data function
+        % 8. _preprocess_data function
+        % 9. _get_trial_inds function
+        % 10. _aggregate_data function
+        % 11. _get_decoder_data function
+        % 12._log2_likelihood function
+        % 13. _get_repeated_fold_average function
+
+
+
     end
 
         
-        % velocity_only
-        % mask_value 
-        % params(% dict then used: MATLAB equivalent needed)
-        % grid_search_params(% dict then used: MATLAB equivalent needed)
+       
