@@ -1,3 +1,4 @@
+
 function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder) 
 % input should maybe be helper functions created, input should be whatever otiginal .py returns
 
@@ -5,9 +6,10 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
 % Python adaptation of Stephanie Prince's choice_analyzer python code 
 
 % need to add python package and module equivalents up here
-    % emphasis on the modules update_project.general.results_io,
-    % update_project.general.timeseries, and
-    % update_project.base_analysis_class (these are file paths)
+    % Block one: built in python libraries
+    % Block two: importation of built in pyton modules AND final line
+    % imports from a built in file
+    % Block Three: imports from built in files from elsewhere 
 
 % 0a.Creating BaseAnalysisClass that is the input into ChoiceAnalyzer
 classdef BaseAnalysisClass
@@ -23,6 +25,7 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
         nwbfile
         session_id
         target_var = 'choice'; 
+        % several params throughout the entire funtion needs to be inserted 
 
         % setup paramas
         velocity_only = False;
@@ -30,9 +33,57 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
         params = dictionary([batch_size, epochs, regularizer, learning_rate, predict_update] , [32, 20, None, 0.1, True])
         grid_search_params = dictionary([batch_size, epochs, regularizer, learning_rate, predict_update], [{20 50 100, 10 20 30}, (regularizer = {[], 0.01, 0.1}),
                                                     ("L2Regularization", 0.1), {0.01 0.1}, False])
+        
         % setup data
-        trials_df = trialsTable = nwbfile.intervals_trials.toTable(); % check format of this and the below
-        session_ts =
+        trials_df = util.table.fromNWB(nwbfile.intervals_trials); % this uses the MATLAB version of NWB
+        session_ts = nwbfile.processing.get('behavior') ...
+        .nwbdatainterface.get('view_angle').view_angle;
+    
+        [input_data, target_data, timestamp_data] = ...
+            setup_data(nwbfile, target_var);
+        
+        [~, non_update_index] = ...
+            get_trial_inds('with_update', false, 'ret_index', true);
+
+        
+        if isfield(params, 'predict_update') && params.predict_update
+
+            [input, target, timestamp] = setup_data(nwbfile, target_var, true);
+            update_input_data = input;
+            update_target_data = target;
+            update_timestamp_data = timestamp;
+        
+            [~, update_index] = get_trial_inds(true, true);
+        
+            max_pad_length = max( ...
+                [ max(cellfun(@length, input_data)), ...
+                  max(cellfun(@length, update_input_data)) ] );
+        
+        else
+            update_input_data = {};  %might beed to change later depending on what data type is being stored 
+            update_target_data = {};
+            update_index = {};
+            max_pad_length = max(cellfun(@length, input_data)); % returns length of longest cell in array
+        end
+
+        % Get results to save
+        if velocity_only
+            add_tags = 'velocity_only';
+        else 
+           add_tags = '';
+        end    
+        
+       % still in Python
+       results_io = ResultsIO(creator_file=__file__, session_id=session_id, folder_name=Path(__file__).parent.stem,
+                                    tags=f'{target_var}{add_tags}') % uses separate file (ResultsIO, also calls another file within repo)
+       % back to MATLAB
+       data_files = struct( ...
+        'dynamic_choice_output', struct( ...
+        'vars', { {'output_data', 'agg_data', 'decoder_data', 'params'} }, ...
+        'format', 'pkl' ...
+            ) ...
+        );
+
 
     end
         
@@ -50,14 +101,56 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
             if nargin >= 4
                 obj.velocity_only = velocity_only;
             end
+            % etc... for the rest of the inserted properties 
         end
         % 2. run_analysis function 
+        function run_analysis
+        end
+
         % 3. _grid_search function
+        function _grid_search
+        end
+
         % 4. get_dynamic_choice function 
+        function get_dynamic_choice
+        end
+
         % 5. _get_classifier function 
-        % 6. _setup_data function
-        _pad_data
-        _preprocess_data
+        function _get_classifier
+        end
+
+        % 6. setup_data function
+        function setup_data
+        end
+
+        % 7._pad_data function
+        function _pad_data
+        end
+
+        % 8. _preprocess_data function
+        function _preprocess_data
+        end
+
+        % 9. get_trial_inds function
+        function get_trial_inds
+        end
+
+        % 10. _aggregate_data function
+        function _aggregate_data
+        end
+
+        % 11. _get_decoder_data function
+        function _get_decoder_data
+        end
+
+        % 12._log2_likelihood function
+        function _log2_likelihood
+        end
+
+        % 13. _get_repeated_fold_average function
+        function  _get_repeated_fold_average
+        end
+
 
 
     end
