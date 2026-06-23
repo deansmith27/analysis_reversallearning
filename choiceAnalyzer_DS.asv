@@ -18,7 +18,6 @@ classdef BaseAnalysisClass
 end
 
 
-
 % 1.creating the ChoiceAnalyzer class
 classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
     properties
@@ -103,9 +102,44 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
             end
             % etc... for the rest of the inserted properties 
         end
+
         % 2. run_analysis function 
-        function run_analysis
-        end
+        function obj = run_analysis(overwrite, grid_search)
+            if nargin < 1
+                overwrite = false;
+            end
+            if nargin < 2
+               grid_search = false; 
+            end
+
+            if grid_search
+                data_files = struct( ...
+                    "grid_search", struct( ...
+                    'vars', {{'grid_search_data', 'grid_search_params'}}, ...
+                    ' format', 'pkl' ...
+                        )...
+                    );
+            end
+            if overwrite
+                if grid_search 
+                    grid_search = {};
+                else
+                    get_dynamic_choice = {};
+                    aggregate_data = {};
+                    get_decoder_data = {}; 
+                    export_data = {};
+                end
+                export_data ={};
+            else % still in Python
+                if exists(results_io.data_exists(self.data_files))
+                self._load_data() 
+            else:
+                warnings.warn('Data with those input parameters does not exist, setting overwrite to True')
+                self.run_analysis(overwrite=True)
+
+
+        end 
+        
 
         % 3. _grid_search function
         function _grid_search
@@ -150,10 +184,9 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
         % 13. _get_repeated_fold_average function
         function  _get_repeated_fold_average
         end
-
-
-
     end
+
+end
 
         
        

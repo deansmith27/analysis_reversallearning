@@ -18,7 +18,6 @@ classdef BaseAnalysisClass
 end
 
 
-
 % 1.creating the ChoiceAnalyzer class
 classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
     properties
@@ -103,57 +102,92 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
             end
             % etc... for the rest of the inserted properties 
         end
+
         % 2. run_analysis function 
-        function run_analysis
-        end
+        function obj = run_analysis(overwrite, grid_search)
+            if nargin < 1
+                overwrite = false;
+            end
+            if nargin < 2
+               grid_search = false; 
+            end
+
+            if grid_search
+                data_files = struct( ...
+                    "grid_search", struct( ...
+                    'vars', {{'grid_search_data', 'grid_search_params'}}, ...
+                    ' format', 'pkl' ...
+                        )...
+                    );
+            end
+            if overwrite
+                if grid_search 
+                    obj.grid_search();
+                else
+                    obj.get_dynamic_choice();
+                    obj.aggregate_data();
+                    obj.get_decoder_data();
+                    obj.export_data();
+                end
+                obj.export_data();
+
+            else 
+                if obj.results_io.data_exists(obj.data_files)
+                    obj.load_data();
+                else
+                    warning('Data with those input parameters does not exist, setting overwrite to true')
+                    obj.run_analysis(true)
+                end
+            end
+        end 
+        
 
         % 3. _grid_search function
-        function _grid_search
+        function obj = grid_search()
         end
 
         % 4. get_dynamic_choice function 
-        function get_dynamic_choice
+        function obj = get_dynamic_choice
         end
 
         % 5. _get_classifier function 
-        function _get_classifier
+        function obj = get_classifier
         end
 
         % 6. setup_data function
-        function setup_data
+        function obj = setup_data
         end
 
         % 7._pad_data function
-        function _pad_data
+        function obj = pad_data
         end
 
         % 8. _preprocess_data function
-        function _preprocess_data
+        function obj = preprocess_data
         end
 
         % 9. get_trial_inds function
-        function get_trial_inds
+        function obj = get_trial_inds
         end
 
         % 10. _aggregate_data function
-        function _aggregate_data
+        function obj = aggregate_data
         end
 
         % 11. _get_decoder_data function
-        function _get_decoder_data
+        function obj = get_decoder_data
         end
 
         % 12._log2_likelihood function
-        function _log2_likelihood
+        function obj = log2_likelihood
         end
 
         % 13. _get_repeated_fold_average function
-        function  _get_repeated_fold_average
+        function  obj = get_repeated_fold_average
         end
-
-
-
     end
+
+end
 
         
        
