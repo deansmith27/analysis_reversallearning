@@ -145,8 +145,9 @@ classdef ChoiceAnalyzer(BaseAnalysisClass) % fix formatting
         % 3. _grid_search function
         function obj = grid_search()
             grid_search_data = {};
+            % come back to this part
             for batch_size, epochs, regularizer, learning_rate in 1:length(itertools.product(*list(self.grid_search_params.values()))) % fix syntax
-            for i = 1:length(itertools, {grid_search_params}, {values})
+            for i = 1:length(itertools, {:grid_search_params}, {values})
                 batch_size =
                 epochs =
                 regularizer =

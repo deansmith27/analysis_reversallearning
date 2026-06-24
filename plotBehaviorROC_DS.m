@@ -1357,49 +1357,48 @@ function [aucOfMeanROC, commonX, meanY, semY, nSessions, lineAnimals] = calcAUCO
     else
         aucOfMeanROC = trapz(commonX(validMeanIdx), meanY(validMeanIdx));
     end
-   
-    % -----------------------------------------------------------
-    % Deandra: Helper function to create date text for figure titles.
-    function dateTitleStr = makeDateTitleString(params)
-    
-        if isfield(params, 'datesincl') && ~isempty(params.datesincl)
-    
-            dateTitleStr = ['Dates Included: ' makeNumberListString(params.datesincl)];
-    
-        elseif isfield(params, 'datesexcl') && ~isempty(params.datesexcl)
-    
-            dateTitleStr = ['Dates Excluded: ' makeNumberListString(params.datesexcl)];
-    
-        else
-    
-            dateTitleStr = 'All Dates';
-    
-        end
-    
-    end
-    
-    
-    Helper function to turn a numeric list into a comma-separated string.
-    function listStr = makeNumberListString(numList)
-    
-        numList = numList(:)';
-    
-        listStr = '';
-    
-        for i = 1:length(numList)
-    
-            if i == 1
-                listStr = num2str(numList(i));
-            else
-                listStr = [listStr ', ' num2str(numList(i))];
-            end
-    
-        end
-    
-    end
-    % -----------------------------------------------------------
 
 end
+% -----------------------------------------------------------
+% Deandra: Helper function to create date text for figure titles.
+function dateTitleStr = makeDateTitleString(params)
+
+if isfield(params, 'datesincl') && ~isempty(params.datesincl)
+
+    dateTitleStr = ['Dates Included: ' makeNumberListString(params.datesincl)];
+
+elseif isfield(params, 'datesexcl') && ~isempty(params.datesexcl)
+
+    dateTitleStr = ['Dates Excluded: ' makeNumberListString(params.datesexcl)];
+
+else
+
+    dateTitleStr = 'All Dates';
+
+end
+
+end
+
+
+% Helper function to turn a numeric list into a comma-separated string.
+function listStr = makeNumberListString(numList)
+
+numList = numList(:)';
+
+listStr = '';
+
+for i = 1:length(numList)
+
+    if i == 1
+        listStr = num2str(numList(i));
+    else
+        listStr = [listStr ', ' num2str(numList(i))];
+    end
+
+end
+
+end
+% -----------------------------------------------------------
 
 
 
