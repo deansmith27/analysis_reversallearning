@@ -17,7 +17,37 @@ addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Danielle\code\vr_novelty_beha
 
 %for Josh's virmen output spreadsheet
 [dirs, params] = getDirectoriesAndParams_JLK_DC();%DC update this to call in commonfunc one with User so I only need 1
-allindexT = selectindextable_JLK(dirs.spreadsheet, 'animal', params.animals, 'Track', [1 2 3 4]);%'SessionType', [2 3],
+% allindexT = selectindextable_JLK(dirs.spreadsheet, 'animal', params.animals, 'Track', [1 2 3 4]);%'SessionType', [2 3],
+
+% Deandra: Date toggle for selecting which dates enter the analysis.
+% If params.datesincl has dates, only those dates are included.
+% If params.datesincl is empty but params.datesexcl has dates, those dates are excluded.
+% If both are empty, all dates are used.
+
+if ~isempty(params.datesincl)
+
+    allindexT = selectindextable_JLK( ...
+        dirs.spreadsheet, ...
+        'animal', params.animals, ...
+        'datesincluded', params.datesincl, ...
+        'Track', [1 2 3 4]);
+
+elseif ~isempty(params.datesexcl)
+
+    allindexT = selectindextable_JLK( ...
+        dirs.spreadsheet, ...
+        'animal', params.animals, ...
+        'datesexcluded', params.datesexcl, ...
+        'Track', [1 2 3 4]);
+
+else
+
+    allindexT = selectindextable_JLK( ...
+        dirs.spreadsheet, ...
+        'animal', params.animals, ...
+        'Track', [1 2 3 4]);
+
+end
 
 % % for Danielle/Xiao's virmen output spreadsheet
 % [dirs, params] = getDirectoriesAndParams_JLK_DC();
@@ -39,13 +69,14 @@ else
 end
 [uniqSess, ind] = unique(allindex(:,1:2), 'rows'); %define session as one date
 
+
 %% Specify what you want to analyze here %%
 createBehaviorStructs = 0;
 plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
 % Deandra new function for Stephanie's choice analyzer
-choiceAnalyzer = 0;
+% choiceAnalyzer = 0;
 
 
 %% Create behavior data structs %%
@@ -237,13 +268,13 @@ end%if plotBehavior
 
 %% Choice Analysis %%
 % Deandra choice analysis code
-if choiceAnalyzer
+% if choiceAnalyzer
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%% Choice Analysis %%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-end
+% end
 %% Gather neural data %%
 if gatherNeuralData
 

@@ -1058,7 +1058,7 @@ function plotAverageGroupedROCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
             %     comparisonTitle = sprintf('Novel2 AZ vs Non RZ %s by five-lap group - %s', rocID, cohortTitleName);
 
         else
-            comparisonTitle = sprintf('%s %s by Five-Lap ROC - \n%s\n%s: %s', fieldPrefix, rocID, dateTitleStr, cohortTitleName, idListStr);
+            comparisonTitle = sprintf('%s %s by Five-Lap ROC - \n%s: %s', fieldPrefix, rocID, dateTitleStr, cohortTitleName, idListStr);
         end
 
         title(comparisonTitle, 'Interpreter', 'none');
@@ -1228,20 +1228,20 @@ function plotAverageGroupedAUCsFromROC(ROC, fieldPrefix, groupsToPlot, rocID, pa
         end
 
         if strcmp(fieldPrefix, 'og')
-            comparisonTitle = sprintf('Original AZ vs Non RZ (Track A) %s by Five-Lap AUC of Mean ROC - \n%s\n%s: %s', ...
-                rocID, dateTitleStr, cohortTitleName, idListStr);
+            comparisonTitle = sprintf('Original AZ vs Non RZ (Track A) %s by Five-Lap AUC of Mean ROC - \n%s: %s', ...
+                rocID, cohortTitleName, idListStr);
 
         elseif strcmp(fieldPrefix, 'up')
-            comparisonTitle = sprintf('Update AZ (Track A'') vs Original RZ (Track A) %s by Five-Lap AUC of Mean ROC - \n%s\n%s: %s', ...
-                rocID, dateTitleStr, cohortTitleName, idListStr);
+            comparisonTitle = sprintf('Update AZ (Track A'') vs Original RZ (Track A) %s by Five-Lap AUC of Mean ROC - \n%s: %s', ...
+                rocID, cohortTitleName, idListStr);
 
         elseif strcmp(fieldPrefix, 'up_UAZvNevRZ')
-            comparisonTitle = sprintf('Update AZ vs Never RZ (Track A'') %s by Five-Lap AUC of Mean ROC - \n%s\n%s: %s', ...
-                rocID, dateTitleStr, cohortTitleName, idListStr);
+            comparisonTitle = sprintf('Update AZ vs Never RZ (Track A'') %s by Five-Lap AUC of Mean ROC -\n%s: %s', ...
+                rocID, cohortTitleName, idListStr);
 
         else
-            comparisonTitle = sprintf('%s %s by Five-Lap AUC of Mean ROC - \n%s\n%s: %s', ...
-                fieldPrefix, rocID, dateTitleStr, cohortTitleName, idListStr);
+            comparisonTitle = sprintf('%s %s by Five-Lap AUC of Mean ROC - \n%s: %s', ...
+                fieldPrefix, rocID, cohortTitleName, idListStr);
         end
 
         title(comparisonTitle, 'Interpreter', 'none');
