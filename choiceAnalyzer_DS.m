@@ -181,23 +181,56 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
     
             % 3. _grid_search function
                 function grid_search(obj)
-                    paramLists = struct2cell(obj.grid_search_params);
-                    T = combinations(paramLists{:});
-                    obj.grid_search_data = T;
-                    for i = 1:height(T)
-                        batch_size    = T{i, 1};
-                        epochs        = T{i, 2};
-                        regularizer   = T{i, 3};
-                        learning_rate = T{i, 4};
+                    grid_search_data = []; %temporary numeric array created, can be changed to a normal array later
+                    grid_search_params_vals= struct2cell(grid_search_params); %extract values of grid_search_params
+                    [grids{1:numel(grid_search_params_vals)}] = ndgrid(grid_search_params_vals{:}); %makes Cartesian products
+
+                    grid_search_params_cartpod = cell(numel(grids{1}), numel(grids)); %creates  cell array whose size matches structure of grids input.
+
+                    for i = 1:numel(grids) %makes Cartesian products
+                        batch_size = grid_search_params_cartpod(:,1); %assigns column to variable
+                        epochs = grid_search_params_cartpod(:,2);
+                        regularizer = grid_search_params_cartpod(:,3);
+                        learning_rate = grid_search_params_cartpod(:,4);
+
+                        % MATLAB equivalent for RepeatedStratifiedKFolds
+                        rng(21)         % same as random state in python
+                        K = 5;          % number of folds
+                        R = 1;           % number of repetitions
+                        
+                        for r = 1:R
+                            c = cvpartition(y, 'KFold', K);  % stratified by default for classification
+                        
+                            for k = 1:K
+                                train_index = training(c, k);
+                                test_index  = test(c, k);
+                        
+                                preprocessed_data = obj.preprocess_data(obj, train_index, test_index) %preprocessed data has train and test groups passed as arguments
+                                
+                                % struct is created which is similar to a python dict
+                                % dot nonation used which is similar to index [] notation
+                                build_data = struct('norm_data',preprocessed_data.input_train_no_pad, ...
+                                'regularizer', self.params.regularizer, ...
+                                'shape', size(preprocessed_data.input_train), ...
+                                'mask_value' ,obj.mask_value, ...
+                                'learning_rate', obj.params.learning_rate);
+
+                                % come back and fix syntax
+                                 history = fit(struct[preprocessed_data.input_train', ...
+                                     preprocessed_data.target_train', ...
+                                    validation_data=(preprocessed_data.input_test', ...
+                                    preprocessed_data.target_test],
+                                    batch_size=batch_size, epochs=epochs)
+
+                                model = obj.get_classifier.methodName(build_data);
+                            end
+                        end
+
                     end
-                
-                    cv = cvpartition(target_data(:,1), 'KFold', 5);
-                    for i = 1:cv.NumTestSets
-                        train_index = training(cv, i);   
-                        test_index  = test(cv, i);       
-                    end
-                   
-                    
+
+   
+                    obj.grid_search_data = array2table(grid_search_data)
+
                 end  
     
             % 4. get_dynamic_choice function 
@@ -220,8 +253,8 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
 
             end
     
-            % 8. _preprocess_data function
-            function preprocess_data(obj)
+            % 8. preprocess_data function
+            function preprocess_data(obj, train_index, test_index)
 
             end
     
