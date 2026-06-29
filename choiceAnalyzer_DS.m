@@ -181,22 +181,33 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
     
             % 3. _grid_search function
                 function grid_search(obj)
-                    grid_search_data = []; %temporary numeric array created, can be changed to a normal array later
-                    grid_search_params_vals= struct2cell(grid_search_params); %extract values of grid_search_params
-                    [grids{1:numel(grid_search_params_vals)}] = ndgrid(grid_search_params_vals{:}); %makes Cartesian products
+                    grid_search_data = struct([]);
 
-                    grid_search_params_cartpod = cell(numel(grids{1}), numel(grids)); %creates  cell array whose size matches structure of grids input.
+                    batch_size_values = obj.grid_search_params.batch_size;  %extract values of grid_search_params
+                    epochs_values = obj.grid_search_params.epochs; 
+                    regularizer_values = obj.grid_search_params.regularizer; 
+                    learning_rate_values = obj.grid_search_params.learning_rate;    %extract values of grid_search_params
 
-                    for i = 1:numel(grids) %makes Cartesian products
-                        batch_size = grid_search_params_cartpod(:,1); %assigns column to variable
-                        epochs = grid_search_params_cartpod(:,2);
-                        regularizer = grid_search_params_cartpod(:,3);
-                        learning_rate = grid_search_params_cartpod(:,4);
+                    for iBatch = 1:numel(batch_size_values) % nested for loops to make Cartesian products
+                        batch_size = batch_size_values(iBatch); %assigns column to variable
+                        for iEpochs =  1:numel(epochs_values)
+                            epochs = epochs_values(iEpochs)
+                            for iReg =  1:numel(regularizer_values);
+                                regularizer = regularizer_values(iReg)
+                                for iLR =  1:numel(learning_rate_values);
+                                    learning_rate = learning_rate_values(iLR)
+                                end
+                            end
+                        end
+                    end
+                               
 
                         % MATLAB equivalent for RepeatedStratifiedKFolds
                         rng(21)         % same as random state in python
                         K = 5;          % number of folds
                         R = 1;           % number of repetitions
+
+                        y = obj.traget_data(:, 1); % creating the y that exists in cv.split
                         
                         for r = 1:R
                             c = cvpartition(y, 'KFold', K);  % stratified by default for classification
@@ -215,21 +226,33 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                                 'mask_value' ,obj.mask_value, ...
                                 'learning_rate', obj.params.learning_rate);
 
-                                % come back and fix syntax
-                                 history = fit(struct[preprocessed_data.input_train', ...
-                                     preprocessed_data.target_train', ...
-                                    validation_data=(preprocessed_data.input_test', ...
-                                    preprocessed_data.target_test],
-                                    batch_size=batch_size, epochs=epochs)
-
                                 model = obj.get_classifier.methodName(build_data);
+
+                                history = obj.fit(obj.preprocessed_data('input_train'), ...
+                                    obj.preprocessed_data('target_train'), ...
+                                    obj.validation_data=preprocessed_data('input_test'), ...
+                                    obj.preprocessed_data('target_test'), ...
+                                    obj.batch_size= batch_size, epochs=epochs));
+
+                                [core, acc] = evaluate(preprocessed_data('input_test'), preprocessed_data('target_test'), ...
+                                            verbose=0)
+
+                                grid_search_data_struct = struct(score.score, ...
+                                    accuracy, acc, ... 
+                                    history, history.history, ...
+                                    batch_size, batch_size, ...
+                                             epochs, epochs, ...
+                                             regularizer, regularizer, ...
+                                             learning_rate, learning_rate);
                             end
+                             grid_search_data(end+1) = grid_search_data_struct
                         end
 
                     end
 
    
-                    obj.grid_search_data = array2table(grid_search_data)
+                    obj.grid_search_data = array2table(grid_search_data);
+                    obj.grid_search_data = grid_search_data;
 
                 end  
     
