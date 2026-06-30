@@ -191,14 +191,14 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                     for iBatch = 1:numel(batch_size_values) % nested for loops to make Cartesian products
                         batch_size = batch_size_values(iBatch); %assigns column to variable
                         for iEpochs =  1:numel(epochs_values)
-                            epochs = epochs_values(iEpochs)
-                            for iReg =  1:numel(regularizer_values);
-                                regularizer = regularizer_values(iReg)
-                                for iLR =  1:numel(learning_rate_values);
-                                    learning_rate = learning_rate_values(iLR)
+                            epochs = epochs_values(iEpochs);
+                            for iReg =  1:numel(regularizer_values)
+                                regularizer = regularizer_values(iReg);
+                                for iLR =  1:numel(learning_rate_values)
+                                    learning_rate = learning_rate_values(iLR);
 
                                     % MATLAB equivalent for RepeatedStratifiedKFolds
-                                    rng(21)         % same as random state in python
+                                    rng(21);         % same as random state in python
                                     K = 5;          % number of folds
                                     R = 1;           % number of repetitions
 
@@ -212,7 +212,7 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                                             train_index = training(c, k);
                                             test_index  = test(c, k);
 
-                                            preprocessed_data = obj.preprocess_data( train_index, test_index) %preprocessed data has train and test groups passed as arguments
+                                            preprocessed_data = obj.preprocess_data( train_index, test_index); %preprocessed data has train and test groups passed as arguments
 
                                             % struct is created which is similar to a python dict
                                             % dot nonation used which is similar to index [] notation
@@ -227,43 +227,137 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                                             %temporary place holder until decided if model will be rebuilt or if tool box is
                                             %being used 
 
-                                            history = model.fit(preprocessed_data.input_train, ...
+                                            history = model.fit(...
+                                                preprocessed_data.input_train, ...
                                                 preprocessed_data.target_train, ...
-                                                validation_data, preprocessed_data.input_test', ...
-                                                preprocessed_data.target_test, ...
-                                                batch_size, batch_size, ...
-                                                epochs, epochs);
+                                                pyargs(...
+                                                validation_data, {preprocessed_data.input_test, ...
+                                                preprocessed_data.target_test}, ...
+                                                'batch_size', batch_size, ...
+                                                'epochs', epochs));
 
-                                            [core, acc] = evaluate(preprocessed_data.input_test, preprocessed_data.target_test, ...
-                                                verbose=0);
+                                            score, acc = mocel.evaluate (preprocessed_data['input_test'], preprocessed_data['target_test'] ...
+                                                pyargs(verbose=0) ...
+                                                );
 
-                                            grid_search_data_struct = struct(score, score, ...
-                                                accuracy, acc, ...
-                                                history, history.history, ...
-                                                batch_size, batch_size, ...
-                                                epochs, epochs, ...
-                                                regularizer, regularizer, ...
-                                                learning_rate, learning_rate);
+                                            grid_search_data_struct = struct('score', score, ...
+                                                'accuracy', acc, ...
+                                                'history', history.history, ...
+                                                'batch_size', batch_size, ...
+                                                'epochs', epochs, ...
+                                                'regularizer', regularizer, ...
+                                                'learning_rate', learning_rate);
+                                            
+                                            grid_search_data(end+1) = grid_search_data_struct;
+
                                         end
-                                        grid_search_data(end+1) = grid_search_data_struct
 
+                                            obj.grid_search_data = grid_search_data;
+
+                                           
                                     end
                                 end
                             end
                         end
                     end
+                end 
                                
-
-                        
-
-   
-                    obj.grid_search_data = array2table(grid_search_data);
-                    obj.grid_search_data = grid_search_data;
-
-                end  
-    
+  
             % 4. get_dynamic_choice function 
             function get_dynamic_choice(obj)
+                 output_data = struct([]);
+
+                 batch_size_values = obj.grid_search_params.batch_size;  %extract values of grid_search_params
+                    epochs_values = obj.grid_search_params.epochs; 
+                    regularizer_values = obj.grid_search_params.regularizer; 
+                    learning_rate_values = obj.grid_search_params.learning_rate;    %extract values of grid_search_params
+
+                    for iBatch = 1:numel(batch_size_values) % nested for loops to make Cartesian products
+                        batch_size = batch_size_values(iBatch); %assigns column to variable
+                        for iEpochs =  1:numel(epochs_values)
+                            epochs = epochs_values(iEpochs);
+                            for iReg =  1:numel(regularizer_values)
+                                regularizer = regularizer_values(iReg);
+                                for iLR =  1:numel(learning_rate_values)
+                                    learning_rate = learning_rate_values(iLR);
+
+
+                                    rng(21);         % same as random state in python
+                                    K = 6;          % number of folds
+                                    R = 3;           % number of repetitions
+
+                                    y = obj.target_data(:, 1); % creating the y that exists in cv.split
+
+                                    for r = 1:R
+                                        c = cvpartition(y, 'KFold', K);  % stratified by default for classification
+
+                                        for k = 1:K
+                                            train_index = training(c, k);
+                                            test_index  = test(c, k);
+
+                                            preprocessed_data = obj.preprocess_data( train_index, test_index)
+
+                                            build_data = struct('norm_data',preprocessed_data.input_train_no_pad, ...
+                                                'regularizer', regularizer_values(iReg), ...
+                                                'shape', size(preprocessed_data.input_train), ...
+                                                'mask_value' ,obj.mask_value, ...
+                                                'learning_rate', learning_rate_values(iLR));
+
+                                            model = obj.get_classifier(build_data);
+                                            disp('Fitting model...');
+
+                                            history = model.fit(...
+                                                preprocessed_data.input_train, ...
+                                                preprocessed_data.target_train, ...
+                                                pyargs(...
+                                                'batch_size', batch_size_values(iBatch), ...
+                                                'epochs', epochs_values(iEpochs)));
+
+                                            score, acc = mocel.evaluate (preprocessed_data['input_test'], preprocessed_data['target_test'] ...
+                                                pyargs(verbose=0) ...
+                                                );
+                                            fprintf('Evaluating model... score: %f binary_accuracy: %f/n', score, acc);
+
+                                            disp('Predicting with model...');
+                                            prediction = model.predict(preprocessed_data.input_test);
+
+                                            if obj.params.predict_update && predict_update == false
+
+                                                [update_input_data, update_target_data, update_timestamp_data] = ...
+                                                    obj.pad_data( ...
+                                                    obj.update_input_data, ...
+                                                    obj.update_target_data, ...
+                                                    obj.update_timestamp_data);
+
+                                                    update_prediction = model.predict(update_input_data);
+                                            else
+                                                update_prediction = struct([])
+                                            end 
+
+                                            
+
+
+                                            output_data_struct = struct(score,score, ...
+                                                accuracy, acc, ...
+                                                history, history.history, ...
+                                                prediction=prediction, ...
+                                                input_test_fold=, reprocessed_data.input_test', ...
+                                                target_test_fold=preprocessed_data.target_test'], test_index=test_index,
+                                            update_prediction=update_prediction, update_test_index=self.update_index,
+                                            timestamp_train=preprocessed_data.timestamp_train'],
+                                            timestamp_test=preprocessed_data.timestamp_test'],
+                                            timestamp_update=update_timestamp_data))
+
+                                            output_data(end+1) = output_data_struct;
+
+
+
+
+
+
+
+
+
 
             end
     
