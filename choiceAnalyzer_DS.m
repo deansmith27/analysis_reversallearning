@@ -191,68 +191,75 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                     for iBatch = 1:numel(batch_size_values) % nested for loops to make Cartesian products
                         batch_size = batch_size_values(iBatch); %assigns column to variable
                         for iEpochs =  1:numel(epochs_values)
-                            epochs = epochs_values(iEpochs)
-                            for iReg =  1:numel(regularizer_values);
-                                regularizer = regularizer_values(iReg)
-                                for iLR =  1:numel(learning_rate_values);
-                                    learning_rate = learning_rate_values(iLR)
+                            epochs = epochs_values(iEpochs);
+                            for iReg =  1:numel(regularizer_values)
+                                regularizer = regularizer_values(iReg);
+                                for iLR =  1:numel(learning_rate_values)
+                                    learning_rate = learning_rate_values(iLR);
+
+                                    % MATLAB equivalent for RepeatedStratifiedKFolds
+                                    rng(21);         % same as random state in python
+                                    K = 5;          % number of folds
+                                    R = 1;           % number of repetitions
+
+                                    y = obj.target_data(:, 1); % creating the y that exists in cv.split
+                                    % COMEBACK and ensure that setup data allows for this to work in a table form
+
+                                    for r = 1:R
+                                        c = cvpartition(y, 'KFold', K);  % stratified by default for classification
+
+                                        for k = 1:K
+                                            train_index = training(c, k);
+                                            test_index  = test(c, k);
+
+                                            preprocessed_data = obj.preprocess_data( train_index, test_index); %preprocessed data has train and test groups passed as arguments
+
+                                            % struct is created which is similar to a python dict
+                                            % dot nonation used which is similar to index [] notation
+                                            build_data = struct('norm_data',preprocessed_data.input_train_no_pad, ...
+                                                'regularizer', regularizer_values(iReg), ...
+                                                'shape', size(preprocessed_data.input_train), ...
+                                                'mask_value' ,obj.mask_value, ...
+                                                'learning_rate', learning_rate_values(iLR));
+
+                                            model = obj.get_classifier(build_data);
+
+                                            %temporary place holder until decided if model will be rebuilt or if tool box is
+                                            %being used 
+
+                                            history = model.fit(preprocessed_data.input_train, ...
+                                                preprocessed_data.target_train, ...
+                                                validation_data, preprocessed_data.input_test', ...
+                                                preprocessed_data.target_test, ...
+                                                batch_size, batch_size, ...
+                                                epochs, epochs);
+
+                                            [core, acc] = evaluate(preprocessed_data.input_test, preprocessed_data.target_test, ...
+                                                verbose=0);
+
+                                            grid_search_data_struct = struct('score', score, ...
+                                                'accuracy', acc, ...
+                                                'history', history.history, ...
+                                                'batch_size', batch_size, ...
+                                                'epochs', epochs, ...
+                                                'regularizer', regularizer, ...
+                                                'learning_rate', learning_rate);
+                                        end
+                                            grid_search_data(end+1) = grid_search_data_struct;
+
+                                            obj.grid_search = grid_search_data;
+
+                                    end
                                 end
                             end
                         end
                     end
                                
 
-                        % MATLAB equivalent for RepeatedStratifiedKFolds
-                        rng(21)         % same as random state in python
-                        K = 5;          % number of folds
-                        R = 1;           % number of repetitions
-
-                        y = obj.traget_data(:, 1); % creating the y that exists in cv.split
                         
-                        for r = 1:R
-                            c = cvpartition(y, 'KFold', K);  % stratified by default for classification
-                        
-                            for k = 1:K
-                                train_index = training(c, k);
-                                test_index  = test(c, k);
-                        
-                                preprocessed_data = obj.preprocess_data(obj, train_index, test_index) %preprocessed data has train and test groups passed as arguments
-                                
-                                % struct is created which is similar to a python dict
-                                % dot nonation used which is similar to index [] notation
-                                build_data = struct('norm_data',preprocessed_data.input_train_no_pad, ...
-                                'regularizer', self.params.regularizer, ...
-                                'shape', size(preprocessed_data.input_train), ...
-                                'mask_value' ,obj.mask_value, ...
-                                'learning_rate', obj.params.learning_rate);
-
-                                model = obj.get_classifier.methodName(build_data);
-
-                                history = obj.fit(obj.preprocessed_data('input_train'), ...
-                                    obj.preprocessed_data('target_train'), ...
-                                    obj.validation_data=preprocessed_data('input_test'), ...
-                                    obj.preprocessed_data('target_test'), ...
-                                    obj.batch_size= batch_size, epochs=epochs));
-
-                                [core, acc] = evaluate(preprocessed_data('input_test'), preprocessed_data('target_test'), ...
-                                            verbose=0)
-
-                                grid_search_data_struct = struct(score.score, ...
-                                    accuracy, acc, ... 
-                                    history, history.history, ...
-                                    batch_size, batch_size, ...
-                                             epochs, epochs, ...
-                                             regularizer, regularizer, ...
-                                             learning_rate, learning_rate);
-                            end
-                             grid_search_data(end+1) = grid_search_data_struct
-                        end
-
-                    end
 
    
-                    obj.grid_search_data = array2table(grid_search_data);
-                    obj.grid_search_data = grid_search_data;
+                    
 
                 end  
     
