@@ -11,6 +11,8 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
     % imports from a built in file
     % Block Three: imports from built in files from elsewhere 
 
+    addpath("Y:\singer\01_PEOPLE\Undergrads\Deandra\analysis_reversallearning\extractZoneBinsByLapGroup_DS.m")
+    
 % 0a.Creating BaseAnalysisClass: loads, saves and exports data. Can be
 % implemented elsewhere 
 
@@ -61,7 +63,6 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
             % Get results to save
             results_io = []
             data_files = struct()
-
         end
             
         methods
@@ -235,11 +236,11 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                                                 validation_data, {preprocessed_data.input_test, ...
                                                 preprocessed_data.target_test}, ...
                                                 'batch_size', batch_size, ...
-                                                'epochs', epochs));
+                                                'epochs', epochs)); % replace pyargs if MATLAB toolbox is used
 
-                                            score, acc = model.evaluate (preprocessed_data.input_test, preprocessed_data.target_test ...
+                                            score, acc = model.evaluate(preprocessed_data.input_test, preprocessed_data.target_test, ...
                                                 pyargs('verbose',0) ...
-                                                );
+                                                ); % replace pyargs if MATLAB toolbox is used
 
                                             grid_search_data_struct = struct('score', score, ...
                                                 'accuracy', acc, ...
@@ -289,13 +290,13 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                          train_index = training(c, k);
                          test_index  = test(c, k);
 
-                         preprocessed_data = obj.preprocess_data( train_index, test_index)
+                         preprocessed_data = obj.preprocess_data( train_index, test_index);
 
                          build_data = struct('norm_data',preprocessed_data.input_train_no_pad, ...
-                             'regularizer', obj.params.regularizer, ...
+                             'regularizer', regularizer, ...
                              'shape', size(preprocessed_data.input_train), ...
                              'mask_value' ,obj.mask_value, ...
-                             'learning_rate', obj.params.learning_rate);
+                             'learning_rate', learning_rate);
 
                          model = obj.get_classifier(build_data);
                          disp('Fitting model...');
@@ -304,18 +305,18 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                              preprocessed_data.input_train, ...
                              preprocessed_data.target_train, ...
                              pyargs(...
-                             'batch_size', obj.params.batch_size, ...
-                             'epochs', obj.params.epochs));
+                             'batch_size', batch_size, ...
+                             'epochs', epochs)); % replace pyargs if MATLAB toolbox is used
 
-                         [score, acc] = model.evaluate(preprocessed_data.input_test, preprocessed_data.target_test ...
+                         [score, acc] = model.evaluate(preprocessed_data.input_test, preprocessed_data.target_test, ...
                              pyargs('verbose',0) ...
-                             );
+                             ); % replace pyargs if MATLAB toolbox is used
                          fprintf('Evaluating model... score: %f binary_accuracy: %f\n', score, acc);
 
                          disp('Predicting with model...');
                          prediction = model.predict(preprocessed_data.input_test);
 
-                         if obj.params.predict_updateis true
+                         if obj.params.predict_update 
 
                              [update_input_data, update_target_data, update_timestamp_data] = ...
                                  obj.pad_data( ...
@@ -334,30 +335,103 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
                              'accuracy', acc, ...
                              'history', history.history, ...
                              'prediction', prediction, ...
-                             'input_test_fold', preprocessed_data.input_test', ...
+                             'input_test_fold', preprocessed_data.input_test, ...
                              'target_test_fold', preprocessed_data.target_test, ...
                              'test_index', test_index,...
                              'update_prediction', update_prediction, ...
                              'update_test_index', obj.update_index, ...
                              'timestamp_train', preprocessed_data.timestamp_train, ...
                              'timestamp_test', preprocessed_data.timestamp_test, ...
-                             'timestamp_update', update_timestamp_data)
+                             'timestamp_update', update_timestamp_data);
 
                          output_data(end+1) = output_data_struct;
                      end
                  end
         
-                 obj.output_data = [output_data, new_row];
+                 obj.output_data = output_data;
+            end
+            
+    
+            % 5a. _get_classifier function: builds the untrained model/network 
+            %decided to leave this static function as a normal function
+            function layers = get_classifier(obj, build_data)
+      
+                input_shape = build_data.shape; %features from build data imported 
+                norm_data = build_data.norm_data;
+                mask_value = build_data.mask_value;
+                regularizer = build_data.regularizer;
+                
+                oneSequence = obj.input_data{1}; %one trial
+                numTimeSteps = size(oneSequence, 1);
+                numFeatures = size(oneSequence, 2);
+                
+                %layer creation
+                layers = [
+                    sequenceInputLayer(numFeatures)
+                    lstmLayer(10, OutputMode="sequence")
+                    fullyConnectedLayer(1)
+                    sigmoidLayer
+                    ];
+
             end
 
-    
-            % 5. _get_classifier function 
-            function get_classifier(Static)
+            %5b.train_classifier: should  set up model for training and %train model
+            function [trained_model, history] = train_classifier(obj, model, training_data, training_labels, params)
+
+                batch_size = params.batch_size;  
+                epochs = params.epochs;
+                regularizer = params.regularizer;
+                learning_rate = params.learning_rate;    
+
+                % training instructions are stored 
+                options = trainingOptions("adam", ...
+                    MaxEpochs=epochs, ...
+                    MiniBatchSize=batch_size, ...
+                    InitialLearnRate=learning_rate, ...
+                    L2Regularization = regularizer, ...
+                    Verbose=false
+                    );
+
+                %training model %removes "score, acc" line above 
+                [trained_model, history] = trainnet(training_data, training_labels, model, "binary-crossentropy", options);
 
             end
-    
+ 
+
+            %5c. evaluate_classifier: checks how well model did on data it did not train on
+            function [score, acc, predictions] = evaluate_classifier(obj, trained_model, test_data, test_labels)
+                predictions = minibatchpredict(trained_model, test_data); %stores models predicted outputs
+                score = crossentropy(predictions, test_labels);
+                predicted_labels = predictions >= 0.5;
+                acc = mean(predicted_labels == test_labels);
+
+            end
+ 
             % 6. setup_data function
-            function setup_data(obj)
+            function setup_data(obj, nwbfile, target_var, with_updaten= false)
+
+                %  get trial data
+                trial_inds = obj.get_trial_inds(with_update=with_update) % need to finish this line
+
+                % get position/velocity data
+                pos_data =
+                trans_data =
+                rot_data =
+                view_data =
+                timestamps =
+
+                % compile data into input matrix
+                pos_data =
+
+                % get target sequence (binary, reported choice OR initial cue)
+
+
+
+                [input_data, target_data, timestamps] = return input_data, target_data, timestamps
+
+ 
+
+
 
             end
     
@@ -395,8 +469,10 @@ function [outputPlaceholder] = choiceAnalyzer_DS(inputPlaceholder)
             function get_repeated_fold_average(obj)
                 
             end
-        end    
+            
+        end
+
     end
-        
-        
+
+
        
