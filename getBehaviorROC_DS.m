@@ -117,6 +117,8 @@ for id = 1:length(params.rocID)
                         lapData = diff(lapData,1,2);
                     end
                     
+                    % insertion of choice analyzer 
+                    choiceOutput = choiceAnalyzer_DS(lapData, params, currEnv);
                   
                
                     %get zone info

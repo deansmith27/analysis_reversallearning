@@ -207,6 +207,9 @@ else
     statsByLap.velocCounts = velocCounts;
     statsByLap.velocCountsSmooth = velocCountsSmooth;
     statsByLap.fileInfo = virmen_fileInfo;
+
+    choiceOutput = choiceAnalyzer_DS(statsByLap);
+
 end%if length(lapStartIdx) <= 1
 
 %% Get stats across laps throughout session %%
@@ -273,5 +276,6 @@ save(filename, 'virmen_fileInfo');
 save(filename2, 'statsByLap');
 save(filename3, 'statsBySession');
 save(filename4, 'rawDataByLap');
+
 
 end%function

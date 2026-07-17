@@ -1,0 +1,619 @@
+
+function choiceOutput = choiceAnalyzer_DS(lapData, statsByLap, params, currEnv, sessionInfo) 
+% input should maybe be helper functions created, input should be whatever otiginal .py returns
+
+% Created by DS on 06/16/26
+% Python adaptation of Stephanie Prince's choice_analyzer python code 
+
+% need to add python package and module equivalents up here
+    % Block one: built in python libraries
+    % Block two: importation of built in pyton modules AND final line
+    % imports from a built in file
+    % Block Three: imports from built in files from elsewhere 
+
+    addpath("Y:\singer\01_PEOPLE\Undergrads\Deandra\analysis_reversallearning\extractZoneBinsByLapGroup_DS.m")
+    
+% 0a.Creating BaseAnalysisClass: loads, saves and exports data. Can be
+% implemented elsewhere
+
+% creating toggle for each env and zone so analysis can be  turned on and off
+% COMEBACK and see if this will be needed later 
+% params.choice.useAZ = 1;
+% params.choice.useCZ = 1;
+% params.choice.useNevRZ = 0;
+% 
+% zoneNames = {'az','cz', 'nevrz'};
+% zoneToggles = {useAZ, useCZ, useNEVRZ};
+
+
+% 1.creating the ChoiceAnalyzer class
+    classdef ChoiceAnalyzer < handle 
+        properties
+            nwbfile
+            session_id
+            target_var = 'choice'; 
+            velocity_only = false;
+
+
+            % setup paramas
+            params = struct(...
+               'miniBatchSize', 32, ...
+               'maxEpochs', 20, ...
+               'regularization', [], ...
+               'initialLearnRate', 0.1, ...
+               'predictUpdate' = true ...
+               );            
+            grid_search_params = struct('miniBatchSize', [20, 50, 100], ...
+                                       'maxEpochs', [10, 20, 30], ...
+                                       'regularization', {{[], 'l2(0.01)', 'l2(0.1)'}}, ...
+                                       'initialLearnRate', [0.01, 0.1], ...
+                                       'predictUpdate', false ...
+                                       ); % has placeholders for tensorflow
+
+
+            % setup data
+            trials_df = table()
+            session_ts = []
+            
+            input_data = {}
+            target_data = {}
+            timestamp_data = {}
+
+            non_update_index = []
+
+            update_input_data = {}
+            update_target_data = {}
+            update_timestamp_data = {}
+            update_index = []
+
+            max_pad_length = []
+            output_data = table();
+
+            % Get results to save
+            results_io = []
+            data_files = struct()
+        end
+            
+        methods
+            function obj = ChoiceAnalyzer(nwbfile, session_id, target_var, velocity_only)
+                if nargin >= 1 && ~empty(nwbfile)
+                    obj.nwbfile = nwbfile;
+                end
+                if nargin >= 2  && ~empty(session_id)
+                    obj.session_id = session_id;
+                end
+                if nargin >= 3  && ~empty(target_var)
+                    obj.target_var = target_var;
+                end
+                if nargin >= 4  && ~empty(velocity_only)
+                    obj.velocity_only = velocity_only;
+                end
+                
+               % setup data methods
+               obj.trials_df = util.table.fromNWB(nwbfile.intervals_trials);
+               obj.session_ts = nwbfile.processing.get('behavior') ...
+                .nwbdatainterface.get('view_angle').view_angle;
+            
+                [input_data, obj.target_data, obj.timestamp_data] = ...
+                    obj.setup_data(nwbfile, obj.target_var);
+                
+                [~, obj.non_update_index] = ...
+                    obj.get_trial_inds('with_update', false, 'ret_index', true);
+
+
+                
+                if obj.params.predict_update
+                    [input, target, timestamp] = ...
+                        obj.setup_data(nwbfile, obj.target_var, true);
+
+                    obj.update_input_data = input;
+                    obj.update_target_data = target;
+                    obj.update_timestamp_data = timestamp;
+                
+                    [~, obj.update_index] = get_trial_inds(true, true);
+                
+                    obj.max_pad_length = max( ...
+                        [ max(cellfun(@length, obj.input_data)), ...
+                          max(cellfun(@length, obj.update_input_data)) ] );
+                
+                else
+                    obj.update_input_data = {};  %might beed to change later depending on what data type is being stored 
+                    obj.update_target_data = {};
+                    obj.update_index = {};
+                    obj.max_pad_length = max(cellfun(@length, input_data)); % returns length of longest cell in array
+                end
+                % Get results to save
+                if obj.velocity_only
+                    add_tags = 'velocity_only';
+                else 
+                   add_tags = '';
+                end    
+                
+               creator_file = [mfilename('fullpath'), '.m']
+               class_file_folder = fileparts(mfilename('fullpath'));
+               [~, folder_name] = fileparts(class_file_folder)
+
+               obj.results_io = resultsIO( ...
+                  creator_file, ...
+                  obj.session_id, ...
+                  folder_name, ...
+                  [obj.target_var, add_tags]...
+                );
+
+               obj.data_files = struct();
+
+
+               obj.data_files.dynamic_choice_output = struct( ...
+                'vars', { {'output_data', 'agg_data', 'decoder_data', 'params'} }, ...
+                'format', 'pkl' ...
+                );
+
+       
+            end
+    
+            % 2. run_analysis function 
+            function runAnalysis(obj, overwrite, grid_search, lapData)
+                if nargin < 2
+                    overwrite = false;
+                end
+                if nargin < 3
+                   grid_search = false; 
+                end
+    
+                if grid_search
+                    obj.data_files = struct( ...
+                        "grid_search", struct( ...
+                        'vars', {{'grid_search_data', 'grid_search_params'}}, ...
+                        ' format', 'pkl' ...
+                            )...
+                        );
+                end
+                if overwrite
+
+                    if grid_search 
+                        obj.grid_search();
+                    else
+                        obj.get_dynamic_choice();
+                        obj.aggregate_data();
+                        obj.get_decoder_data();
+                    end
+                    
+                    obj.export_data();
+    
+                else 
+                    if obj.results_io.data_exists(obj.data_files)
+                        obj.load_data();
+                    else
+                        warning('Data with those input parameters does not exist, setting overwrite to true')
+                        obj.runAnalysis(true)
+                    end
+                end 
+            end
+            
+    
+            % 3.gridSearch function
+                function gridSearch(obj)
+                    gridSearchData = struct([]);
+
+                    miniBatchSizeValues = obj.gridSearchParams.miniBatchSizeValues;  %extract values of grid_search_params
+                    maxEpochsValues = obj.gridSearchParams.epochs; 
+                    regularizerValues = obj.gridSearchParams.regularizer; 
+                    learningRateValues = obj.gridSearchParams.learning_rate;    %extract values of grid_search_params
+
+                    for iBatch = 1:numel(miniBatchSizeValues) % nested for loops to make Cartesian products
+                        batch_size = miniBatchSizeValues(iBatch); %assigns column to variable
+                        for iEpochs =  1:numel(maxEpochsValues)
+                            epochs = maxEpochsValues(iEpochs);
+                            for iReg =  1:numel(regularizerValues)
+                                regularizer = regularizerValues(iReg);
+                                for iLR =  1:numel(learningRateValues)
+                                    learningRate = learningRateValues(iLR);
+
+                                    % MATLAB equivalent for RepeatedStratifiedKFolds
+                                    rng(21);         % same as random state in python
+                                    K = 5;          % number of folds
+                                    R = 1;           % number of repetitions
+
+                                    y = obj.target_data(:, 1); % creating the y that exists in cv.split
+                                    % COMEBACK and ensure that setup data allows for this to work in a table form
+
+                                    for r = 1:R
+                                        c = cvpartition(y, 'KFold', K);  % stratified by default for classification
+
+                                        for k = 1:K
+                                            trainIndex = training(c, k);
+                                            testIndex  = test(c, k);
+
+                                            preprocessedData = obj.preprocess_data( trainIndex, testIndex); %preprocessed data has train and test groups passed as arguments
+
+                                            % struct is created which is similar to a python dict
+                                            % dot nonation used which is similar to index [] notation
+                                            buildData = struct('norm_data',preprocessedData.input_train_no_pad, ...
+                                                'regularizer', regularizer_values(iReg), ...
+                                                'shape', size(preprocessedData.input_train), ...
+                                                'mask_value' ,obj.mask_value, ...
+                                                'learning_rate', learning_rate_values(iLR));
+
+                                            model = obj.get_classifier(buildData);
+
+                                            %temporary place holder until decided if model will be rebuilt or if tool box is
+                                            %being used 
+
+                                            history = model.fit(...
+                                                preprocessedData.input_train, ...
+                                                preprocessedData.target_train, ...
+                                                pyargs(...
+                                                validation_data, {preprocessed_data.input_test, ...
+                                                preprocessed_data.target_test}, ...
+                                                'batch_size', batch_size, ...
+                                                'epochs', epochs)); % replace pyargs if MATLAB toolbox is used
+
+                                            score, acc = model.evaluate(preprocessed_data.input_test, preprocessed_data.target_test, ...
+                                                pyargs('verbose',0) ...
+                                                ); % replace pyargs if MATLAB toolbox is used
+
+                                            gridSearchDataStruct = struct('score', score, ...
+                                                'accuracy', acc, ...
+                                                'history', history.history, ...
+                                                'batch_size', batch_size, ...
+                                                'epochs', epochs, ...
+                                                'regularizer', regularizer, ...
+                                                'learning_rate', learning_rate);
+                                            
+                                            gridSearchData(end+1) = gridSearchDataStruct;
+
+                                        end
+
+                                            obj.gridSearchData = gridSearchData;
+
+                                           
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end 
+                               
+  
+            % 4. get_dynamic_choice function 
+            function getDynamicChoice(obj)
+                 output_data = struct([]);
+
+                 batch_size = obj.params.batch_size;  %extract values of grid_search_params
+                 epochs = obj.params.epochs;
+                 regularizer = obj.params.regularizer;
+                 learning_rate = obj.params.learning_rate;    %extract values of grid_search_params
+
+                    
+
+
+                 rng(21);         % same as random state in python
+                 K = 6;          % number of folds
+                 R = 3;           % number of repetitions
+
+                 y = obj.target_data(:, 1); % creating the y that exists in cv.split
+
+                 for r = 1:R
+                     c = cvpartition(y, 'KFold', K);  % stratified by default for classification
+
+                     for k = 1:K
+                         train_index = training(c, k);
+                         test_index  = test(c, k);
+
+                         preprocessed_data = obj.preprocess_data( train_index, test_index);
+
+                         build_data = struct('norm_data',preprocessed_data.input_train_no_pad, ...
+                             'regularizer', regularizer, ...
+                             'shape', size(preprocessed_data.input_train), ...
+                             'mask_value' ,obj.mask_value, ...
+                             'learning_rate', learning_rate);
+
+                         model = obj.get_classifier(build_data);
+                         disp('Fitting model...');
+
+                         history = model.fit(...
+                             preprocessed_data.input_train, ...
+                             preprocessed_data.target_train, ...
+                             pyargs(...
+                             'batch_size', batch_size, ...
+                             'epochs', epochs)); % replace pyargs if MATLAB toolbox is used
+
+                         [score, acc] = model.evaluate(preprocessed_data.input_test, preprocessed_data.target_test, ...
+                             pyargs('verbose',0) ...
+                             ); % replace pyargs if MATLAB toolbox is used
+                         fprintf('Evaluating model... score: %f binary_accuracy: %f\n', score, acc);
+
+                         disp('Predicting with model...');
+                         prediction = model.predict(preprocessed_data.input_test);
+
+                         if obj.params.predict_update 
+
+                             [update_input_data, update_target_data, update_timestamp_data] = ...
+                                 obj.update_input_data, ...
+                                 obj.update_target_data, ...
+                                 obj.update_timestamp_data);
+
+                             update_prediction = model.predict(update_input_data);
+                         else
+                             update_prediction = [];
+                             update_timestamp_data = [];
+                         end
+
+
+                         output_data_struct = struct('score',score, ...
+                             'accuracy', acc, ...
+                             'history', history.history, ...
+                             'prediction', prediction, ...
+                             'input_test_fold', preprocessed_data.input_test, ...
+                             'target_test_fold', preprocessed_data.target_test, ...
+                             'test_index', test_index,...
+                             'update_prediction', update_prediction, ...
+                             'update_test_index', obj.update_index, ...
+                             'timestamp_train', preprocessed_data.timestamp_train, ...
+                             'timestamp_test', preprocessed_data.timestamp_test, ...
+                             'timestamp_update', update_timestamp_data);
+
+                         output_data(end+1) = output_data_struct;
+                     end
+                 end
+        
+                 obj.output_data = output_data;
+            end
+            
+    
+            % 5a. _get_classifier function: builds the untrained model/network 
+            %decided to leave this static function as a normal function
+            function layers = getClassifier(obj, buildData)
+      
+                input_shape = buildData.shape; %features from build data imported 
+                norm_data = buildData.norm_data;
+                mask_value = buildData.mask_value;
+                regularizer = buildData.regularizer;
+                
+                oneSequence = obj.input_data{1}; %one trial
+                numTimeSteps = size(oneSequence, 1);
+                numFeatures = size(oneSequence, 2);
+                
+                %layer creation
+                layers = [
+                    sequenceInputLayer(numFeatures)
+                    lstmLayer(10, OutputMode="sequence")
+                    fullyConnectedLayer(1)
+                    sigmoidLayer
+                    ];
+
+            end
+
+            %5b.train_classifier: should  set up model for training and %train model
+            function [trainedModel, history] = trainClassifier(obj, model, training_data, training_labels, params)
+
+                batch_size = params.batch_size;  
+                epochs = params.epochs;
+                regularizer = params.regularizer;
+                learning_rate = params.learning_rate;    
+
+                % training instructions are stored 
+                options = trainingOptions("adam", ...
+                    MaxEpochs=epochs, ...
+                    MiniBatchSize=batch_size, ...
+                    InitialLearnRate=learning_rate, ...
+                    L2Regularization = regularizer, ...
+                    Verbose=false
+                    );
+
+                %training model %removes "score, acc" line above 
+                [trained_model, history] = trainnet(training_data, training_labels, model, "binary-crossentropy", options);
+
+            end
+ 
+
+            %5c. evaluate_classifier: checks how well model did on data it did not train on
+            function [score, acc, predictions] = evaluate_classifier(obj, trained_model, test_data, test_labels)
+                predictions = minibatchpredict(trained_model, test_data); %stores models predicted outputs
+                score = crossentropy(predictions, test_labels);
+                predicted_labels = predictions >= 0.5;
+                acc = mean(predicted_labels == test_labels);
+
+            end
+ 
+            % 6. setup_data function: prepares trial by trial data for a
+            function setupData(obj, lapData)
+
+                % a. create a base for the data
+                baseDir = '\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\OutputStructs\Data\Behavior\sessionData';
+
+                currIden   = params.iden;
+                currAnimal = params.animals;
+                currDate   = params.datesincl;
+
+                % rawDataFileSess = fullfile(baseDir, currIden, currAnimal, currDate, 'rawDataBySession.mat');
+                rawDataFileTrial = fullfile(baseDir, currIden, currAnimal, currDate, 'rawDataByTrial.mat');
+
+
+
+                % 1b. pull in rot and trans veloc data (positional and view not availible
+                % transVelo_data = rawData.transVelo
+                % rotVelo_data = rawData.rotVelo
+
+                % 2b. pull in lickrate smooth and speed smooth
+                lickrateSmooth = statsByLap.lickRateSmooth;  
+                speedSmooth = statsByLap.velocCountsSmooth;  
+                
+                % c. pull in time data from rawDatabySession
+
+                rawData = load(rawDataFileTrial);
+                vrTime = rawData.vrTime;
+
+                % d. Ensuring data is filtered for relative toggle
+                
+                currData = data.curr(currEnv).(currZone);
+
+                if ~isfield(data, currEnv)
+                    fprintf('skipping %s.%s because it is empty \n'. currEnv, currZone)
+                end 
+
+                for z = 1:length(zoneNames)      
+                    currZone = zoneNames{z};     
+                    zoneIsOn = zoneToggles(z);      
+                    
+                    % Skip zone if toggle is off     
+                    if zoneIsOn ~= 1         
+                        fprintf('Skipping %s because toggle is off.\n', currZone);         
+                        continue     
+                    end
+                end
+
+                % e. create target data using binary code (using just lickrate)
+
+                statsByTrial = fullfile(baseDir, currIden, currAnimal, currDate, 'rawDataFileTrial.mat');
+
+                S = load(statsBySession);
+                statsByTrial = S.statsByTrial;
+
+                lickBehavior = statsByTrial.lickBehavior;
+                licksInReward = lickBehavior.licksInReward;
+
+                targetData = double(licksInReward > 0);
+
+                % f. create time stamps and input data
+                timeStampData = rawDataFileTrial.vrTime; % come back and fix this 
+                inputData = ...; 
+
+
+            end 
+
+    
+            % 7._pad_data function % NOT NEEDED IN MATLAB COMPARED TO PYTHON
+            % function padData(obj)
+
+            % end
+    
+            % 8. preprocess_data function
+            function preprocessData(obj, trainIndex, testIndex)
+                % 1. pad data not needed for MATLAB so first section is unnecessary (might add it later if needed)
+
+                % get input and target data
+                % 2. split data into train and test
+                 inputTrain =  inputData(trainIndex, :, :);
+                 inputTest = inputData(testIndex, :, :);
+                % 3. split timestamps into train and test
+                timestampTrain = timestampData(trainIndex, :);
+                timestampTest = timestampData(testIndex, :);
+                % 4. split target data in train and test
+                targetTrain  = targetData(trainIndex);
+                targetTest = targetData(testIndex);
+                 
+                % 5. returns OG training trials w/o padding but no padding used 
+                
+                % 6. return everything as a struct
+                returnStruct  = struct('input_train',input_train ...
+                    'inputTest',inputTest, ....
+                    'targetTrain',targetTrain, ...
+                    'targetTest',targetTest, ...
+                'timestampTrain',timestampTrain, ...
+                    'timestampTest',timestampTest, ...
+                    'input_train_no_pad',input_train_no_pad);
+            end
+    
+            % 9. getTrialInds function
+            % not needed, behaves like getBehaviors in zone and bin extraction
+
+            %1. Picks the update type where true = types 2 & 3 and false keeps type %1
+            %2. Only keeps trials where maze type is #4
+            %3. Only removes unusally long trials 
+    
+            % 10. _aggregate_data function
+            function aggregateData(obj)
+                % get average for each trial across all cross-validation folds
+                predictData = obj.getRepeatedFoldAverage(obj.output_data, 'prediction');
+                updatePredictData = obj.getRepeatedFoldAverage(obj.output_data, 'update_prediction', ...
+                    'update_test_index');
+                targetData = obj.getRepeatedFoldAverage(obj.output_data, 'targetTestFold')(:, end);  
+                logLikelihood = np.array([obj.log2Likelihood(np.tile(t, len(p)), p) 
+                    
+                for i = 1:length(targetData)
+                    t = targetData(i);
+                    p = predictData(i);
+
+                    logLikelihood(i) = log2Likelihood(repmat(t, 1, length(p)), p);
+                end
+
+                timestamps = obj.getRepeatedFoldAverage(obj.output_data, 'timestamp_test');
+                timestamps(timestamps < -9000) = NaN; % remove mask values
+                updateTimestamps = obj.getRepeatedFoldAverage(obj.output_data, 'timestamp_update', ...
+                                                            'update_test_index');
+
+                updateTimestamps(update_timestamps < -9000) = NaN;  % remove mask values
+
+                if obj.velocityOnly
+                    yPosition = NaN(size(timestamps));
+                else
+                    yPosition = obj.getRepeatedFoldAverage(obj.output_data, 'input_test_fold')(:, :, 1);
+                    yPosition(yPosition < -9000) = NaN;
+                end
+
+                self.agg_data = dict(predict=predict_data, update_predict_data=update_predict_data, target=target_data,
+                             y_position=y_position, timestamps=timestamps, update_timestamps=update_timestamps,
+                             log_likelihood=log_likelihood, )
+
+
+
+
+            end
+    
+            % 11. _get_decoder_data function
+            function getDecoderData(obj)
+
+            end
+    
+           methods(Static)
+
+            % 12._log2_likelihood function
+            function logLikelihoodElem = log2Likelihood(yTrue, yPred, epsVal)
+                
+                if nargin < 3 || isempty(epsVal)
+                    epsVal = 1e-15;
+                end
+
+                % adjust small values so work with log correctly
+                yPred = clip(yPred, epsVal, 1 - epsVal);
+
+                % calculate log_likelihood of elements
+                logLikelihoodElem = yTrue .* log2(yPred) + (1 - yTrue) .* log2(1 - yPred);
+
+            end
+    
+            % 13. _get_repeated_fold_average function
+           
+            function meanData = getRepeatedFoldAverage(outputDf, label, trialIndex)
+                % 1. assign inputs values
+                if nargin < 2 || isempty(label)
+                    label = [];
+                end
+
+                if nargin < 3 || isempty(trialIndex)
+                    trialIndex = 'testIndex';
+                end
+                 
+                % 2. flatten indices into a one row
+                 allTrialInds = horzcat(outputDf.(trialIndex){:});
+                 allTrialOutputs = vertcat(outputDf.(label){:});
+
+                 meanData = [];
+
+                 uniqueTrialInds = unique(allTrialInds);
+                 for trialInd = uniqueTrialInds(:)'
+                     outputData = allTrialOutputs(allTrialInds == trialInd, :);
+                     meanData(end+1,:) = mean(outputData, 1);
+                 end
+
+            end
+
+% ---------------
+% 1. setup data and get_trial_inds done with getBehavior, have to find a
+% way to insert it with getBehavior
+% 2. run analysis should be the point of where to actually start
+    end
+
+
+       

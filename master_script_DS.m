@@ -269,10 +269,14 @@ end%if plotBehavior
 %% Choice Analysis %%
 % Deandra choice analysis code
 % if choiceAnalyzer
+% 
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%% Choice Analysis %%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%
+%     addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\analysis_reversallearning\extractZoneBinsByLapGroup_DS.m')
+% end 
+% 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%%% Choice Analysis %%%%%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % end
 %% Gather neural data %%
