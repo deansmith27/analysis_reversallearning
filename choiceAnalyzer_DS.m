@@ -1,5 +1,5 @@
 function choiceOutput = choiceAnalyzer_DS(allindex, dirs, params, choiceTrialType)
-% Created from Stephanie Prince's Python ChoiceAnalyzer.
+% Created from Stephanie Prince's Python ChoiceAnalyzer
 %
 % Main question:
 % Can pre-zone behavior predict whether the mouse will lick in the upcoming
@@ -34,6 +34,8 @@ function choiceOutput = choiceAnalyzer_DS(allindex, dirs, params, choiceTrialTyp
 %
 % Required toolbox:
 %   Deep Learning Toolbox (trainnet, sequenceInputLayer, lstmLayer)
+%
+% Data saved Data/Behavior/ChoiceAnalysis/
 
 %% Check inputs %%
 if nargin < 4 || isempty(choiceTrialType)
@@ -45,7 +47,7 @@ if ~ismember(choiceTrialType, [0 1 2 3])
 end
 
 if exist('trainnet', 'file') ~= 2
-    error(['trainnet was not found. GPT_choiceAnalyzer_DS requires a MATLAB ' ...
+    error(['trainnet was not found. choiceAnalyzer_DS requires a MATLAB ' ...
         'version with Deep Learning Toolbox and trainnet support.']);
 end
 
@@ -316,9 +318,18 @@ for r = 1:choiceParams.numRepeats
         [trainedNet, info] = trainnet(inputTrain, targetTrain, layers, ...
             "binary-crossentropy", options);
 
-        prediction = minibatchpredict(trainedNet, inputTest, ...
-            MiniBatchSize=currBatchSize);
-        prediction = predictionToDouble(prediction);
+       prediction = nan(length(inputTest), 1);  
+        for testTrial = 1:length(inputTest)         
+            currTestData = inputTest{testTrial};     
+            
+            currPrediction = predict(trainedNet, currTestData, ...         
+                InputDataFormats="TC");      
+            
+            % Convert dlarray/GPU output to a normal MATLAB number     
+            currPrediction = predictionToDouble(currPrediction);      
+            prediction(testTrial,1) = currPrediction(1);  
+        
+        end
 
         predictedClass = double(prediction >= 0.5);
         accuracy = mean(predictedClass == targetTest);

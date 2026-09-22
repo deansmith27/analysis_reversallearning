@@ -76,8 +76,8 @@ plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
 % Deandra new function for Stephanie's choice analyzer
-choiceAnalyzer = 0; %0 = off, 1 = run Choice Analysis
-choiceTrialType = 0; %0 = all zone trial types, 1 = reward, 2 = nonreward/control, 3 = alt nonreward
+choiceAnalyzer = 1; %0 = off, 1 = run Choice Analysis
+choiceTrialType = 1; %0 = all zone trial types, 1 = reward, 2 = nonreward/control, 3 = alt nonreward
 
 
 %% Create behavior data structs %%
@@ -260,8 +260,8 @@ if plotBehavior
         doROCPlots = 0; %ROC plots across sessions/animals, separated by track
         doAUCIndPlots = 0; %AUC plots across sessions for each animal
         doAUCGroupUpdatePlots = 0;%AUC plots across original sessions and update sessions by control vs. experimental group
-        doGroupedROCby5 = 1; % Deandra: toggle for grouped ROCs by 5
-        doGroupedAUCby5 = 1; % Deandra: toggle for grouped AUCs by 5
+        doGroupedROCby5 = 0; % Deandra: toggle for grouped ROCs by 5
+        doGroupedAUCby5 = 0; % Deandra: toggle for grouped AUCs by 5
         plotBehaviorROC_DS(allindex, uniqSess, dirs, ROC, params.rocID{id}, params, doROCPlots, doAUCIndPlots, doAUCGroupUpdatePlots, doGroupedROCby5, doGroupedAUCby5)
     end
 
