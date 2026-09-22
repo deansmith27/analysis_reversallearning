@@ -76,7 +76,8 @@ plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
 % Deandra new function for Stephanie's choice analyzer
-% choiceAnalyzer = 0;
+choiceAnalyzer = 0; %0 = off, 1 = run Choice Analysis
+choiceTrialType = 0; %0 = all zone trial types, 1 = reward, 2 = nonreward/control, 3 = alt nonreward
 
 
 %% Create behavior data structs %%
@@ -268,17 +269,15 @@ end%if plotBehavior
 
 %% Choice Analysis %%
 % Deandra choice analysis code
-% if choiceAnalyzer
-% 
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%
-%     %%%% Choice Analysis %%%%%
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%
-%     addpath('\\ad.gatech.edu\bme\labs\singer\01_PEOPLE\Undergrads\Deandra\analysis_reversallearning\extractZoneBinsByLapGroup_DS.m')
-% end 
-% 
+if choiceAnalyzer
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%% Choice Analysis %%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% end
+    choiceOutput = choiceAnalyzer_DS(allindex, dirs, params, choiceTrialType);
+
+end
 %% Gather neural data %%
 if gatherNeuralData
 
