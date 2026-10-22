@@ -76,7 +76,7 @@ plotBehavior = 1;
 gatherNeuralData = 0;
 doDecoding = 0;
 % Deandra new function for Stephanie's choice analyzer
-choiceAnalyzer = 1; %0 = off, 1 = run Choice Analysis
+choiceAnalyzer = 0; %0 = off, 1 = run Choice Analysis
 choiceTrialType = 1; %0 = all zone trial types, 1 = reward, 2 = nonreward/control, 3 = alt nonreward
 
 

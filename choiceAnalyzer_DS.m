@@ -33,7 +33,7 @@ function choiceOutput = choiceAnalyzer_DS(allindex, dirs, params, choiceTrialTyp
 %   3 = alternate nonreward trials only
 %
 % Required toolbox:
-%   Deep Learning Toolbox (trainnet, sequenceInputLayer, lstmLayer)
+%   Deep Learning Toolbox (trainNetwork, sequenceInputLayer, lstmLayer)
 %
 % Data saved Data/Behavior/ChoiceAnalysis/
 
@@ -46,9 +46,9 @@ if ~ismember(choiceTrialType, [0 1 2 3])
     error('choiceTrialType must be 0, 1, 2, or 3.');
 end
 
-if exist('trainnet', 'file') ~= 2
-    error(['trainnet was not found. choiceAnalyzer_DS requires a MATLAB ' ...
-        'version with Deep Learning Toolbox and trainnet support.']);
+if exist('trainNetwork', 'file') ~= 2
+    error(['trainNetwork was not found. choiceAnalyzer_DS requires a MATLAB ' ...
+        'version with Deep Learning Toolbox and trainNetwork support.']);
 end
 
 %% Choice Analysis parameters %%
@@ -269,8 +269,9 @@ numFeatures = 2;
 layers = [
     sequenceInputLayer(numFeatures)
     lstmLayer(choiceParams.numLSTMUnits, OutputMode="last")
-    fullyConnectedLayer(1)
-    sigmoidLayer
+    fullyConnectedLayer(2)
+    softmaxLayer
+    classificationLayer
     ];
 
 %% Repeated stratified cross-validation %%
@@ -315,19 +316,26 @@ for r = 1:choiceParams.numRepeats
             Verbose=false, ...
             Plots="none");
 
-        [trainedNet, info] = trainnet(inputTrain, targetTrain, layers, ...
-            "binary-crossentropy", options);
+        % trainNetwork expects features-by-time sequences and categorical classes.
+        inputTrainNetwork = cellfun(@transpose, inputTrain, 'UniformOutput', false);
+        targetTrainNetwork = categorical(targetTrain, [0 1], {'0', '1'});
+        [trainedNet, info] = trainNetwork(inputTrainNetwork, targetTrainNetwork, ...
+            layers, options);
+        positiveClassIndex = find(string(trainedNet.Layers(end).Classes) == "1", 1);
+        if isempty(positiveClassIndex)
+            error('The trained classifier is missing the positive (lick) class.');
+        end
 
        prediction = nan(length(inputTest), 1);  
         for testTrial = 1:length(inputTest)         
-            currTestData = inputTest{testTrial};     
+            currTestData = inputTest{testTrial}.';     
             
-            currPrediction = predict(trainedNet, currTestData, ...         
-                InputDataFormats="TC");      
+            currPrediction = predict(trainedNet, {currTestData}, ...
+                'MiniBatchSize', 1);      
             
             % Convert dlarray/GPU output to a normal MATLAB number     
             currPrediction = predictionToDouble(currPrediction);      
-            prediction(testTrial,1) = currPrediction(1);  
+            prediction(testTrial,1) = currPrediction(positiveClassIndex);  
         
         end
 
@@ -374,8 +382,10 @@ finalOptions = trainingOptions("adam", ...
     Plots="none");
 
 rng(choiceParams.randomSeed);
-[finalModel, finalTrainingHistory] = trainnet(allInputNormalized, targetData, ...
-    layers, "binary-crossentropy", finalOptions);
+allInputNetwork = cellfun(@transpose, allInputNormalized, 'UniformOutput', false);
+allTargetsCategorical = categorical(targetData, [0 1], {'0', '1'});
+[finalModel, finalTrainingHistory] = trainNetwork(allInputNetwork, ...
+    allTargetsCategorical, layers, finalOptions);
 
 %% Put trial information and predictions together %%
 trialTable = struct2table(trialInfo);
@@ -459,7 +469,7 @@ end
 
 %% Helper: normalize using training data only %%
 function [trainData, testData, normalization] = normalizeSequenceData(trainData, testData)
-% Data format for trainnet sequence input is time-by-features.
+% Stored sequences are time-by-features; transpose when calling trainNetwork.
 
 allTrainData = vertcat(trainData{:});
 
