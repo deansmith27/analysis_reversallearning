@@ -87,6 +87,7 @@ for id = 1:length(params.rocID)
             for f = 1:length(files)
                 currFile = files(f);
                 sessionType = sessionInfo(f,4);
+                
 
                 datafname = fullfile(dirs.loadoutputstructs, ['Data\Behavior\sessionData\' params.iden num2str(animal)], ...
                     [num2str(sessDate) '_' num2str(currFile) '_' num2str(sessionType)], 'statsByLap.mat');
@@ -95,6 +96,19 @@ for id = 1:length(params.rocID)
                 else
                     fprintf(['cannot locate ' ': ' params.iden num2str(allindex(f,1)) '_' num2str(allindex(f,2)) '_' num2str(allindex(f,3)) '... \n'])
                 end
+
+                % Debugging code
+%                 disp('MATLAB is looking for:')
+%                 disp(datafname)
+%                 disp(['File exists: ' num2str(isfile(datafname))])
+%                 
+%                 if isfile(datafname)
+%                     load(datafname)
+%                 else
+%                     fprintf('Cannot locate: %s\n', datafname);
+%                     continue
+%                 end
+
 
                 if ~isempty(statsByLap)
                     if sessionType == 1 %session in original environment
@@ -118,7 +132,7 @@ for id = 1:length(params.rocID)
                     end
                     
                     % insertion of choice analyzer 
-                    choiceOutput = choiceAnalyzer_DS(lapData, params, currEnv);
+                    %choiceOutput = choiceAnalyzer_DS(lapData, params, currEnv);
                   
                
                     %get zone info
